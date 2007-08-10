@@ -5,9 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>vrecord</string>
+	<string>Books</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.sadun.VoiceRecorder</string>
+	<string>com.zacharybrewstergeisz.books</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -15,6 +15,6 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>0.1</string>
 </dict>
 </plist>

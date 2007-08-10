@@ -31,12 +31,6 @@
     textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
-    [textView setEditable:NO];
-
-    size = 12.0f;
-
-    [textView setTextSize:size];
-    [textView setTextFont:@"TimesNewRoman"];
 
     browserView = [[FileBrowser alloc] initWithFrame:
 		  CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
@@ -59,9 +53,6 @@
     [mainView addSubview:transitionView];
 
     [transitionView transition:1 toView:browserView];
-    [textView setAllowsRubberBanding:YES];
-    [textView setBottomBufferHeight:0.0f];
-    //[textView setDelegate:self];
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
@@ -78,11 +69,7 @@
     else
       {
 	NSString *leftTitle;
-	[textView setHTML:
-		    [NSMutableString 
-		      stringWithContentsOfFile:file
-		      encoding:NSMacOSRomanStringEncoding
-		      error:&error]];
+	[textView loadBookWithPath:file];
 
 	if (bookHasChapters)
 	  leftTitle = @"Chapters";
@@ -121,9 +108,7 @@
   case 0:// right
     if (readingText)
       {
-	size += 2.0f;
-	[textView setTextSize:size];
-	[textView setNeedsDisplay];
+	[textView embiggenText]; // It's a perfectly cromulent method.
       }
     break;
   case 1:// left
