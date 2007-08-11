@@ -11,6 +11,7 @@
 #import <UIKit/UIKeyboard.h>
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UITransitionView.h>
+#import <UIKit/UINavigationItem.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
 
@@ -18,6 +19,7 @@
 	UIView      *mainView;
 	UINavigationBar *navBar;
 	UITransitionView *transitionView;
+	UINavigationItem *booksItem, *chaptersItem, *bookItem;
         EBookView   *textView;
 	FileBrowser *browserView;
 	FileBrowser *chapterBrowserView;

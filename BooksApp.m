@@ -25,6 +25,12 @@
     //    [navBar setPrompt:@"Choose a book..."];
     [navBar enableAnimation];
 
+    booksItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
+    chaptersItem = [[UINavigationItem alloc] initWithTitle:@""];
+    bookItem = [[UINavigationItem alloc] initWithTitle:@""];
+
+    [navBar pushNavigationItem:booksItem];
+
     bookHasChapters = NO;
     readingText = NO;
 
@@ -62,6 +68,10 @@
     if ([fileManager fileExistsAtPath:file isDirectory:&isDir] && isDir)
       {
 	[chapterBrowserView setPath:file];
+	[chaptersItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
+	//	[chaptersItem setBackButtonTitle:@"Books"];
+	[navBar pushNavigationItem:chaptersItem];
+	//[navBar showBackButton:YES animated:YES];
 	[navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
 	[transitionView transition:1 toView:chapterBrowserView];
 	bookHasChapters = YES;
@@ -75,7 +85,11 @@
 	  leftTitle = @"Chapters";
 	else
 	  leftTitle = @"Books";
-	[navBar showButtonsWithLeftTitle:leftTitle rightTitle:@"Bigger" leftBack:YES];
+	[bookItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
+	//[bookItem setBackButtonTitle:leftTitle];
+	[navBar pushNavigationItem:bookItem];
+	//[navBar showBackButton:YES animated:YES];
+	[navBar showButtonsWithLeftTitle:leftTitle rightTitle:nil leftBack:YES];
 	[transitionView transition:1 toView:textView];
 	[textView becomeFirstResponder];
 	readingText = YES;
@@ -96,14 +110,16 @@
     {
       if (bookHasChapters && readingText)
 	{
+	  [navBar popNavigationItem];
 	  [navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
 	  [transitionView transition:2 toView:chapterBrowserView];
 	  readingText = NO;
 	}
       else
 	{
-	  [transitionView transition:2 toView:browserView];
+	  [navBar popNavigationItem];
 	  [navBar hideButtons];
+	  [transitionView transition:2 toView:browserView];
 	  bookHasChapters = NO;
 	  readingText = NO;
 	}
@@ -120,6 +136,9 @@
 
 - (void) dealloc
 {
+  [booksItem release];
+  [chaptersItem release];
+  [bookItem release];
   [navBar release];
   [mainView release];
   [textView release];
