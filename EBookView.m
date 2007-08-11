@@ -6,7 +6,7 @@
 - (id)initWithFrame:(struct CGRect)rect
 {
   [super initWithFrame:rect];
-  tapinfo = [[UIViewTapInfo alloc] initWithDelegate:self view:self];
+  //  tapinfo = [[UIViewTapInfo alloc] initWithDelegate:self view:self];
 
   size = 16.0f;
 
@@ -20,6 +20,7 @@
   [self setAllowsRubberBanding:YES];
   [self setBottomBufferHeight:0.0f];
 
+  [self setTapDelegate:self];
   return self;
 }
 
@@ -48,6 +49,7 @@
 - (void)embiggenText
   // "A noble spirit embiggens the smallest man." -- Jebediah Springfield
 {
+  //FIXME: needs better scrolling support
   size += 2.0f;
   [self setTextSize:size];
   [self loadBookWithPath:path];
@@ -59,24 +61,42 @@
 {
   size -= 2.0f;
   [self setTextSize:size];
-  [self loadBookWithPath:path];
+  [self loadBookWithPath:path]; // This is horribly slow!  Is there a better way?
   [self setNeedsDisplay];
 }
 // None of these tap methods work yet.  They may never work.
 
 - (void)handleDoubleTapEvent:(struct __GSEvent *)event
 {
-  NSLog(@"doubletap\n");
+  [self embiggenText];
+  //[super handleDoubleTapEvent:event];
 }
 
 - (void)handleSingleTapEvent:(struct __GSEvent *)event
 {
-  NSLog(@"singletap\n");
+  [self ensmallenText];
+  //[super handleDoubleTapEvent:event];
+}
+
+- (void)mouseUp:(struct __GSEvent *)event
+  // Why doesn't this work the way it should?
+  // In Terminal.app, a single tap is properly noted.
+  // But here, it always thinks we're scrolling for some reason.
+{
+  if ([self isScrolling])
+    {
+      // Ignore
+    }
+  else
+    {
+      [self embiggenText];
+    }
+  [super mouseUp:event];
 }
 
 - (void)dealloc
 {
-  [tapinfo release];
+  //[tapinfo release];
   [path release];
   [super dealloc];
 }

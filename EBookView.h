@@ -7,7 +7,7 @@
 
 @interface EBookView : UITextView
 {
-  UIViewTapInfo *tapinfo;
+  //  UIViewTapInfo *tapinfo;
   NSString      *path;
   float         size;
 }

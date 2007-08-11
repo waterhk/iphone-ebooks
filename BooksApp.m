@@ -77,32 +77,13 @@
 	  leftTitle = @"Books";
 	[navBar showButtonsWithLeftTitle:leftTitle rightTitle:@"Bigger" leftBack:YES];
 	[transitionView transition:1 toView:textView];
+	[textView becomeFirstResponder];
 	readingText = YES;
       }
 }
 
 
-/*  FIXME--what I want is to dynamically resize and reflow the text,
-    so call it, say, a double-tap to make text bigger, and a single-tap
-    to make it smaller.  But how?
-
-- (void)mouseUp:(struct __GSEvent *)fp8
-{
-    float size = [textView textSize];
-
-    if (GSEventGetClickCount(fp8) == 2)
-      {
-	[textView setTextSize:(size + 2.0f)];
-	[textView setNeedsDisplay];
-      }
-    else if (GSEventGetClickCount(fp8) == 1)
-      {
-	[textView setTextSize:(size - 2.0f)];
-	[textView setNeedsDisplay];
-      }
-}
-
-*/
+// FIXME: make the nav-bar prettier!
 - (void)navigationBar:(UINavigationBar *)thebar buttonClicked:(int)button {
   switch (button) {
   case 0:// right
@@ -132,11 +113,9 @@
 
 - (void) applicationWillSuspend
 {
-  /*   [[textView text]
-	writeToFile: path 
-	atomically: NO 
-	encoding: NSMacOSRomanStringEncoding
-	error: &error]; */
+  // Nothing yet.  Eventually we will write something,
+  // probably to NSUserDefaults, which will allow us to pick up
+  // where we left off.
 }
 
 - (void) dealloc
