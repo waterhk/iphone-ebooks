@@ -14,12 +14,13 @@
 #import <UIKit/UINavigationItem.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
+#import "EBookNavItem.h"
 
 @interface BooksApp : UIApplication {
 	UIView      *mainView;
 	UINavigationBar *navBar;
 	UITransitionView *transitionView;
-	UINavigationItem *booksItem, *chaptersItem, *bookItem;
+	EBookNavItem *booksItem, *chaptersItem, *bookItem;
         EBookView   *textView;
 	FileBrowser *browserView;
 	FileBrowser *chapterBrowserView;
@@ -31,4 +32,6 @@
 	float       size;
 }
 
+- (void)transitionForwardToView:(id)view;
+- (void)transitionBackwardToView:(id)view;
 @end

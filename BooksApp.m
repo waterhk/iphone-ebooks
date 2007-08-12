@@ -1,5 +1,22 @@
+/* ------ BooksApp, written by Zachary Brewster-Geisz
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; version 2
+ of the License.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+
+*/
 #import "BooksApp.h"
-//#import <UIKit/UIViewTapInfo.h>
+
 
 @implementation BooksApp
 
@@ -25,15 +42,6 @@
     //    [navBar setPrompt:@"Choose a book..."];
     [navBar enableAnimation];
 
-    booksItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
-    chaptersItem = [[UINavigationItem alloc] initWithTitle:@""];
-    bookItem = [[UINavigationItem alloc] initWithTitle:@""];
-
-    [navBar pushNavigationItem:booksItem];
-
-    bookHasChapters = NO;
-    readingText = NO;
-
     textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
@@ -46,6 +54,20 @@
 
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(rect.origin.x, 48.0f, rect.size.width, rect.size.height - 48.0f)];
+
+    booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
+    chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
+    bookItem = [[EBookNavItem alloc] initWithTitle:@"" view:textView];
+
+    [booksItem setDelegate:self];
+    [chaptersItem setDelegate:self];
+    [bookItem setDelegate:self];
+
+    [navBar pushNavigationItem:booksItem];
+
+    bookHasChapters = NO;
+    readingText = NO;
+
 
     path = @"/var/root/Media/EBooks/";
 
@@ -70,10 +92,10 @@
 	[chapterBrowserView setPath:file];
 	[chaptersItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
 	//	[chaptersItem setBackButtonTitle:@"Books"];
+	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:chaptersItem];
-	//[navBar showBackButton:YES animated:YES];
-	[navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
-	[transitionView transition:1 toView:chapterBrowserView];
+	//[navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
+	//	[transitionView transition:1 toView:chapterBrowserView];
 	bookHasChapters = YES;
       }
     else
@@ -87,9 +109,9 @@
 	  leftTitle = @"Books";
 	[bookItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
 	//[bookItem setBackButtonTitle:leftTitle];
+	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:bookItem];
-	//[navBar showBackButton:YES animated:YES];
-	[navBar showButtonsWithLeftTitle:leftTitle rightTitle:nil leftBack:YES];
+	//[navBar showButtonsWithLeftTitle:leftTitle rightTitle:nil leftBack:YES];
 	[transitionView transition:1 toView:textView];
 	[textView becomeFirstResponder];
 	readingText = YES;
@@ -125,6 +147,16 @@
 	}
     }
   }
+}
+
+- (void)transitionForwardToView:(id)view
+{
+  [transitionView transition:1 toView:view];
+}
+
+- (void)transitionBackwardToView:(id)view
+{
+  [transitionView transition:2 toView:view];
 }
 
 - (void) applicationWillSuspend
