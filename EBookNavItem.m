@@ -18,10 +18,10 @@
 
 - (void) willBecomeTopInNavigationBar:(id)theBar navigationBarState:(int)state
 {
-  NSLog(@"willBecomeTop\n");
-  if ([theDelegate respondsToSelector:@selector(transitionForwardToView:)])
+  //NSLog(@"willBecomeTop\n");
+  if ([theDelegate respondsToSelector:@selector(transitionToView:)])
     {
-      [theDelegate transitionForwardToView:theView];
+      [theDelegate transitionToView:theView];
     }
   [super willBecomeTopInNavigationBar:theBar navigationBarState:state];
 }

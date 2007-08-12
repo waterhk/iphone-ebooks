@@ -112,7 +112,7 @@
 	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:bookItem];
 	//[navBar showButtonsWithLeftTitle:leftTitle rightTitle:nil leftBack:YES];
-	[transitionView transition:1 toView:textView];
+	//[transitionView transition:1 toView:textView];
 	[textView becomeFirstResponder];
 	readingText = YES;
       }
@@ -149,14 +149,33 @@
   }
 }
 
-- (void)transitionForwardToView:(id)view
+- (void)transitionToView:(id)view
 {
-  [transitionView transition:1 toView:view];
-}
-
-- (void)transitionBackwardToView:(id)view
-{
-  [transitionView transition:2 toView:view];
+  int transType;
+  if ([view isEqual:browserView]) // we must be going backward
+    {
+      readingText = NO;
+      NSLog(@"toview: browserView\n");
+      transType = 2;
+    }
+  else if ([view isEqual:textView]) // we must be going forward
+    {
+      NSLog(@"toView:textview\n");
+      transType = 1;
+    }
+  else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
+    {
+      NSLog(@"toView: chapterBrowserView\n");
+      if (readingText == YES)
+	{
+	  transType = 2;
+	}
+      else
+	{
+	  transType = 1; 
+	}
+    }
+  [transitionView transition:transType toView:view];
 }
 
 - (void) applicationWillSuspend

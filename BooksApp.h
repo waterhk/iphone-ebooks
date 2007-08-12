@@ -32,6 +32,6 @@
 	float       size;
 }
 
-- (void)transitionForwardToView:(id)view;
-- (void)transitionBackwardToView:(id)view;
+- (void)transitionToView:(id)view;
+
 @end
