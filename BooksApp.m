@@ -59,6 +59,10 @@
     chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
     bookItem = [[EBookNavItem alloc] initWithTitle:@"" view:textView];
 
+    [browserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
+    [chapterBrowserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
+
+
     [booksItem setDelegate:self];
     [chaptersItem setDelegate:self];
     [bookItem setDelegate:self];
