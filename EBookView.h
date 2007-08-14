@@ -14,6 +14,7 @@
 
 - (id)initWithFrame:(struct CGRect)rect;
 - (void)loadBookWithPath:(NSString *)thePath;
+- (NSString *)currentPath;
 - (void)embiggenText;
 - (void)ensmallenText;
 - (void)handleDoubleTapEvent:(struct __GSEvent *)event;

@@ -49,6 +49,10 @@
     }
 }
 
+- (NSString *)currentPath;
+{
+  return path;
+}
 - (void)embiggenText
   // "A noble spirit embiggens the smallest man." -- Jebediah Springfield
 {

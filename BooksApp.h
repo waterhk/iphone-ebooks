@@ -15,6 +15,7 @@
 #import "EBookView.h"
 #import "FileBrowser.h"
 #import "EBookNavItem.h"
+#import "BooksDefaultsController.h"
 
 @interface BooksApp : UIApplication {
 	UIView      *mainView;
@@ -29,7 +30,9 @@
 	//UIViewTapInfo  *tapinfo;
 	BOOL        bookHasChapters;
 	BOOL        readingText;
+	BOOL        doneLaunching;
 	float       size;
+	BooksDefaultsController *defaults;
 }
 
 - (void)transitionToView:(id)view;

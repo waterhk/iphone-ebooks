@@ -22,9 +22,16 @@
 
 - (void) applicationDidFinishLaunching: (id) unused
 {
+    NSString *recentFile;
+
     UIWindow *window;
+
     struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
     rect.origin.x = rect.origin.y = 0.0f;
+
+    doneLaunching = NO;
+
+    defaults = [[BooksDefaultsController alloc] init];
 
     window = [[UIWindow alloc] initWithContentRect: rect];
 
@@ -46,6 +53,20 @@
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
 
+    recentFile = [defaults fileBeingRead];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
+      {
+	[textView loadBookWithPath:recentFile];
+	//	[transitionView transition:1 toView:textView];
+      }
+    else
+      {  // Recent file has been deleted!  RESET!
+	//[defaults setLastScrollPoint:CGPointMake(0, 0)];
+	[defaults setTopViewIndex:BROWSERVIEW];
+	[defaults setFileBeingRead:@""];
+      }
+
     browserView = [[FileBrowser alloc] initWithFrame:
 		  CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
 
@@ -57,7 +78,7 @@
 
     booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
     chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
-    bookItem = [[EBookNavItem alloc] initWithTitle:@"" view:textView];
+    bookItem = [[EBookNavItem alloc] initWithTitle:[[[textView currentPath] lastPathComponent] stringByDeletingPathExtension] view:textView];
 
     [browserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
     [chapterBrowserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
@@ -67,10 +88,9 @@
     [chaptersItem setDelegate:self];
     [bookItem setDelegate:self];
 
-    [navBar pushNavigationItem:booksItem];
-
     bookHasChapters = NO;
     readingText = NO;
+
 
 
     path = @"/var/root/Media/EBooks/";
@@ -84,7 +104,33 @@
     [mainView addSubview:navBar];
     [mainView addSubview:transitionView];
 
-    [transitionView transition:1 toView:browserView];
+    [navBar pushNavigationItem:booksItem];
+    if ([defaults topViewIndex] > BROWSERVIEW)
+      {
+	[navBar pushNavigationItem:chaptersItem];
+	bookHasChapters = YES;  // FIXME.  
+	// We might be reading a book without chapters!
+      }
+    if ([defaults topViewIndex] == TEXTVIEW)
+      {
+	NSLog(@"Hello thar!\n");
+	[navBar pushNavigationItem:bookItem];
+	readingText = YES;
+      }
+    switch ([defaults topViewIndex]) 
+      {
+      case BROWSERVIEW:
+	[transitionView transition:1 toView:browserView];
+	break;
+      case CHAPTERBROWSERVIEW:
+	[transitionView transition:1 toView:chapterBrowserView];
+	break;
+      case TEXTVIEW:
+	[transitionView transition:1 toView:textView];
+	break;
+      }
+
+    doneLaunching = YES;
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
@@ -105,7 +151,11 @@
     else
       {
 	NSString *leftTitle;
-	[textView loadBookWithPath:file];
+	if (!([[textView currentPath] isEqualToString:file]))
+	  [textView loadBookWithPath:file];
+	// Slight optimization.  If the file is already loaded,
+	// don't bother reloading.
+	//[textView scrollPointVisibleAtTopLeft:[defaults lastScrollPoint]];
 
 	if (bookHasChapters)
 	  leftTitle = @"Chapters";
@@ -156,30 +206,34 @@
 - (void)transitionToView:(id)view
 {
   int transType;
-  if ([view isEqual:browserView]) // we must be going backward
+  if (doneLaunching)
     {
-      readingText = NO;
-      NSLog(@"toview: browserView\n");
-      transType = 2;
-    }
-  else if ([view isEqual:textView]) // we must be going forward
-    {
-      NSLog(@"toView:textview\n");
-      transType = 1;
-    }
-  else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
-    {
-      NSLog(@"toView: chapterBrowserView\n");
-      if (readingText == YES)
+      if ([view isEqual:browserView]) // we must be going backward
 	{
+	  readingText = NO;
+	  NSLog(@"toview: browserView\n");
 	  transType = 2;
 	}
-      else
+      else if ([view isEqual:textView]) // we must be going forward
 	{
-	  transType = 1; 
+	  NSLog(@"toView:textview\n");
+	  transType = 1;
 	}
+      else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
+	{
+	  NSLog(@"toView: chapterBrowserView\n");
+	  if (readingText == YES)
+	    {
+	      //readingText = NO;
+	      transType = 2;
+	    }
+	  else
+	    {
+	      transType = 1; 
+	    }
+	}
+      [transitionView transition:transType toView:view];
     }
-  [transitionView transition:transType toView:view];
 }
 
 - (void) applicationWillSuspend
@@ -187,6 +241,15 @@
   // Nothing yet.  Eventually we will write something,
   // probably to NSUserDefaults, which will allow us to pick up
   // where we left off.
+
+  [defaults setFileBeingRead:[textView currentPath]];
+  //[defaults setLastScrollPoint:[textView offset]];
+  if (readingText)
+    [defaults setTopViewIndex:TEXTVIEW];
+  else
+    [defaults setTopViewIndex:BROWSERVIEW];
+  [defaults synchronize];
+
 }
 
 - (void) dealloc
@@ -198,6 +261,7 @@
   [mainView release];
   [textView release];
   [browserView release];
+  [defaults release];
   [super dealloc];
 }
 

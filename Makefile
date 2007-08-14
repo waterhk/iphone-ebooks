@@ -4,14 +4,15 @@ LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit 
 
 all:    Books
 
-Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o EBookNavItem.o
+Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o EBookNavItem.o \
+BooksDefaultsController.o
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m
 		$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 clean:
-		rm -f *.o Books
+		rm -rf *.o *~ Books Books.app
 
 package: Books
 	rm -fr Books.app
