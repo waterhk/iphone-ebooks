@@ -1,3 +1,4 @@
+
 #import <GraphicsServices/GraphicsServices.h>
 #import "EBookView.h"
 
@@ -20,6 +21,8 @@
   [self setAllowsRubberBanding:YES];
   [self setBottomBufferHeight:0.0f];
 
+  [self setScrollDecelerationFactor:0.99f];
+  //  NSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
   [self setTapDelegate:self];
   return self;
 }
