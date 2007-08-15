@@ -1,6 +1,1 @@
-8/10/07
-Implement dynamic text resizing
-Allow only .txt and .htm(l) files
-Display .txt files correctly
-EBooks class needs to handle more internal stuff, rather than BooksApp
-more...
+For an up-to-date list of TODO items, visit http://iphoneebooks.googlecode.com/

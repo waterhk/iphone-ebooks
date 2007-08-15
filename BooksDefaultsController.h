@@ -7,15 +7,14 @@
 @interface BooksDefaultsController : NSObject
 {
 
-  struct CGPoint lastScrollPoint;
+  unsigned int lastScrollPoint;
   int topViewIndex;
   NSString *fileBeingRead;
 
   NSUserDefaults *sharedDefaults;
 }
 
-#define LASTXSCROLLPOINTKEY @"lastXScrollPointKey"
-#define LASTYSCROLLPOINTKEY @"lastYScrollPointKey"
+#define LASTSCROLLPOINTKEY @"lastScrollPointKey"
 #define TOPVIEWKEY @"topViewKey"
 #define FILEBEINGREADKEY @"fileBeingReadKey"
 
@@ -23,11 +22,11 @@
 #define CHAPTERBROWSERVIEW 1
 #define TEXTVIEW 2
 
-- (struct CGPoint)lastScrollPoint;
+- (unsigned int)lastScrollPoint;
 - (int)topViewIndex;
 - (NSString *)fileBeingRead;
 
-- (void)setLastScrollPoint:(struct CGPoint)point;
+- (void)setLastScrollPoint:(unsigned int)point;
 - (void)setTopViewIndex:(int)index;
 - (void)setFileBeingRead:(NSString *)file;
 

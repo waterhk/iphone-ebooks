@@ -38,5 +38,6 @@
 - (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col;
 - (void)tableRowSelected:(NSNotification *)notification;
 - (NSString *)selectedFile;
+- (void)setExtensions:(NSArray *)extensions;
 
 @end

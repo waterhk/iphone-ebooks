@@ -10,6 +10,7 @@
   //  UIViewTapInfo *tapinfo;
   NSString      *path;
   float         size;
+  id            _heartbeatDelegate;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
@@ -19,5 +20,6 @@
 - (void)ensmallenText;
 - (void)handleDoubleTapEvent:(struct __GSEvent *)event;
 - (void)handleSingleTapEvent:(struct __GSEvent *)event;
-
+- (void)setHeartbeatDelegate:(id)delegate;
+- (void)heartbeatCallback:(id)unused;
 @end

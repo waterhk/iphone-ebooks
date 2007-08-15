@@ -31,10 +31,11 @@
 	BOOL        bookHasChapters;
 	BOOL        readingText;
 	BOOL        doneLaunching;
+	BOOL        transitionHasBeenCalled;
 	float       size;
 	BooksDefaultsController *defaults;
 }
 
 - (void)transitionToView:(id)view;
-
+- (void)heartbeatCallback:(id)unused;
 @end

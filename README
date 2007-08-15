@@ -21,8 +21,6 @@ them.  Install iPHUC, plug in your iPhone, and run:
 
 It currently has many problems, only a few of which are:
 
-- You must provide the full path name to a book, not the relative path
-(although ~ and ~user are OK)
 - Nothing in the path can have spaces.
 
 Anyone who is a better Bash guru than me, please, please help!

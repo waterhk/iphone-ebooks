@@ -2,6 +2,13 @@
 #import <GraphicsServices/GraphicsServices.h>
 #import "EBookView.h"
 
+@interface NSObject (HeartbeatDelegate)
+
+- (void)heartbeatCallback:(id)ignored;
+
+@end
+
+
 @implementation EBookView
 
 - (id)initWithFrame:(struct CGRect)rect
@@ -26,6 +33,25 @@
   [self setTapDelegate:self];
   return self;
 }
+
+- (void)heartbeatCallback:(id)unused
+{
+  if (_heartbeatDelegate != nil) {
+    if ([_heartbeatDelegate respondsToSelector:@selector(heartbeatCallback:)]) {
+      [_heartbeatDelegate heartbeatCallback:self];
+    } else {
+      [NSException raise:NSInternalInconsistencyException
+		   format:@"Delegate doesn't respond to selector"];
+    }
+  }
+}
+
+- (void)setHeartbeatDelegate:(id)delegate
+{
+  _heartbeatDelegate = delegate;
+  [self startHeartbeat:@selector(heartbeatCallback:) inRunLoopMode:nil];
+}
+
 
 - (void)loadBookWithPath:(NSString *)thePath
 {
@@ -89,6 +115,8 @@
   // Why doesn't this work the way it should?
   // In Terminal.app, a single tap is properly noted.
   // But here, it always thinks we're scrolling for some reason.
+  // 8/14/07 --These events may work now, but we have an insertion point.
+  // ARGH.
 {
   if ([self isScrolling])
     {
@@ -96,7 +124,18 @@
     }
   else
     {
-      [self embiggenText];
+      int count = GSEventGetClickCount(event);  // nope, doesn't work
+      switch (count)
+	{
+	case 1:
+	  [self embiggenText];
+	  break;
+	case 2:
+	  [self ensmallenText];
+	  break;
+	default:
+	  break;
+	}
     }
   [super mouseUp:event];
 }

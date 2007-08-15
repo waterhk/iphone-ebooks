@@ -12,10 +12,9 @@
 
   sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:4];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:3];
 
-  [temp setObject:@"0" forKey:LASTXSCROLLPOINTKEY];
-  [temp setObject:@"0" forKey:LASTYSCROLLPOINTKEY];
+  [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:TOPVIEWKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
 
@@ -25,21 +24,17 @@
 
   //  [sharedDefaults setInteger:TEXTVIEW forKey:TOPVIEWKEY];
 
-  NSLog(@"defaults dump\n%d %d %d %@\n",
-	[sharedDefaults integerForKey:LASTXSCROLLPOINTKEY],
-	[sharedDefaults integerForKey:LASTYSCROLLPOINTKEY],
+  NSLog(@"defaults dump\n%d %d %@\n",
+	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
 	[sharedDefaults integerForKey:TOPVIEWKEY],
 	[sharedDefaults objectForKey:FILEBEINGREADKEY]);
 
   return self;
 }
 
-- (struct CGPoint)lastScrollPoint
+- (unsigned int)lastScrollPoint
 {
-  struct CGPoint ret;
-  ret = CGPointMake([sharedDefaults integerForKey:LASTXSCROLLPOINTKEY],
-		    [sharedDefaults integerForKey:LASTYSCROLLPOINTKEY]);
-  return ret;
+  return [sharedDefaults integerForKey:LASTSCROLLPOINTKEY];
 }
 
 - (int)topViewIndex
@@ -52,13 +47,9 @@
   return [[sharedDefaults objectForKey:FILEBEINGREADKEY] autorelease];
 }
 
-- (void)setLastScrollPoint:(struct CGPoint)point
+- (void)setLastScrollPoint:(unsigned int)point
 {
-  [sharedDefaults setFloat:point.x forKey:LASTXSCROLLPOINTKEY];
-  [sharedDefaults setFloat:point.y forKey:LASTYSCROLLPOINTKEY];
-
-  NSLog(@"x: %f y: %f\n", point.x, point.y);
-  NSLog(@"objectx:%@ objecty:%@", [sharedDefaults objectForKey:LASTXSCROLLPOINTKEY], [sharedDefaults objectForKey:LASTYSCROLLPOINTKEY]);
+  [sharedDefaults setInteger:point forKey:LASTSCROLLPOINTKEY];
 }
 
 - (void)setTopViewIndex:(int)index

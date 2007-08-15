@@ -31,6 +31,8 @@
 
     doneLaunching = NO;
 
+    transitionHasBeenCalled = NO;
+
     defaults = [[BooksDefaultsController alloc] init];
 
     window = [[UIWindow alloc] initWithContentRect: rect];
@@ -47,7 +49,7 @@
     [navBar setDelegate:self];
     [navBar hideButtons];
     //    [navBar setPrompt:@"Choose a book..."];
-    [navBar enableAnimation];
+    [navBar disableAnimation];
 
     textView = [[EBookView alloc] 
         initWithFrame:
@@ -58,11 +60,13 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
       {
 	[textView loadBookWithPath:recentFile];
-	//	[transitionView transition:1 toView:textView];
+
+	NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
+
       }
     else
       {  // Recent file has been deleted!  RESET!
-	//[defaults setLastScrollPoint:CGPointMake(0, 0)];
+	[defaults setLastScrollPoint:0];
 	[defaults setTopViewIndex:BROWSERVIEW];
 	[defaults setFileBeingRead:@""];
       }
@@ -75,12 +79,13 @@
 
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(rect.origin.x, 48.0f, rect.size.width, rect.size.height - 48.0f)];
+    [transitionView setDelegate:self];
 
     booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
     chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
     bookItem = [[EBookNavItem alloc] initWithTitle:[[[textView currentPath] lastPathComponent] stringByDeletingPathExtension] view:textView];
 
-    [browserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
+    [browserView setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"html", @"htm", nil]];
     [chapterBrowserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
 
 
@@ -113,7 +118,7 @@
       }
     if ([defaults topViewIndex] == TEXTVIEW)
       {
-	NSLog(@"Hello thar!\n");
+	//NSLog(@"Hello thar!\n");
 	[navBar pushNavigationItem:bookItem];
 	readingText = YES;
       }
@@ -124,13 +129,39 @@
 	break;
       case CHAPTERBROWSERVIEW:
 	[transitionView transition:1 toView:chapterBrowserView];
+	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
 	break;
       case TEXTVIEW:
 	[transitionView transition:1 toView:textView];
+	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
+	[textView setNeedsDisplay]; // KLUDGE
+	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
+	struct CGRect temp = [textView visibleRect];
+	NSLog(@"x: %f y: %f w: %f h: %f\n", temp.origin.x, temp.origin.y, temp.size.width, temp.size.height);
+	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
+	temp = [textView visibleRect];
+	NSLog(@"x: %f y: %f w: %f h: %f\n", temp.origin.x, temp.origin.y, temp.size.width, temp.size.height);
 	break;
       }
 
+    [textView setHeartbeatDelegate:self];
+
+    [navBar enableAnimation];
     doneLaunching = YES;
+
+}
+
+- (void)heartbeatCallback:(id)unused
+{
+  if (!transitionHasBeenCalled)
+    {
+      if ((textView != nil) && (defaults != nil))
+	{
+	  [textView scrollPointVisibleAtTopLeft:
+		      CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
+	  transitionHasBeenCalled = YES;
+	}
+    }
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
@@ -152,10 +183,13 @@
       {
 	NSString *leftTitle;
 	if (!([[textView currentPath] isEqualToString:file]))
-	  [textView loadBookWithPath:file];
+	  {
+	    [textView loadBookWithPath:file];
+	    [defaults setLastScrollPoint:0];
+	  }
 	// Slight optimization.  If the file is already loaded,
 	// don't bother reloading.
-	//[textView scrollPointVisibleAtTopLeft:[defaults lastScrollPoint]];
+
 
 	if (bookHasChapters)
 	  leftTitle = @"Chapters";
@@ -205,6 +239,7 @@
 
 - (void)transitionToView:(id)view
 {
+  struct CGRect selectionRect;
   int transType;
   if (doneLaunching)
     {
@@ -225,6 +260,12 @@
 	  if (readingText == YES)
 	    {
 	      //readingText = NO;
+	      //[textView repositionCaretToVisibleRect];
+	      NSLog(@"About to call visibleRect\n");
+	      selectionRect = [textView visibleRect];
+	      //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
+	      NSLog(@"Called it, %d\n", (unsigned int)selectionRect.origin.y);
+	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
 	      transType = 2;
 	    }
 	  else
@@ -236,14 +277,27 @@
     }
 }
 
+- (void)notifyDidCompleteTransition:(id)unused
+  // Delegate method?
+{
+  
+  if (!transitionHasBeenCalled)
+    {
+      NSLog(@"notifyDidComplete\n");
+      transitionHasBeenCalled = YES;
+    }
+}
+
 - (void) applicationWillSuspend
 {
   // Nothing yet.  Eventually we will write something,
   // probably to NSUserDefaults, which will allow us to pick up
   // where we left off.
-
+  struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
-  //[defaults setLastScrollPoint:[textView offset]];
+  selectionRect = [textView visibleRect];
+  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+
   if (readingText)
     [defaults setTopViewIndex:TEXTVIEW];
   else

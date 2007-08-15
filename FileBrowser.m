@@ -78,16 +78,16 @@
 - (void)reloadData {
         BOOL isDir;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSArray *tempArray = [[NSArray alloc] initWithArray:[fileManager directoryContentsAtPath:_path]];
+
 	if ([fileManager fileExistsAtPath: _path] == NO) {
 		return;
 	}
 
-	[_files setArray:[fileManager directoryContentsAtPath:_path]];
-	/*
 	[_files removeAllObjects];
 
         NSString *file;
-        NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath: _path];
+        NSEnumerator *dirEnum = [tempArray objectEnumerator];
 	while (file = [dirEnum nextObject]) {
 		if (_extensions != nil && [_extensions count] > 0) {
 			NSString *extension = [[file pathExtension] lowercaseString];
@@ -97,13 +97,12 @@
 		} else {
 			[_files addObject: file];
 		}
-		if ([fileManager fileExistsAtPath:[_path stringByAppendingString:file] isDir:&isDir] && isDir)
-		  [dirEnum skipDescendents];
  	}
-	*/
+
 	//[_files sortUsingSelector:@selector(caseInsensitiveCompare:)];
 	_rowCount = [_files count];
 	[_table reloadData];
+	[tempArray release];
 }
 
 - (void)setDelegate:(id)delegate {
