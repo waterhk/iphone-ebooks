@@ -1,3 +1,6 @@
+v. 0.4 - Persistence works!  Occasional issues, but works 99% of the time,
+         anyway.
+
 v. 0.3 - Finessed copybookdir.sh
        - File browser now only shows directories, text, and HTML files
        - Beginnings of persistence; will remember when you were reading

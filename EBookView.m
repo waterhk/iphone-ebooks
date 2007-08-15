@@ -120,6 +120,9 @@
 {
   if ([self isScrolling])
     {
+      //struct CGRect rect = [self visibleRect];
+      //[defaults setLastScrollPoint:(unsigned int)visibleRect.origin.y];
+
       // Ignore
     }
   else

@@ -158,7 +158,7 @@
       if ((textView != nil) && (defaults != nil))
 	{
 	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
+		      CGPointMake(0.0f, (float)[defaults lastScrollPoint]) animated:YES];
 	  transitionHasBeenCalled = YES;
 	}
     }
