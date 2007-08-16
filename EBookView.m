@@ -1,6 +1,7 @@
-
+#import <CoreGraphics/CoreGraphics.h>
 #import <GraphicsServices/GraphicsServices.h>
 #import "EBookView.h"
+#import "BooksDefaultsController.h"
 
 @interface NSObject (HeartbeatDelegate)
 
@@ -79,20 +80,25 @@
 {
   return path;
 }
+
 - (void)embiggenText
   // "A noble spirit embiggens the smallest man." -- Jebediah Springfield
 {
+  struct CGRect oldRect = [self visibleTextRect];
   //FIXME: needs better scrolling support
-  size += 2.0f;
+  if (size < 36.0f)
+    size += 2.0f;
   [self setTextSize:size];
   [self loadBookWithPath:path];
+  [self scrollRectToVisible:oldRect];
   [self setNeedsDisplay];
 }
 
 - (void)ensmallenText
   // "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
 {
-  size -= 2.0f;
+  if (size > 10.0f)
+    size -= 2.0f;
   [self setTextSize:size];
   [self loadBookWithPath:path]; // This is horribly slow!  Is there a better way?
   [self setNeedsDisplay];
@@ -120,8 +126,8 @@
 {
   if ([self isScrolling])
     {
-      //struct CGRect rect = [self visibleRect];
-      //[defaults setLastScrollPoint:(unsigned int)visibleRect.origin.y];
+      //      struct CGRect rect = [self visibleRect];
+      //[[textView defaultsController] setLastScrollPoint:(unsigned int)visibleRect.origin.y];
 
       // Ignore
     }

@@ -51,17 +51,29 @@
     //    [navBar setPrompt:@"Choose a book..."];
     [navBar disableAnimation];
 
-    textView = [[EBookView alloc] 
+    plainTextView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
 
+    HTMLTextView = [[EBookView alloc] 
+        initWithFrame:
+          CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
+
+    textView = HTMLTextView;
+
     recentFile = [defaults fileBeingRead];
 
-    if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
+    if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile] && 
+	([defaults topViewIndex] == TEXTVIEW))
       {
+	if ([[recentFile pathExtension] isEqualToString:@"txt"])
+	  textView = plainTextView;
+	else
+	  textView = HTMLTextView;
+
 	[textView loadBookWithPath:recentFile];
 
-	NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
+	//NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
 
       }
     else
@@ -133,7 +145,12 @@
 	break;
       case TEXTVIEW:
 	[transitionView transition:1 toView:textView];
+
+	//FIXME: The following fails if we're reading a book without chapters.
+	//This may have to wait until the browser architecture has
+	//been rewritten.
 	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
+	/*
 	[textView setNeedsDisplay]; // KLUDGE
 	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
 	struct CGRect temp = [textView visibleRect];
@@ -141,10 +158,12 @@
 	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
 	temp = [textView visibleRect];
 	NSLog(@"x: %f y: %f w: %f h: %f\n", temp.origin.x, temp.origin.y, temp.size.width, temp.size.height);
+	*/
 	break;
       }
 
-    [textView setHeartbeatDelegate:self];
+    [plainTextView setHeartbeatDelegate:self];
+    [HTMLTextView setHeartbeatDelegate:self];
 
     [navBar enableAnimation];
     doneLaunching = YES;
@@ -158,7 +177,7 @@
       if ((textView != nil) && (defaults != nil))
 	{
 	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPoint]) animated:YES];
+		      CGPointMake(0.0f, (float)[defaults lastScrollPoint]) animated:NO];
 	  transitionHasBeenCalled = YES;
 	}
     }
@@ -172,11 +191,10 @@
       {
 	[chapterBrowserView setPath:file];
 	[chaptersItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
-	//	[chaptersItem setBackButtonTitle:@"Books"];
+
 	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:chaptersItem];
-	//[navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
-	//	[transitionView transition:1 toView:chapterBrowserView];
+
 	bookHasChapters = YES;
       }
     else
@@ -184,25 +202,30 @@
 	NSString *leftTitle;
 	if (!([[textView currentPath] isEqualToString:file]))
 	  {
+	    if ([[file pathExtension] isEqualToString:@"txt"])
+	      textView = plainTextView;
+	    else
+	      textView = HTMLTextView;
 	    [textView loadBookWithPath:file];
-	    [defaults setLastScrollPoint:0];
+	    [defaults setLastScrollPoint:1];
+	    //[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, 0.0f)];
+	    //transitionHasBeenCalled = NO;
 	  }
 	// Slight optimization.  If the file is already loaded,
 	// don't bother reloading.
-
 
 	if (bookHasChapters)
 	  leftTitle = @"Chapters";
 	else
 	  leftTitle = @"Books";
 	[bookItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
-	//[bookItem setBackButtonTitle:leftTitle];
+
 	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:bookItem];
-	//[navBar showButtonsWithLeftTitle:leftTitle rightTitle:nil leftBack:YES];
-	//[transitionView transition:1 toView:textView];
+
 	[textView becomeFirstResponder];
 	readingText = YES;
+
       }
 }
 
@@ -249,11 +272,6 @@
 	  NSLog(@"toview: browserView\n");
 	  transType = 2;
 	}
-      else if ([view isEqual:textView]) // we must be going forward
-	{
-	  NSLog(@"toView:textview\n");
-	  transType = 1;
-	}
       else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
 	{
 	  NSLog(@"toView: chapterBrowserView\n");
@@ -263,15 +281,22 @@
 	      //[textView repositionCaretToVisibleRect];
 	      NSLog(@"About to call visibleRect\n");
 	      selectionRect = [textView visibleRect];
-	      //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
 	      NSLog(@"Called it, %d\n", (unsigned int)selectionRect.origin.y);
 	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+
 	      transType = 2;
 	    }
 	  else
 	    {
 	      transType = 1; 
 	    }
+	}
+      else
+	{
+	  view = textView;  // this is needed because of the txt/html fugliness
+	  NSLog(@"toView:textview\n");
+	  transType = 1;
+	  //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
 	}
       [transitionView transition:transType toView:view];
     }
@@ -290,9 +315,7 @@
 
 - (void) applicationWillSuspend
 {
-  // Nothing yet.  Eventually we will write something,
-  // probably to NSUserDefaults, which will allow us to pick up
-  // where we left off.
+
   struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
@@ -313,7 +336,9 @@
   [bookItem release];
   [navBar release];
   [mainView release];
-  [textView release];
+  textView = nil;
+  [plainTextView release];
+  [HTMLTextView release];
   [browserView release];
   [defaults release];
   [super dealloc];

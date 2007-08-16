@@ -22,7 +22,7 @@
 	UINavigationBar *navBar;
 	UITransitionView *transitionView;
 	EBookNavItem *booksItem, *chaptersItem, *bookItem;
-        EBookView   *textView;
+        EBookView   *textView, *plainTextView, *HTMLTextView;
 	FileBrowser *browserView;
 	FileBrowser *chapterBrowserView;
 	NSString    *path;
