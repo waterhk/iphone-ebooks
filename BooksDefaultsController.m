@@ -18,7 +18,7 @@
   [temp setObject:@"0" forKey:TOPVIEWKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
 
-  NSLog(@"temp dictionary: %@\n", temp);
+  //  NSLog(@"temp dictionary: %@\n", temp);
 
   [sharedDefaults registerDefaults:temp];
 
@@ -29,6 +29,7 @@
 	[sharedDefaults integerForKey:TOPVIEWKEY],
 	[sharedDefaults objectForKey:FILEBEINGREADKEY]);
 
+  [temp release];
   return self;
 }
 
