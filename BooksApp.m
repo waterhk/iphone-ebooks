@@ -33,6 +33,8 @@
 
     transitionHasBeenCalled = NO;
 
+    navbarsAreOn = YES;
+
     defaults = [[BooksDefaultsController alloc] init];
 
     window = [[UIWindow alloc] initWithContentRect: rect];
@@ -43,7 +45,7 @@
 
     mainView = [[UIView alloc] initWithFrame: rect];
 
-    navBar = [[UINavigationBar alloc] initWithFrame:
+    navBar = [[HideableNavBar alloc] initWithFrame:
         CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
 
     [navBar setDelegate:self];
@@ -51,13 +53,18 @@
     //    [navBar setPrompt:@"Choose a book..."];
     [navBar disableAnimation];
 
+    bottomNavBar = [[HideableNavBar alloc] initWithFrame:
+       CGRectMake(rect.origin.x, rect.size.height - 48.0f, rect.size.width, 48.0f)];
+
+    [bottomNavBar setDelegate:self];
+
     plainTextView = [[EBookView alloc] 
         initWithFrame:
-          CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
+          CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
     HTMLTextView = [[EBookView alloc] 
         initWithFrame:
-          CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
+          CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
     textView = HTMLTextView;
 
@@ -83,14 +90,16 @@
 	[defaults setFileBeingRead:@""];
       }
 
+
+
     browserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
+		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height - 48.0f)];
 
     chapterBrowserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0, rect.size.width, rect.size.height - 48.0f)];
+		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height - 48.0f)];
 
     transitionView = [[UITransitionView alloc] initWithFrame:
-       CGRectMake(rect.origin.x, 48.0f, rect.size.width, rect.size.height - 48.0f)];
+       CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
     [transitionView setDelegate:self];
 
     booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
@@ -118,8 +127,9 @@
 
 
     [window setContentView: mainView];
-    [mainView addSubview:navBar];
     [mainView addSubview:transitionView];
+    [mainView addSubview:navBar];
+    [mainView addSubview:bottomNavBar];
 
     [navBar pushNavigationItem:booksItem];
     if ([defaults topViewIndex] > BROWSERVIEW)
@@ -130,7 +140,6 @@
       }
     if ([defaults topViewIndex] == TEXTVIEW)
       {
-	//NSLog(@"Hello thar!\n");
 	[navBar pushNavigationItem:bookItem];
 	readingText = YES;
       }
@@ -150,15 +159,6 @@
 	//This may have to wait until the browser architecture has
 	//been rewritten.
 	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
-	/*
-	[textView setNeedsDisplay]; // KLUDGE
-	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
-	struct CGRect temp = [textView visibleRect];
-	NSLog(@"x: %f y: %f w: %f h: %f\n", temp.origin.x, temp.origin.y, temp.size.width, temp.size.height);
-	[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, (float)[defaults lastScrollPoint])];
-	temp = [textView visibleRect];
-	NSLog(@"x: %f y: %f w: %f h: %f\n", temp.origin.x, temp.origin.y, temp.size.width, temp.size.height);
-	*/
 	break;
       }
 
@@ -169,7 +169,15 @@
     doneLaunching = YES;
 
 }
+/*
+- (void)toggleNavbars
+{
+  struct CGRect appRect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect topNavbarOn = CGMakeRect(appRect.origin.x, appRect.origin.y, appRect.size.width, 48.0f);
+  struct CGRect topNavbarOn = CGMakeRect(appRect.origin.x - 48.0, appRect.origin.y, appRect.size.width, 48.0f);
 
+}
+*/
 - (void)heartbeatCallback:(id)unused
 {
   if (!transitionHasBeenCalled)
@@ -181,6 +189,33 @@
 	  transitionHasBeenCalled = YES;
 	}
     }
+}
+
+- (void)hideNavbars
+{
+  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  rect.origin.x = rect.origin.y = 0.0f;
+  [textView setFrame:rect];
+  [navBar hide];
+  [bottomNavBar hide];
+}
+
+- (void)toggleNavbars
+{
+  /*  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  rect.origin.x = rect.origin.y = 0.0f;
+  struct CGRect newRect = CGRectMake(0.0f, 48.0f, rect.size.width, rect.size.height - 48.0f);
+  if ([navBar hidden])
+    {
+      [textView setFrame:newRect];
+    }
+  else
+    {
+      [textView setFrame:rect];
+    }
+  */
+  [navBar toggle];
+  [bottomNavBar toggle];
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
@@ -209,7 +244,7 @@
 	    [textView loadBookWithPath:file];
 	    [defaults setLastScrollPoint:1];
 	    //[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, 0.0f)];
-	    //transitionHasBeenCalled = NO;
+	    transitionHasBeenCalled = NO;
 	  }
 	// Slight optimization.  If the file is already loaded,
 	// don't bother reloading.
@@ -264,6 +299,8 @@
 {
   struct CGRect selectionRect;
   int transType;
+  struct CGRect fullRect = [UIHardware fullScreenApplicationContentRect];
+  fullRect.origin.x = fullRect.origin.y = 0.0f;
   if (doneLaunching)
     {
       if ([view isEqual:browserView]) // we must be going backward
@@ -277,13 +314,8 @@
 	  NSLog(@"toView: chapterBrowserView\n");
 	  if (readingText == YES)
 	    {
-	      //readingText = NO;
-	      //[textView repositionCaretToVisibleRect];
-	      NSLog(@"About to call visibleRect\n");
 	      selectionRect = [textView visibleRect];
-	      NSLog(@"Called it, %d\n", (unsigned int)selectionRect.origin.y);
 	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
-
 	      transType = 2;
 	    }
 	  else

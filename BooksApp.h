@@ -16,10 +16,11 @@
 #import "FileBrowser.h"
 #import "EBookNavItem.h"
 #import "BooksDefaultsController.h"
+#import "HideableNavBar.h"
 
 @interface BooksApp : UIApplication {
 	UIView      *mainView;
-	UINavigationBar *navBar;
+	HideableNavBar  *navBar, *bottomNavBar;
 	UITransitionView *transitionView;
 	EBookNavItem *booksItem, *chaptersItem, *bookItem;
         EBookView   *textView, *plainTextView, *HTMLTextView;
@@ -32,10 +33,13 @@
 	BOOL        readingText;
 	BOOL        doneLaunching;
 	BOOL        transitionHasBeenCalled;
+	BOOL        navbarsAreOn;
 	float       size;
 	BooksDefaultsController *defaults;
 }
 
 - (void)transitionToView:(id)view;
 - (void)heartbeatCallback:(id)unused;
+- (void)hideNavbars;
+- (void)toggleNavbars;
 @end

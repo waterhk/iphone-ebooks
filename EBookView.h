@@ -11,6 +11,7 @@
   NSString      *path;
   float         size;
   id            _heartbeatDelegate;
+  struct CGRect lastVisibleRect;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
@@ -22,4 +23,6 @@
 - (void)handleSingleTapEvent:(struct __GSEvent *)event;
 - (void)setHeartbeatDelegate:(id)delegate;
 - (void)heartbeatCallback:(id)unused;
+- (void)hideNavbars;
+- (void)toggleNavbars;
 @end
