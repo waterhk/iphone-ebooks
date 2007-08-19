@@ -87,6 +87,9 @@
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
+    [HTMLTextView setTextSize:[defaults textSize]];
+    [plainTextView setTextSize:[defaults textSize]];
+
     textView = HTMLTextView;
 
     recentFile = [defaults fileBeingRead];
@@ -395,13 +398,19 @@
 - (void)embiggenText:(UINavBarButton *)button
 {
   if (![button isPressed]) // mouse up events only, kids!
-    [textView embiggenText];
+    {
+      [textView embiggenText];
+      [defaults setTextSize:[textView textSize]];
+    }
 }
 
 - (void)ensmallenText:(UINavBarButton *)button
 {
   if (![button isPressed]) // mouse up events only, kids!
-    [textView ensmallenText];
+    {
+      [textView ensmallenText];
+      [defaults setTextSize:[textView textSize]];
+    }
 }
 
 - (void) dealloc

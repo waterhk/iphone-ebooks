@@ -26,5 +26,7 @@
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
+- (int)textSize;
+- (void)setTextSize:(int)newSize;
 
 @end

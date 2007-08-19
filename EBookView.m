@@ -188,6 +188,20 @@
   [super mouseUp:event];
 }
 
+- (int)textSize
+  // This method is needed because the toolchain doesn't
+  // currently handle floating-point return values in an
+  // ARM-friendly way.
+{
+  return (int)size;
+}
+
+- (void)setTextSize:(int)newSize
+{
+  size = (float)newSize;
+  [super setTextSize:size];
+}
+
 - (void)dealloc
 {
   //[tapinfo release];

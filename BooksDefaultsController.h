@@ -10,6 +10,7 @@
   unsigned int lastScrollPoint;
   int topViewIndex;
   NSString *fileBeingRead;
+  int textSize;
 
   NSUserDefaults *sharedDefaults;
 }
@@ -17,6 +18,7 @@
 #define LASTSCROLLPOINTKEY @"lastScrollPointKey"
 #define TOPVIEWKEY @"topViewKey"
 #define FILEBEINGREADKEY @"fileBeingReadKey"
+#define TEXTSIZEKEY @"textSizeKey"
 
 #define BROWSERVIEW 0
 #define CHAPTERBROWSERVIEW 1
@@ -25,11 +27,12 @@
 - (unsigned int)lastScrollPoint;
 - (int)topViewIndex;
 - (NSString *)fileBeingRead;
+- (int)textSize;
 
 - (void)setLastScrollPoint:(unsigned int)point;
 - (void)setTopViewIndex:(int)index;
 - (void)setFileBeingRead:(NSString *)file;
-
+- (void)setTextSize:(int)size;
 - (BOOL)synchronize;
 
 @end
