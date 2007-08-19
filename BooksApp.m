@@ -79,29 +79,29 @@
     [bottomNavBar addSubview:plusButton];
     [plusButton setEnabled:NO];
 
-    plainTextView = [[EBookView alloc] 
+    textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
-    HTMLTextView = [[EBookView alloc] 
+    /*    HTMLTextView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
+    */
+    [textView setTextSize:[defaults textSize]];
+    // [plainTextView setTextSize:[defaults textSize]];
 
-    [HTMLTextView setTextSize:[defaults textSize]];
-    [plainTextView setTextSize:[defaults textSize]];
-
-    textView = HTMLTextView;
+    //textView = HTMLTextView;
 
     recentFile = [defaults fileBeingRead];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile] && 
 	([defaults topViewIndex] == TEXTVIEW))
       {
-	if ([[recentFile pathExtension] isEqualToString:@"txt"])
+	/*	if ([[recentFile pathExtension] isEqualToString:@"txt"])
 	  textView = plainTextView;
 	else
 	  textView = HTMLTextView;
-
+	*/
 	[textView loadBookWithPath:recentFile];
 
 	//NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
@@ -188,8 +188,8 @@
 	break;
       }
 
-    [plainTextView setHeartbeatDelegate:self];
-    [HTMLTextView setHeartbeatDelegate:self];
+    [textView setHeartbeatDelegate:self];
+    //[HTMLTextView setHeartbeatDelegate:self];
 
     [navBar enableAnimation];
     doneLaunching = YES;
@@ -263,10 +263,12 @@
 	NSString *leftTitle;
 	if (!([[textView currentPath] isEqualToString:file]))
 	  {
+	    /*
 	    if ([[file pathExtension] isEqualToString:@"txt"])
 	      textView = plainTextView;
 	    else
 	      textView = HTMLTextView;
+	    */
 	    [textView loadBookWithPath:file];
 	    [defaults setLastScrollPoint:1];
 	    //[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, 0.0f)];
@@ -420,9 +422,9 @@
   [bookItem release];
   [navBar release];
   [mainView release];
-  textView = nil;
-  [plainTextView release];
-  [HTMLTextView release];
+  // textView = nil;
+  [textView release];
+  //[HTMLTextView release];
   [browserView release];
   [defaults release];
   [minusButton release];

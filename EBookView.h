@@ -28,5 +28,6 @@
 - (void)toggleNavbars;
 - (int)textSize;
 - (void)setTextSize:(int)newSize;
+- (NSString *)HTMLFromTextFile:(NSString *)file;
 
 @end

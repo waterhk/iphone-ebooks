@@ -24,7 +24,7 @@
 	HideableNavBar  *navBar, *bottomNavBar;
 	UITransitionView *transitionView;
 	EBookNavItem *booksItem, *chaptersItem, *bookItem;
-        EBookView   *textView, *plainTextView, *HTMLTextView;
+        EBookView   *textView;  /* *plainTextView, *HTMLTextView;*/
 	FileBrowser *browserView;
 	FileBrowser *chapterBrowserView;
 	NSString    *path;
