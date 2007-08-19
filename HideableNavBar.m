@@ -29,6 +29,9 @@
     isTop = YES;
   else
     isTop = NO;
+  translate =  [[UITransformAnimation alloc] initWithTarget: self];
+  animator = [[UIAnimator alloc] init];
+  hidden = NO;
   return self;
 }
 
@@ -38,6 +41,9 @@
   // If we can't infer, use this method instead.
   isTop = top;
 
+  translate =  [[UITransformAnimation alloc] initWithTarget: self];
+  animator = [[UIAnimator alloc] init];
+  hidden = NO;
   return self;
 }
 
@@ -45,20 +51,26 @@
 
 - (void)hide
 {
-  if (isTop)
-    [self hideTopNavBar];
-  else
-    [self hideBotNavBar];
-  hidden = YES;
+  if (!hidden)
+    {
+      if (isTop)
+	[self hideTopNavBar];
+      else
+	[self hideBotNavBar];
+      hidden = YES;
+    }
 }
 
 - (void)show
 {
-  if (isTop)
-    [self showTopNavBar];
-  else
-    [self showBotNavBar];
-  hidden = NO;
+  if (hidden)
+    {
+      if (isTop)
+	[self showTopNavBar];
+      else
+	[self showBotNavBar];
+      hidden = NO;
+    }
 }
 
 - (void)toggle
@@ -77,30 +89,60 @@
 {
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
-  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
-  //animation goeth here?
+  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 48.0f, hardwareRect.size.width, 48.0f)];
+  //  [self setTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-48);
+  [translate setStartTransform: trans];
+  [translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
+ 
+  [animator addAnimation:translate withDuration:.25 start:YES];
+  //  [animator release];
+  //  [translate release];
+
 }
 
 - (void)hideTopNavBar
 {
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
-  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 48.0f, hardwareRect.size.width, 48.0f)];
-  //animation goeth here?
+  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
+  //  [self setTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -48.0);
+  [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
+  [translate setEndTransform: trans];
+  [animator addAnimation:translate withDuration:.25 start:YES];
+  //  [animator release];
+  //  [translate release];
+
 }
 
 - (void)showBotNavBar
 {
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
-  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
+  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
+  [translate setStartTransform: trans];
+  [translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
+  [animator addAnimation:translate withDuration:.25 start:YES];
   //animation goeth here?
 }
 
 - (void)hideBotNavBar
 {
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
-  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
+  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
+  [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
+  [translate setEndTransform: trans];
+  [animator addAnimation:translate withDuration:.25 start:YES];
   //animation goeth here?
+}
+
+- (void)dealloc
+{
+  [animator release];
+  [translate release];
+  [super dealloc];
 }
 
 @end

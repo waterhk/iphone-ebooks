@@ -18,6 +18,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <CoreGraphics/CGColor.h>
+#import <CoreGraphics/CGColorSpace.h>
 
 @interface FileBrowser : UIView 
 {

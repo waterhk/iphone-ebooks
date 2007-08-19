@@ -93,10 +93,10 @@
 
 
     browserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height - 48.0f)];
+		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
 
     chapterBrowserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height - 48.0f)];
+		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
 
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
@@ -306,12 +306,12 @@
       if ([view isEqual:browserView]) // we must be going backward
 	{
 	  readingText = NO;
-	  NSLog(@"toview: browserView\n");
+
 	  transType = 2;
 	}
       else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
 	{
-	  NSLog(@"toView: chapterBrowserView\n");
+
 	  if (readingText == YES)
 	    {
 	      selectionRect = [textView visibleRect];
@@ -326,9 +326,10 @@
       else
 	{
 	  view = textView;  // this is needed because of the txt/html fugliness
-	  NSLog(@"toView:textview\n");
+
 	  transType = 1;
 	  //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
+	  [self hideNavbars];
 	}
       [transitionView transition:transType toView:view];
     }

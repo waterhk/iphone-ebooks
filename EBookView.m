@@ -116,9 +116,9 @@
       struct CGRect oldRect = [self visibleRect];
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = middleRect / (size*2.0f);  // Number of lines down
+      float scrollFactor = middleRect / (size*2.2f);  // Number of lines down
       size += 2.0f;
-      middleRect = scrollFactor * (size*2.0f);
+      middleRect = scrollFactor * (size*2.2f);
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       [self setTextSize:size];
@@ -135,9 +135,9 @@
     {
       struct CGRect oldRect = [self visibleRect];
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = middleRect / (size*2.0f);  // Number of lines down
+      float scrollFactor = middleRect / (size*2.2f);  // Number of lines down
       size -= 2.0f;
-      middleRect = scrollFactor * (size*2.0f);
+      middleRect = scrollFactor * (size*2.2f);
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       [self setTextSize:size];
       [self loadBookWithPath:path]; // This is horribly slow!  Is there a better way?

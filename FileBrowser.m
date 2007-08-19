@@ -27,8 +27,10 @@
 			identifier:@"filename"
 			width: frame.size.width
 		];
-
-		_table = [[UITable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)];
+		float components[4] = {1.0, 1.0, 1.0, 1.0};
+		struct CGColor *white = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
+		[self setBackgroundColor:white];
+		_table = [[UITable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 96.0f)]; //assume we have a bottom navbar
 		[_table addTableColumn: col];
 		[_table setSeparatorStyle: 1];
 		[_table setDelegate: self];

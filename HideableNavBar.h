@@ -23,11 +23,15 @@
 #include <Foundation/Foundation.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <UIKit/UINavigationBar.h>
+#import <UIKit/UITransformAnimation.h>
+#import <UIKit/UIAnimator.h>
 
 @interface HideableNavBar : UINavigationBar
 {
   BOOL hidden;
   BOOL isTop;
+  UITransformAnimation *translate;
+  UIAnimator *animator;
 }
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top;
 - (void)hide;
