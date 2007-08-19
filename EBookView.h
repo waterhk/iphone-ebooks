@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UITextTraitsClientProtocol.h>
+//#import "UIKeyboardInputProtocol.h"
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UIViewTapInfo.h>
 
@@ -25,4 +26,5 @@
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
+
 @end

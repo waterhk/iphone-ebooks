@@ -56,7 +56,28 @@
     bottomNavBar = [[HideableNavBar alloc] initWithFrame:
        CGRectMake(rect.origin.x, rect.size.height - 48.0f, rect.size.width, 48.0f)];
 
+    [bottomNavBar setBarStyle:0];
     [bottomNavBar setDelegate:self];
+
+    minusButton = [[UINavBarButton alloc] initWithFrame:
+       					   CGRectMake(5,8,32,32)];
+    [minusButton setAutosizesToFit:NO];
+    [minusButton setTitle:@"-"];
+    [minusButton setNavBarButtonStyle:0];
+    [minusButton setDrawContentsCentered:YES];
+    [minusButton addTarget:self action:@selector(ensmallenText:) forEvents:(255)];
+    [bottomNavBar addSubview:minusButton];
+    [minusButton setEnabled:NO];
+
+    plusButton = [[UINavBarButton alloc] initWithFrame:
+	      				   CGRectMake(40,8,32,32)];
+    [plusButton setAutosizesToFit:NO];
+    [plusButton setTitle:@"+"];
+    [plusButton setDrawContentsCentered:YES];
+    [plusButton addTarget:self action:@selector(embiggenText:) forEvents: (255)];
+    [plusButton setNavBarButtonStyle:0];
+    [bottomNavBar addSubview:plusButton];
+    [plusButton setEnabled:NO];
 
     plainTextView = [[EBookView alloc] 
         initWithFrame:
@@ -159,6 +180,8 @@
 	//This may have to wait until the browser architecture has
 	//been rewritten.
 	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
+	[plusButton setEnabled:YES];
+	[minusButton setEnabled:YES];
 	break;
       }
 
@@ -257,6 +280,8 @@
 
 	[navBar showBackButton:YES animated:YES];
 	[navBar pushNavigationItem:bookItem];
+	[minusButton setEnabled:YES];
+	[plusButton setEnabled:YES];
 
 	[textView becomeFirstResponder];
 	readingText = YES;
@@ -264,7 +289,7 @@
       }
 }
 
-
+//The following method may be unneeded.
 // FIXME: make the nav-bar prettier!
 - (void)navigationBar:(UINavigationBar *)thebar buttonClicked:(int)button {
   switch (button) {
@@ -306,7 +331,8 @@
       if ([view isEqual:browserView]) // we must be going backward
 	{
 	  readingText = NO;
-
+	  [minusButton setEnabled:NO];
+	  [plusButton setEnabled:NO];
 	  transType = 2;
 	}
       else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
@@ -316,6 +342,8 @@
 	    {
 	      selectionRect = [textView visibleRect];
 	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+	      [minusButton setEnabled:NO];
+	      [plusButton setEnabled:NO];
 	      transType = 2;
 	    }
 	  else
@@ -330,6 +358,8 @@
 	  transType = 1;
 	  //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
 	  [self hideNavbars];
+	  [minusButton setEnabled:YES];
+	  [plusButton setEnabled:YES];
 	}
       [transitionView transition:transType toView:view];
     }
@@ -362,6 +392,18 @@
 
 }
 
+- (void)embiggenText:(UINavBarButton *)button
+{
+  if (![button isPressed]) // mouse up events only, kids!
+    [textView embiggenText];
+}
+
+- (void)ensmallenText:(UINavBarButton *)button
+{
+  if (![button isPressed]) // mouse up events only, kids!
+    [textView ensmallenText];
+}
+
 - (void) dealloc
 {
   [booksItem release];
@@ -374,6 +416,8 @@
   [HTMLTextView release];
   [browserView release];
   [defaults release];
+  [minusButton release];
+  [plusButton release];
   [super dealloc];
 }
 

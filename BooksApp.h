@@ -12,6 +12,7 @@
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UITransitionView.h>
 #import <UIKit/UINavigationItem.h>
+#import <UIKit/UINavBarButton.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
 #import "EBookNavItem.h"
@@ -36,10 +37,14 @@
 	BOOL        navbarsAreOn;
 	float       size;
 	BooksDefaultsController *defaults;
+	UINavBarButton *minusButton;
+	UINavBarButton *plusButton;
 }
 
 - (void)transitionToView:(id)view;
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
+- (void)embiggenText:(UINavBarButton *)button;
+- (void)ensmallenText:(UINavBarButton *)button;
 @end
