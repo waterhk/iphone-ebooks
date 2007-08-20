@@ -83,6 +83,8 @@
 
 - (void)loadBookWithPath:(NSString *)thePath
 {
+  NSStringEncoding encoding;
+  NSString *originalText;
   path = [[thePath copy] retain];
   if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
     {
@@ -91,11 +93,35 @@
   else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"html"] ||
 	   [[[thePath pathExtension] lowercaseString] isEqualToString:@"htm"])
     {
-      [self setHTML:
-	      [NSString 
-		stringWithContentsOfFile:thePath
-		encoding:NSUTF8StringEncoding
-		error:NULL]];
+      originalText = [NSString 
+		       stringWithContentsOfFile:thePath
+		       usedEncoding:&encoding
+		       error:NULL];
+      if (nil == originalText)
+	{
+	  originalText = [NSString stringWithContentsOfFile:thePath
+				   encoding: NSUTF8StringEncoding
+				   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  originalText = [NSString stringWithContentsOfFile:thePath
+				   encoding: NSISOLatin1StringEncoding
+				   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  originalText = [NSString stringWithContentsOfFile:thePath
+				   encoding: NSMacOSRomanStringEncoding
+				   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  originalText = [NSString stringWithContentsOfFile:thePath
+				   encoding: NSASCIIStringEncoding
+				   error:NULL];
+	}
+      [self setHTML:originalText];
     }
 }
 
@@ -200,52 +226,82 @@
 
 - (NSString *)HTMLFromTextFile:(NSString *)file
 {
-  NSMutableString *outputHTML = [[NSMutableString alloc]
-				  initWithString:@"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n"];
+  NSStringEncoding encoding;
+  NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n";
   NSMutableString *originalText = [[NSMutableString alloc] 
 				    initWithContentsOfFile:file
-				    encoding:NSUTF8StringEncoding 
+				    usedEncoding:&encoding
 				    error:NULL];
+  NSString *outputHTML;
+
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:file
+		       encoding:NSUTF8StringEncoding error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:file
+		       encoding:NSISOLatin1StringEncoding error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:file
+		       encoding:NSMacOSRomanStringEncoding error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:file
+		       encoding:NSASCIIStringEncoding error:NULL];
+    }
   if (nil == originalText)
     return nil;
+
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
   unsigned int i,j;
   j=0;
   i = [originalText replaceOccurrencesOfString:@"&" withString:@"&amp;"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d &s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@"<" withString:@"&lt;"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d <s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@">" withString:@"&gt;"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d >s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   // Argh, bloody MS line breaks!  Change them to UNIX, then...
   i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d carriage return/newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   // Change UNIX newlines to <br> tags.
   i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   // And just in case someone has a Classic MacOS textfile...
   i = [originalText replaceOccurrencesOfString:@"\r" withString:@"<br />\n"
 		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d carriage returns\n", i);
   j += i;
 
   NSLog(@"Replaced %d characters in textfile %@.\n", j, file);
-
-  [outputHTML appendString:originalText];
-  [outputHTML appendString:@"\n</body>\n</html>\n"];
-
+  outputHTML = [[NSString alloc] initWithFormat:@"%@%@\n</body>\n</html\n", header, originalText];
   [originalText release];
-  return [NSString stringWithString:[outputHTML autorelease]];
+  return [outputHTML autorelease];
 }
 
 
