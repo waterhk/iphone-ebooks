@@ -1,3 +1,7 @@
+v. 0.5.2 - Text file handling much improved.  This should squash the "txt 
+           scrolls to end for no reason" bug and the "txt doesn't appear"
+           bug.
+
 v. 0.5 - Navbars disappear when scrolling text, reappear with single-tap
          (or double, depending).  Added plus and minus buttons for text
          size.  Text size remembered between launches.
