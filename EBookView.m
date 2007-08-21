@@ -138,14 +138,14 @@
       struct CGRect oldRect = [self visibleRect];
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = middleRect / (size*2.2f);  // Number of lines down
+      float scrollFactor = (size + 3)/size;  
       size += 2.0f;
-      middleRect = scrollFactor * (size*2.2f);
+      middleRect *= scrollFactor;
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       [self setTextSize:size];
       [self loadBookWithPath:path];
-      [self scrollPointVisibleAtTopLeft:oldRect.origin];
+      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:YES];
       [self setNeedsDisplay];
     }
 }
@@ -157,13 +157,13 @@
     {
       struct CGRect oldRect = [self visibleRect];
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = middleRect / (size*2.2f);  // Number of lines down
+      float scrollFactor = (size - 3)/size;
       size -= 2.0f;
-      middleRect = scrollFactor * (size*2.2f);
+      middleRect *= scrollFactor;
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       [self setTextSize:size];
       [self loadBookWithPath:path]; // This is horribly slow!  Is there a better way?
-      [self scrollPointVisibleAtTopLeft:oldRect.origin];
+      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:YES];
       [self setNeedsDisplay];
     }
 }
@@ -188,10 +188,33 @@
   // 8/14/07 --These events may work now, but we have an insertion point.
   // ARGH.
 {
+  /*************
+   * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
+   * WILL NOT COMPILE UNLESS YOU HAVE PATCHED GRAPHICSSERVICES.H TO ALLOW IT!
+  *****************/
+
+  struct CGRect clicked = GSEventGetLocationInWindow(event);
   struct CGRect newRect = [self visibleRect];
+  struct CGRect topTapRect = CGRectMake(0, 0, 320, 48);
+  struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
-      if (CGRectEqualToRect(lastVisibleRect, newRect))
+      if (CGRectContainsPoint(topTapRect, clicked.origin))
+	{
+	  //scroll back one screen...
+	  [self scrollByDelta:CGSizeMake(0, -1*(contentRect.size.height - size)) 
+		animated:YES];
+	  [self hideNavbars];
+	}
+      else if (CGRectContainsPoint(botTapRect,clicked.origin))
+	{
+	  //scroll forward one screen...
+	  [self scrollByDelta:CGSizeMake(0, contentRect.size.height - size)
+		animated:YES];
+	  [self hideNavbars];
+	}
+      else if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{  // If the old rect equals the new, then we must not be scrolling
 	  [self toggleNavbars];
 	}
@@ -200,12 +223,7 @@
 	  [self hideNavbars];
 	}
     }
-  /*
-  else //two-finger tap
-    {
-      [self ensmallenText];
-    }
-  */
+
   lastVisibleRect = [self visibleRect];
   [super mouseUp:event];
 }
