@@ -22,3 +22,13 @@ package: Books
 	cp icon.png Books.app/icon.png
 	cp Default.png Books.app/Default.png
 	cp PkgInfo Books.app/PkgInfo
+	cp inv_up.png Books.app/inv_up.png
+	cp inv_down.png Books.app/inv_down.png
+	cp embig_up.png Books.app/embig_up.png
+	cp embig_down.png Books.app/embig_down.png
+	cp emsmall_up.png Books.app/emsmall_up.png
+	cp emsmall_down.png Books.app/emsmall_down.png
+	cp prefs_up.png Books.app/prefs_up.png
+	cp prefs_down.png Books.app/prefs_down.png
+	
+	

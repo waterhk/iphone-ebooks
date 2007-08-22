@@ -43,6 +43,9 @@
 	UINavBarButton *minusButton;
 	UINavBarButton *plusButton;
 	UINavBarButton *invertButton;
+	
+	UIImage *buttonImg;
+	NSString *imgPath;
 }
 
 - (void)transitionToView:(id)view;
@@ -52,4 +55,6 @@
 - (void)embiggenText:(UINavBarButton *)button;
 - (void)ensmallenText:(UINavBarButton *)button;
 - (void)invertText:(UINavBarButton *)button;
+- (void)setTextInverted:(BOOL)b;
+- (UIImage *)navBarImage:(NSString *)name;
 @end

@@ -12,12 +12,13 @@
 
   sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:4];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:5];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:TOPVIEWKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
+  [temp setObject:@"0" forKey:ISINVERTEDKEY];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
@@ -54,6 +55,11 @@
   return [sharedDefaults integerForKey:TEXTSIZEKEY];
 }
 
+- (BOOL)inverted
+{
+  return [sharedDefaults boolForKey:ISINVERTEDKEY];
+}
+
 - (void)setLastScrollPoint:(unsigned int)point
 {
   [sharedDefaults setInteger:point forKey:LASTSCROLLPOINTKEY];
@@ -72,6 +78,11 @@
 - (void)setTextSize:(int)size
 {
   [sharedDefaults setInteger:size forKey:TEXTSIZEKEY];
+}
+
+- (void)setInverted:(BOOL)isInverted
+{
+  [sharedDefaults setBool:isInverted forKey:ISINVERTEDKEY];
 }
 
 - (BOOL)synchronize

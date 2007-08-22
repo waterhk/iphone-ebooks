@@ -60,9 +60,10 @@
     [bottomNavBar setDelegate:self];
 
     minusButton = [[UINavBarButton alloc] initWithFrame:
-       					   CGRectMake(5,8,32,32)];
+       					   CGRectMake(5,9,33,30)];
     [minusButton setAutosizesToFit:NO];
-    [minusButton setTitle:@"-"];
+	[minusButton setImage:[self navBarImage:@"emsmall_up"] forState:0];
+	[minusButton setImage:[self navBarImage:@"emsmall_down"] forState:1];
     [minusButton setNavBarButtonStyle:0];
     [minusButton setDrawContentsCentered:YES];
     [minusButton addTarget:self action:@selector(ensmallenText:) forEvents:(255)];
@@ -70,9 +71,10 @@
     [minusButton setEnabled:NO];
 
     plusButton = [[UINavBarButton alloc] initWithFrame:
-	      				   CGRectMake(40,8,32,32)];
-    [plusButton setAutosizesToFit:NO];
-    [plusButton setTitle:@"+"];
+	      				   CGRectMake(43,9,33,30)];
+	[plusButton setAutosizesToFit:NO];
+	[plusButton setImage:[self navBarImage:@"embig_up"] forState:0];
+	[plusButton setImage:[self navBarImage:@"embig_down"] forState:1];
     [plusButton setDrawContentsCentered:YES];
     [plusButton addTarget:self action:@selector(embiggenText:) forEvents: (255)];
     [plusButton setNavBarButtonStyle:0];
@@ -80,9 +82,10 @@
     [plusButton setEnabled:NO];
 
  	invertButton = [[UINavBarButton alloc] initWithFrame: 
-							CGRectMake(245,8,70,32)];
-	[invertButton setAutosizesToFit:NO];
-    [invertButton setTitle:@"Invert"]; // I want to use a button with an icon insted, need to figure this out
+							CGRectMake(81,9,33,30)];
+	[invertButton setAutosizesToFit:NO];							
+	[invertButton setImage:[self navBarImage:@"inv_up"] forState:0];
+	[invertButton setImage:[self navBarImage:@"inv_down"] forState:1];
     [invertButton setDrawContentsCentered:YES];
     [invertButton addTarget:self action:@selector(invertText:) forEvents: (255)];
     [invertButton setNavBarButtonStyle:0];
@@ -102,6 +105,9 @@
     // [plainTextView setTextSize:[defaults textSize]];
 
     //textView = HTMLTextView;
+
+    textInverted = [defaults inverted];
+    [textView invertText:textInverted];
 
     recentFile = [defaults fileBeingRead];
 
@@ -440,6 +446,14 @@
     }	
 }
 
+- (UIImage *)navBarImage:(NSString *)name
+{
+  NSBundle *bundle = [NSBundle mainBundle];
+  imgPath = [bundle pathForResource:name ofType:@"png"];
+  buttonImg = [[UIImage alloc]initWithContentsOfFile:imgPath];
+  return buttonImg;
+}
+
 - (void)setTextInverted:(BOOL)b
 {
 	textInverted = b;
@@ -457,9 +471,10 @@
   //[HTMLTextView release];
   [browserView release];
   [defaults release];
+[buttonImg release];
   [minusButton release];
   [plusButton release];
-[invertButton release];
+  [invertButton release];
   [super dealloc];
 }
 
