@@ -1,3 +1,11 @@
+v. 0.6 - Added several nice buttons designed by Chris Born.
+         Added Chris Born's invert text code.
+	 Added single-tap scrolling up and down.  Single-taps are now much
+	 more reliably detected.
+	 Some text file conversion finessing--now handles double-newlines
+	 as paragraph breaks, rather than just putting a <br> at every
+	 newline.
+
 v. 0.5.2 - Text file handling much improved.  This should squash the "txt 
            scrolls to end for no reason" bug and the "txt doesn't appear"
            bug.

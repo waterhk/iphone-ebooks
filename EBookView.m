@@ -41,6 +41,8 @@
 
 - (void)heartbeatCallback:(id)unused
 {
+  if ((![self isScrolling]) && (![self isDecelerating]))
+    lastVisibleRect = [self visibleRect];
   if (_heartbeatDelegate != nil) {
     if ([_heartbeatDelegate respondsToSelector:@selector(heartbeatCallback:)]) {
       [_heartbeatDelegate heartbeatCallback:self];
@@ -182,15 +184,11 @@
 }
 
 - (void)mouseUp:(struct __GSEvent *)event
-  // Why doesn't this work the way it should?
-  // In Terminal.app, a single tap is properly noted.
-  // But here, it always thinks we're scrolling for some reason.
-  // 8/14/07 --These events may work now, but we have an insertion point.
-  // ARGH.
 {
   /*************
    * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
    * WILL NOT COMPILE UNLESS YOU HAVE PATCHED GRAPHICSSERVICES.H TO ALLOW IT!
+   * A patch is included in the svn.
   *****************/
 
   struct CGRect clicked = GSEventGetLocationInWindow(event);
@@ -200,17 +198,27 @@
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
+      float scrollness = contentRect.size.height;
+      //      NSLog(@"scrollness %f\n",scrollness);
+      scrollness /= size;
+      //      NSLog(@"scrollness %f\n",scrollness);
+      scrollness = floor(scrollness - 1.0f);
+      //      NSLog(@"scrollness %f\n",scrollness);
+      scrollness *= size;  
+      //      NSLog(@"scrollness %f\n",scrollness);
+      // That little dance above was so we only scroll in
+      // multiples of the text size.  And it doesn't even work!
       if (CGRectContainsPoint(topTapRect, clicked.origin))
 	{
 	  //scroll back one screen...
-	  [self scrollByDelta:CGSizeMake(0, -1*(contentRect.size.height - size)) 
+	  [self scrollByDelta:CGSizeMake(0, -1*scrollness)
 		animated:YES];
 	  [self hideNavbars];
 	}
       else if (CGRectContainsPoint(botTapRect,clicked.origin))
 	{
 	  //scroll forward one screen...
-	  [self scrollByDelta:CGSizeMake(0, contentRect.size.height - size)
+	  [self scrollByDelta:CGSizeMake(0, scrollness)
 		animated:YES];
 	  [self hideNavbars];
 	}
@@ -223,7 +231,7 @@
 	  [self hideNavbars];
 	}
     }
-
+  BOOL unused = [self releaseRubberBandIfNecessary];
   lastVisibleRect = [self visibleRect];
   [super mouseUp:event];
 }
@@ -350,12 +358,14 @@
       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
       [self setBackgroundColor: CGColorCreate( colorSpace, backParts)];
       [self setTextColor: CGColorCreate( colorSpace, textParts)];
+      [self setScrollerIndicatorStyle:2];
     } else {
       float backParts[4] = {1, 1, 1, 1};
       float textParts[4] = {0, 0, 0, 0};
       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
       [self setBackgroundColor: CGColorCreate( colorSpace, backParts)];
       [self setTextColor: CGColorCreate( colorSpace, textParts)];
+      [self setScrollerIndicatorStyle:0];
     }
   // This "loadBookWithPath" invocation is a kludge;
   // for some reason the display doesn't update correctly
