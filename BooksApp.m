@@ -410,6 +410,7 @@
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+  [defaults setInverted:textInverted];
 
   if (readingText)
     [defaults setTopViewIndex:TEXTVIEW];
