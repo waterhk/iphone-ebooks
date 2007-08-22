@@ -322,6 +322,28 @@
   return [outputHTML autorelease];
 }
 
+- (void)invertText:(BOOL)b
+{
+  if (b)
+    {
+      // makes the the view white text on black
+      float backParts[4] = {0, 0, 0, 0};
+      float textParts[4] = {1, 1, 1, 1};
+      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+      [self setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+      [self setTextColor: CGColorCreate( colorSpace, textParts)];
+    } else {
+      float backParts[4] = {1, 1, 1, 1};
+      float textParts[4] = {0, 0, 0, 0};
+      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+      [self setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+      [self setTextColor: CGColorCreate( colorSpace, textParts)];
+    }
+  //  [self scrollByDelta:CGSizeMake(0,1) animated:YES];  // kludge!
+  [self setNeedsDisplay];
+  [self forceDisplayIfNeeded];    
+}
+
 
 - (void)dealloc
 {

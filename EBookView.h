@@ -29,5 +29,6 @@
 - (int)textSize;
 - (void)setTextSize:(int)newSize;
 - (NSString *)HTMLFromTextFile:(NSString *)file;
+- (void)invertText:(BOOL)b;
 
 @end

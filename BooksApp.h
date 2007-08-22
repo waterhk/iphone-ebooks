@@ -13,11 +13,13 @@
 #import <UIKit/UITransitionView.h>
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavBarButton.h>
+#import <UIKit/UIFontChooser.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
 #import "EBookNavItem.h"
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"
+
 
 @interface BooksApp : UIApplication {
 	UIView      *mainView;
@@ -35,10 +37,12 @@
 	BOOL        doneLaunching;
 	BOOL        transitionHasBeenCalled;
 	BOOL        navbarsAreOn;
+	BOOL		textInverted;
 	float       size;
 	BooksDefaultsController *defaults;
 	UINavBarButton *minusButton;
 	UINavBarButton *plusButton;
+	UINavBarButton *invertButton;
 }
 
 - (void)transitionToView:(id)view;
@@ -47,4 +51,5 @@
 - (void)toggleNavbars;
 - (void)embiggenText:(UINavBarButton *)button;
 - (void)ensmallenText:(UINavBarButton *)button;
+- (void)invertText:(UINavBarButton *)button;
 @end

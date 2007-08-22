@@ -79,6 +79,17 @@
     [bottomNavBar addSubview:plusButton];
     [plusButton setEnabled:NO];
 
+ 	invertButton = [[UINavBarButton alloc] initWithFrame: 
+							CGRectMake(245,8,70,32)];
+	[invertButton setAutosizesToFit:NO];
+    [invertButton setTitle:@"Invert"]; // I want to use a button with an icon insted, need to figure this out
+    [invertButton setDrawContentsCentered:YES];
+    [invertButton addTarget:self action:@selector(invertText:) forEvents: (255)];
+    [invertButton setNavBarButtonStyle:0];
+	[invertButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [bottomNavBar addSubview:invertButton];
+    [invertButton setEnabled:NO];
+
     textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
@@ -185,6 +196,7 @@
 	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
 	[plusButton setEnabled:YES];
 	[minusButton setEnabled:YES];
+	[invertButton setEnabled:YES];
 	break;
       }
 
@@ -287,6 +299,7 @@
 	[navBar pushNavigationItem:bookItem];
 	[minusButton setEnabled:YES];
 	[plusButton setEnabled:YES];
+	[invertButton setEnabled:YES];
 
 	[textView becomeFirstResponder];
 	readingText = YES;
@@ -338,6 +351,7 @@
 	  readingText = NO;
 	  [minusButton setEnabled:NO];
 	  [plusButton setEnabled:NO];
+	  [invertButton setEnabled:NO];
 	  transType = 2;
 	}
       else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
@@ -349,6 +363,7 @@
 	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
 	      [minusButton setEnabled:NO];
 	      [plusButton setEnabled:NO];
+          [invertButton setEnabled:NO];
 	      transType = 2;
 	    }
 	  else
@@ -365,6 +380,7 @@
 	  [self hideNavbars];
 	  [minusButton setEnabled:YES];
 	  [plusButton setEnabled:YES];
+	  [invertButton setEnabled:YES];
 	}
       [transitionView transition:transType toView:view];
     }
@@ -415,6 +431,20 @@
     }
 }
 
+- (void)invertText:(UINavBarButton *)button 
+{
+  if (![button isPressed]) // mouse up events only, kids!
+    {
+      textInverted = !textInverted;
+      [textView invertText:textInverted];
+    }	
+}
+
+- (void)setTextInverted:(BOOL)b
+{
+	textInverted = b;
+}
+
 - (void) dealloc
 {
   [booksItem release];
@@ -429,6 +459,7 @@
   [defaults release];
   [minusButton release];
   [plusButton release];
+[invertButton release];
   [super dealloc];
 }
 
