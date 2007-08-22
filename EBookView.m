@@ -245,7 +245,7 @@
 - (NSString *)HTMLFromTextFile:(NSString *)file
 {
   NSStringEncoding encoding;
-  NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n";
+  NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
   NSMutableString *originalText = [[NSMutableString alloc] 
 				    initWithContentsOfFile:file
 				    usedEncoding:&encoding
@@ -298,12 +298,18 @@
   NSLog(@"replaced %d >s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
+  i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
+		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d double-spaces\n", i);
+  j += i;
+  fullRange = NSMakeRange(0, [originalText length]);
   // Argh, bloody MS line breaks!  Change them to UNIX, then...
   i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
 		    options:NSLiteralSearch range:fullRange];
   NSLog(@"replaced %d carriage return/newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
+  /* DEPRECATED.
   // Change UNIX newlines to <br> tags.
   i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
 		    options:NSLiteralSearch range:fullRange];
@@ -315,9 +321,21 @@
 		    options:NSLiteralSearch range:fullRange];
   NSLog(@"replaced %d carriage returns\n", i);
   j += i;
+  */
+  //Change double-newlines to </p><p>.
+  i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
+		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d newlines\n", i);
+  j += i;
+  fullRange = NSMakeRange(0, [originalText length]);
+  // And just in case someone has a Classic MacOS textfile...
+  i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
+		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"replaced %d carriage returns\n", i);
+  j += i;
 
   NSLog(@"Replaced %d characters in textfile %@.\n", j, file);
-  outputHTML = [[NSString alloc] initWithFormat:@"%@%@\n</body>\n</html\n", header, originalText];
+  outputHTML = [[NSString alloc] initWithFormat:@"%@%@\n</p>\n</body>\n</html>\n", header, originalText];
   [originalText release];
   return [outputHTML autorelease];
 }
@@ -339,9 +357,13 @@
       [self setBackgroundColor: CGColorCreate( colorSpace, backParts)];
       [self setTextColor: CGColorCreate( colorSpace, textParts)];
     }
-  //  [self scrollByDelta:CGSizeMake(0,1) animated:YES];  // kludge!
+  // This "loadBookWithPath" invocation is a kludge;
+  // for some reason the display doesn't update correctly
+  // without it, and we can't yet figure out how to fix it.
+  struct CGRect oldRect = [self visibleRect];
+  [self loadBookWithPath:path];
+  [self scrollPointVisibleAtTopLeft:oldRect.origin];
   [self setNeedsDisplay];
-  [self forceDisplayIfNeeded];    
 }
 
 
