@@ -1,0 +1,10 @@
+--- GraphicsServices.h~	2007-08-14 11:40:52.000000000 -0400
++++ GraphicsServices.h	2007-08-21 18:53:23.000000000 -0400
+@@ -6,6 +6,7 @@
+ 
+ int GSEventIsChordingHandEvent(GSEvent *ev);
+ int GSEventGetClickCount(GSEvent *ev);
++struct CGRect GSEventGetLocationInWindow(GSEvent *ev);
+ 
+ #endif
+ 
