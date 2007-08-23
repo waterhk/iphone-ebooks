@@ -52,7 +52,7 @@
 	NSString *imgPath;
 }
 
-- (void)transitionToView:(id)view;
+//- (void)transitionToView:(id)view;
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;

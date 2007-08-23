@@ -50,13 +50,14 @@
 
     [navBar setDelegate:self];
     [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"", nil]];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", nil]];
     [navBar hideButtons];
-    //    [navBar setPrompt:@"Choose a book..."];
+
     [navBar disableAnimation];
 
     bottomNavBar = [[HideableNavBar alloc] initWithFrame:
-       CGRectMake(rect.origin.x, rect.size.height - 48.0f, rect.size.width, 48.0f)];
+       CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
+		  rect.size.width, 48.0f)];
 
     [bottomNavBar setBarStyle:0];
     [bottomNavBar setDelegate:self];
@@ -64,8 +65,8 @@
     minusButton = [[UINavBarButton alloc] initWithFrame:
        					   CGRectMake(5,9,33,30)];
     [minusButton setAutosizesToFit:NO];
-	[minusButton setImage:[self navBarImage:@"emsmall_up"] forState:0];
-	[minusButton setImage:[self navBarImage:@"emsmall_down"] forState:1];
+    [minusButton setImage:[self navBarImage:@"emsmall_up"] forState:0];
+    [minusButton setImage:[self navBarImage:@"emsmall_down"] forState:1];
     [minusButton setNavBarButtonStyle:0];
     [minusButton setDrawContentsCentered:YES];
     [minusButton addTarget:self action:@selector(ensmallenText:) forEvents:(255)];
@@ -74,24 +75,24 @@
 
     plusButton = [[UINavBarButton alloc] initWithFrame:
 	      				   CGRectMake(43,9,33,30)];
-	[plusButton setAutosizesToFit:NO];
-	[plusButton setImage:[self navBarImage:@"embig_up"] forState:0];
-	[plusButton setImage:[self navBarImage:@"embig_down"] forState:1];
+    [plusButton setAutosizesToFit:NO];
+    [plusButton setImage:[self navBarImage:@"embig_up"] forState:0];
+    [plusButton setImage:[self navBarImage:@"embig_down"] forState:1];
     [plusButton setDrawContentsCentered:YES];
     [plusButton addTarget:self action:@selector(embiggenText:) forEvents: (255)];
     [plusButton setNavBarButtonStyle:0];
     [bottomNavBar addSubview:plusButton];
     [plusButton setEnabled:NO];
 
- 	invertButton = [[UINavBarButton alloc] initWithFrame: 
-							CGRectMake(81,9,33,30)];
-	[invertButton setAutosizesToFit:NO];							
-	[invertButton setImage:[self navBarImage:@"inv_up"] forState:0];
-	[invertButton setImage:[self navBarImage:@"inv_down"] forState:1];
+    invertButton = [[UINavBarButton alloc] initWithFrame: 
+					     CGRectMake(81,9,33,30)];
+    [invertButton setAutosizesToFit:NO];							
+    [invertButton setImage:[self navBarImage:@"inv_up"] forState:0];
+    [invertButton setImage:[self navBarImage:@"inv_down"] forState:1];
     [invertButton setDrawContentsCentered:YES];
     [invertButton addTarget:self action:@selector(invertText:) forEvents: (255)];
     [invertButton setNavBarButtonStyle:0];
-	[invertButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [invertButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
     [bottomNavBar addSubview:invertButton];
     [invertButton setEnabled:NO];
 
@@ -104,23 +105,16 @@
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
     */
     [textView setTextSize:[defaults textSize]];
-    // [plainTextView setTextSize:[defaults textSize]];
-
-    //textView = HTMLTextView;
 
     textInverted = [defaults inverted];
     [textView invertText:textInverted];
 
     recentFile = [defaults fileBeingRead];
+    readingText = [defaults readingText];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile] && 
-	([defaults topViewIndex] == TEXTVIEW))
+	readingText)
       {
-	/*	if ([[recentFile pathExtension] isEqualToString:@"txt"])
-	  textView = plainTextView;
-	else
-	  textView = HTMLTextView;
-	*/
 	[textView loadBookWithPath:recentFile];
 
 	//NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
@@ -129,8 +123,9 @@
     else
       {  // Recent file has been deleted!  RESET!
 	[defaults setLastScrollPoint:0];
-	[defaults setTopViewIndex:BROWSERVIEW];
+	[defaults setReadingText:NO];
 	[defaults setFileBeingRead:@""];
+	[defaults setBrowserArray:[NSArray arrayWithObject:EBOOK_PATH]];
       }
 
 
@@ -158,9 +153,10 @@
     [booksItem setDelegate:self];
     [chaptersItem setDelegate:self];
     [bookItem setDelegate:self];
-    */
+
     bookHasChapters = NO;
-    readingText = NO;
+    */
+    //readingText = NO;
 
 
 
@@ -212,6 +208,26 @@
 	break;
       }
     */
+    NSArray *tempArray = [defaults browserArray];
+    NSEnumerator *pathEnum = [tempArray objectEnumerator];
+    NSString *curPath = [pathEnum nextObject];  // Should always be the base
+    while (nil != (curPath = [pathEnum nextObject]))
+      {
+	UINavigationItem *tempItem = [[UINavigationItem alloc]
+			     initWithTitle:[curPath lastPathComponent]];
+	[navBar pushNavigationItem:tempItem withBrowserPath:curPath];
+	[tempItem release];
+      }
+
+    if (readingText)
+      {
+	UINavigationItem *tempItem = [[UINavigationItem alloc]
+	        initWithTitle:[[recentFile lastPathComponent] 
+				stringByDeletingPathExtension]];
+	[navBar pushNavigationItem:tempItem withView:textView];
+	[tempItem release];
+      }
+
     [textView setHeartbeatDelegate:self];
 
 
@@ -244,21 +260,10 @@
 
 - (void)toggleNavbars
 {
-  /*  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-  rect.origin.x = rect.origin.y = 0.0f;
-  struct CGRect newRect = CGRectMake(0.0f, 48.0f, rect.size.width, rect.size.height - 48.0f);
-  if ([navBar hidden])
-    {
-      [textView setFrame:newRect];
-    }
-  else
-    {
-      [textView setFrame:rect];
-    }
-  */
   [navBar toggle];
   [bottomNavBar toggle];
 }
+
 /*  ****** DEPRECATED ******
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
 
@@ -356,20 +361,31 @@
       UINavigationItem *tempItem = [[UINavigationItem alloc]
 		        initWithTitle:[[file lastPathComponent]
 					stringByDeletingPathExtension]];
+      if (!([[textView currentPath] isEqualToString:file]))
+	{
+	  
+	  [textView loadBookWithPath:file];
+	  [defaults setLastScrollPoint:1];
+	  transitionHasBeenCalled = NO;
+	}
+      // Slight optimization.  If the file is already loaded,
+      // don't bother reloading.
       [navBar pushNavigationItem:tempItem withView:textView];
-      [textView loadBookWithPath:file];
 
       [minusButton setEnabled:YES];
       [plusButton setEnabled:YES];
       [invertButton setEnabled:YES];
 
       [tempItem release];
-
+      [navBar hide];
+      [bottomNavBar hide];
     }
 }
 
 - (void)textViewDidGoAway:(id)sender
 {
+  struct CGRect selectionRect = [textView visibleRect];
+  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
   readingText = NO;
   [minusButton setEnabled:NO];
   [plusButton setEnabled:NO];
@@ -397,8 +413,6 @@
 
 	  if (readingText == YES)
 	    {
-	      selectionRect = [textView visibleRect];
-	      [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
 	      [minusButton setEnabled:NO];
 	      [plusButton setEnabled:NO];
           [invertButton setEnabled:NO];
@@ -445,10 +459,8 @@
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
   [defaults setInverted:textInverted];
 
-  if (readingText)
-    [defaults setTopViewIndex:TEXTVIEW];
-  else
-    [defaults setTopViewIndex:BROWSERVIEW];
+  [defaults setReadingText:readingText];
+  [defaults setBrowserArray:[navBar browserPaths]];
   [defaults synchronize];
 
 }
@@ -499,6 +511,7 @@
   //[chaptersItem release];
   //[bookItem release];
   [navBar release];
+  [bottomNavBar release];
   [mainView release];
   // textView = nil;
   [textView release];

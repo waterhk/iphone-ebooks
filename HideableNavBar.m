@@ -33,7 +33,7 @@
   translate =  [[UITransformAnimation alloc] initWithTarget: self];
   animator = [[UIAnimator alloc] init];
   hidden = NO;
-  _textIsOnTop = YES;
+  _textIsOnTop = NO;
   _transView = nil;
   _extensions = nil;
   _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?

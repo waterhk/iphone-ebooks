@@ -6,37 +6,29 @@
 
 @interface BooksDefaultsController : NSObject
 {
-
-  unsigned int lastScrollPoint;
-  int topViewIndex;
-  NSString *fileBeingRead;
-  int textSize;
-
   NSUserDefaults *sharedDefaults;
 }
 
 #define LASTSCROLLPOINTKEY @"lastScrollPointKey"
-#define TOPVIEWKEY @"topViewKey"
+#define READINGTEXTKEY @"readingTextKey"
 #define FILEBEINGREADKEY @"fileBeingReadKey"
 #define TEXTSIZEKEY @"textSizeKey"
 #define ISINVERTEDKEY @"isInvertedKey"
-
-#define BROWSERVIEW 0
-#define CHAPTERBROWSERVIEW 1
-#define TEXTVIEW 2
+#define BROWSERFILESKEY @"browserFilesKey"
 
 - (unsigned int)lastScrollPoint;
-- (int)topViewIndex;
 - (NSString *)fileBeingRead;
 - (int)textSize;
 - (BOOL)inverted;
+- (BOOL)readingText;
+- (NSArray *)browserArray;
 
 - (void)setLastScrollPoint:(unsigned int)point;
-- (void)setTopViewIndex:(int)index;
 - (void)setFileBeingRead:(NSString *)file;
 - (void)setTextSize:(int)size;
 - (void)setInverted:(BOOL)isInverted;
-
+- (void)setReadingText:(BOOL)readingText;
+- (void)setBrowserArray:(NSArray *)browserArray;
 - (BOOL)synchronize;
 
 @end

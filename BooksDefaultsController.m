@@ -15,10 +15,12 @@
   NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:5];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
-  [temp setObject:@"0" forKey:TOPVIEWKEY];
+  [temp setObject:@"0" forKey:READINGTEXTKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
+  [temp setObject:[NSArray arrayWithObject:@"/var/root/Media/EBooks/"]
+	forKey:BROWSERFILESKEY];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
@@ -26,10 +28,10 @@
 
   //  [sharedDefaults setInteger:TEXTVIEW forKey:TOPVIEWKEY];
 
-  NSLog(@"defaults dump\n%d %d %@\n",
-	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
-	[sharedDefaults integerForKey:TOPVIEWKEY],
-	[sharedDefaults objectForKey:FILEBEINGREADKEY]);
+  //  NSLog(@"defaults dump\n%d %d %@\n",
+  //	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
+  //	[sharedDefaults integerForKey:TOPVIEWKEY],
+  //	[sharedDefaults objectForKey:FILEBEINGREADKEY]);
 
   [temp release];
   return self;
@@ -38,11 +40,6 @@
 - (unsigned int)lastScrollPoint
 {
   return [sharedDefaults integerForKey:LASTSCROLLPOINTKEY];
-}
-
-- (int)topViewIndex
-{
-  return [sharedDefaults integerForKey:TOPVIEWKEY];
 }
 
 - (NSString *)fileBeingRead
@@ -60,14 +57,24 @@
   return [sharedDefaults boolForKey:ISINVERTEDKEY];
 }
 
+- (BOOL)readingText
+{
+  return [sharedDefaults boolForKey:READINGTEXTKEY];
+}
+
+- (NSArray *)browserArray
+{
+  return [[sharedDefaults objectForKey:BROWSERFILESKEY] autorelease];
+}
+
 - (void)setLastScrollPoint:(unsigned int)point
 {
   [sharedDefaults setInteger:point forKey:LASTSCROLLPOINTKEY];
 }
 
-- (void)setTopViewIndex:(int)index
+- (void)setBrowserArray:(NSArray *)browserArray
 {
-  [sharedDefaults setInteger:index forKey:TOPVIEWKEY];
+  [sharedDefaults setObject:browserArray forKey:BROWSERFILESKEY];
 }
 
 - (void)setFileBeingRead:(NSString *)file
@@ -83,6 +90,11 @@
 - (void)setInverted:(BOOL)isInverted
 {
   [sharedDefaults setBool:isInverted forKey:ISINVERTEDKEY];
+}
+
+- (void)setReadingText:(BOOL)readingText
+{
+  [sharedDefaults setBool:readingText forKey:READINGTEXTKEY];
 }
 
 - (BOOL)synchronize

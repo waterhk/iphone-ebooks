@@ -119,7 +119,7 @@
         BOOL isDir = NO;
 	UISimpleTableCell *cell = [[UISimpleTableCell alloc] init];
 	[cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
-	if ([[NSFileManager defaultManager] fileExistsAtPath:[_path stringByAppendingString:[_files objectAtIndex:row]] isDirectory:&isDir] && isDir)
+	if ([[NSFileManager defaultManager] fileExistsAtPath:[_path stringByAppendingPathComponent:[_files objectAtIndex:row]] isDirectory:&isDir] && isDir)
 	     [cell setShowDisclosure:YES];
 	return cell;
 }
@@ -135,4 +135,5 @@
 
 	return [_path stringByAppendingPathComponent: [_files objectAtIndex: [_table selectedRow]]];
 }
+
 @end
