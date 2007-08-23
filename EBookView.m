@@ -85,8 +85,6 @@
 
 - (void)loadBookWithPath:(NSString *)thePath
 {
-  NSStringEncoding encoding;
-  NSString *originalText;
   path = [[thePath copy] retain];
   if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
     {
@@ -94,39 +92,63 @@
     }
   else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"html"] ||
 	   [[[thePath pathExtension] lowercaseString] isEqualToString:@"htm"])
-    {
-      originalText = [NSString 
-		       stringWithContentsOfFile:thePath
-		       usedEncoding:&encoding
-		       error:NULL];
-      if (nil == originalText)
-	{
-	  originalText = [NSString stringWithContentsOfFile:thePath
-				   encoding: NSUTF8StringEncoding
-				   error:NULL];
-	}
-      if (nil == originalText)
-	{
-	  originalText = [NSString stringWithContentsOfFile:thePath
-				   encoding: NSISOLatin1StringEncoding
-				   error:NULL];
-	}
-      if (nil == originalText)
-	{
-	  originalText = [NSString stringWithContentsOfFile:thePath
-				   encoding: NSMacOSRomanStringEncoding
-				   error:NULL];
-	}
-      if (nil == originalText)
-	{
-	  originalText = [NSString stringWithContentsOfFile:thePath
-				   encoding: NSASCIIStringEncoding
-				   error:NULL];
-	}
-      [self setHTML:originalText];
+    { 
+      [self setHTML:[self HTMLFileWithoutImages:thePath]];
     }
 }
 
+- (NSString *)HTMLFileWithoutImages:(NSString *)thePath
+{
+  NSStringEncoding encoding;
+  NSMutableString *originalText;
+  NSString *outputHTML;
+  originalText = [[NSMutableString alloc]
+		   initWithContentsOfFile:thePath
+		   usedEncoding:&encoding
+		   error:NULL];
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:thePath
+		       encoding: NSUTF8StringEncoding
+		       error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:thePath
+		       encoding: NSISOLatin1StringEncoding
+		       error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:thePath
+		       encoding: NSMacOSRomanStringEncoding
+		       error:NULL];
+    }
+  if (nil == originalText)
+    {
+      originalText = [[NSMutableString alloc] 
+		       initWithContentsOfFile:thePath
+		       encoding: NSASCIIStringEncoding
+		       error:NULL];
+    }
+  if (nil == originalText)
+    return nil;
+
+  NSRange fullRange = NSMakeRange(0, [originalText length]);
+
+  unsigned int i;
+
+  //Comment out all images.
+  i = [originalText replaceOccurrencesOfString:@"<img" withString:@"<!img"
+		    options:NSLiteralSearch range:fullRange];
+  NSLog(@"Commented out %d images.\n", i);
+  outputHTML = [[NSString alloc] initWithString:originalText];
+  [originalText release];
+  return [outputHTML autorelease];
+}
 - (NSString *)currentPath;
 {
   return path;

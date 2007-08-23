@@ -1,3 +1,6 @@
+v. 0.6.1 - Kludgy fix for wide HTML images.  May not work with all
+	   files, but it's a start.
+
 v. 0.6 - Added several nice buttons designed by Chris Born.
          Added Chris Born's invert text code.
 	 Added single-tap scrolling up and down.  Single-taps are now much

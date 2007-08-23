@@ -17,6 +17,7 @@
 
 - (id)initWithFrame:(struct CGRect)rect;
 - (void)loadBookWithPath:(NSString *)thePath;
+- (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
 - (NSString *)currentPath;
 - (void)embiggenText;
 - (void)ensmallenText;
