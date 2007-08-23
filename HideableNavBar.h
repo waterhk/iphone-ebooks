@@ -1,4 +1,6 @@
 // HideableNavBar, (c) 2007 by Zachary Brewster-Geisz
+// Creates a navBar that disappears when you ask it to.
+// Also features integration with FileBrowser class.
 
 /*
 
@@ -25,18 +27,33 @@
 #include <UIKit/UINavigationBar.h>
 #import <UIKit/UITransformAnimation.h>
 #import <UIKit/UIAnimator.h>
+#import <UIKit/UITransitionView.h>
+#import "FileBrowser.h"
 
 @interface HideableNavBar : UINavigationBar
 {
   BOOL hidden;
   BOOL isTop;
+  BOOL _textIsOnTop;
   UITransformAnimation *translate;
   UIAnimator *animator;
+  UITransitionView *_transView;
+  NSMutableArray *_browserArray;
+  NSArray *_extensions;
+  id _browserDelegate;
 }
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top;
+- (void)setTransitionView:(UITransitionView *)transView;
+- (void)popNavigationItem;
+- (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath;
+- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view;
 - (void)hide;
 - (void)show;
 - (void)toggle;
 - (BOOL)hidden;
+- (void)setExtensions:(NSArray *)extensions;
+- (void)setBrowserDelegate:(id)bDelegate;
+- (FileBrowser *)topBrowser;
+- (NSArray *)browserPaths;
 
 @end

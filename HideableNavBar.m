@@ -18,6 +18,7 @@
 
 #import <UIKit/UIHardware.h>
 #import "HideableNavBar.h"
+#import "FileBrowser.h"
 
 @implementation HideableNavBar
 
@@ -32,6 +33,10 @@
   translate =  [[UITransformAnimation alloc] initWithTarget: self];
   animator = [[UIAnimator alloc] init];
   hidden = NO;
+  _textIsOnTop = YES;
+  _transView = nil;
+  _extensions = nil;
+  _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
   return self;
 }
 
@@ -44,10 +49,79 @@
   translate =  [[UITransformAnimation alloc] initWithTarget: self];
   animator = [[UIAnimator alloc] init];
   hidden = NO;
+  _textIsOnTop = NO;
+  _transView = nil;
+  _extensions = nil;
+  _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
   return self;
 }
 
+- (void)setBrowserDelegate:(id)bDelegate
+{
+  _browserDelegate = [bDelegate retain];
+}
 
+- (void)popNavigationItem
+{
+  if (_textIsOnTop)
+    {
+      _textIsOnTop = NO;
+      [_transView transition:2 toView:[_browserArray lastObject]];
+      [super popNavigationItem];
+    }
+  else
+    {
+      [_browserArray removeLastObject];
+      [_transView transition:2 toView:[_browserArray lastObject]];
+      [super popNavigationItem];
+    }
+}
+
+- (NSArray *)browserPaths;
+{
+  NSMutableArray *pathsArray = [NSMutableArray arrayWithCapacity:
+						 [_browserArray count]];
+  NSEnumerator *enum = [_browserArray objectEnumerator];
+  FileBrowser *b;
+  while (nil != (b = [enum nextObject]))
+    [pathsArray addObject:[b path]];
+  return [NSArray arrayWithArray:pathsArray];
+}
+
+- (void)pushNavigationItem:(UINavigationItem *)item
+	   withBrowserPath:(NSString *)browserPath
+{
+  struct CGRect fullRect = [UIHardware fullScreenApplicationContentRect];
+  fullRect.origin.x = fullRect.origin.y = 0.0f;
+  FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
+  [newBrowser setExtensions:_extensions];
+  [newBrowser setPath:browserPath];
+  [newBrowser setDelegate:_browserDelegate];
+  [_browserArray addObject:newBrowser];
+  [_transView transition:1 toView:newBrowser];
+  [newBrowser release];  // we still have it in the array, don't worry!
+  [super pushNavigationItem:item];
+}
+
+- (void)pushNavigationItem:(UINavigationItem *)item
+		  withView:(UIView *)view
+{
+  // Here, cometh funky code, in anticipation of multiple text views.
+  if (_textIsOnTop)
+    {
+      [self disableAnimation];
+      [super popNavigationItem];
+      [self enableAnimation];
+    }
+  textIsOnTop = YES;
+  [_transView transition:1 toView:view];
+  [super pushNavigationItem:item];
+}
+
+- (FileBrowser *)topBrowser
+{
+  return [_browserArray lastObject];
+}
 
 - (void)hide
 {
@@ -90,14 +164,12 @@
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 48.0f, hardwareRect.size.width, 48.0f)];
-  //  [self setTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+
   struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-48);
   [translate setStartTransform: trans];
   [translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
  
   [animator addAnimation:translate withDuration:.25 start:YES];
-  //  [animator release];
-  //  [translate release];
 
 }
 
@@ -106,13 +178,11 @@
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
-  //  [self setTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+
   struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -48.0);
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [translate setEndTransform: trans];
   [animator addAnimation:translate withDuration:.25 start:YES];
-  //  [animator release];
-  //  [translate release];
 
 }
 
@@ -124,7 +194,7 @@
   [translate setStartTransform: trans];
   [translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [animator addAnimation:translate withDuration:.25 start:YES];
-  //animation goeth here?
+
 }
 
 - (void)hideBotNavBar
@@ -135,13 +205,30 @@
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [translate setEndTransform: trans];
   [animator addAnimation:translate withDuration:.25 start:YES];
-  //animation goeth here?
+
+}
+
+- (void)setTransitionView:(UITransitionView *)view
+{
+  _transView = [view retain];
+}
+
+- (void)setExtensions:(NSArray *)extensions
+{
+  _extensions = [extensions retain];
 }
 
 - (void)dealloc
 {
   [animator release];
   [translate release];
+  if (nil != _transView)
+    [_transView release];
+  if (nil != _extensions)
+    [_extensions release];
+  if (nil != _browserDelegate)
+    [_browserDelegate release];
+  [_browserArray release];
   [super dealloc];
 }
 
