@@ -68,6 +68,8 @@
       _textIsOnTop = NO;
       [_transView transition:2 toView:[_browserArray lastObject]];
       [super popNavigationItem];
+      if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
+	[_browserDelegate textViewDidGoAway:self];
     }
   else
     {
@@ -81,9 +83,9 @@
 {
   NSMutableArray *pathsArray = [NSMutableArray arrayWithCapacity:
 						 [_browserArray count]];
-  NSEnumerator *enum = [_browserArray objectEnumerator];
+  NSEnumerator *enumer = [_browserArray objectEnumerator];
   FileBrowser *b;
-  while (nil != (b = [enum nextObject]))
+  while (nil != (b = [enumer nextObject]))
     [pathsArray addObject:[b path]];
   return [NSArray arrayWithArray:pathsArray];
 }
@@ -113,7 +115,7 @@
       [super popNavigationItem];
       [self enableAnimation];
     }
-  textIsOnTop = YES;
+  _textIsOnTop = YES;
   [_transView transition:1 toView:view];
   [super pushNavigationItem:item];
 }

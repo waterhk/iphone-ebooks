@@ -22,12 +22,13 @@
 
 
 
-#include <Foundation/Foundation.h>
-#include <CoreGraphics/CoreGraphics.h>
-#include <UIKit/UINavigationBar.h>
+#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UINavigationBar.h>
 #import <UIKit/UITransformAnimation.h>
 #import <UIKit/UIAnimator.h>
 #import <UIKit/UITransitionView.h>
+#import <UIKit/UINavigationItem.h>
 #import "FileBrowser.h"
 
 @interface HideableNavBar : UINavigationBar
@@ -42,9 +43,12 @@
   NSArray *_extensions;
   id _browserDelegate;
 }
+
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top;
 - (void)setTransitionView:(UITransitionView *)transView;
+
 - (void)popNavigationItem;
+
 - (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath;
 - (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view;
 - (void)hide;

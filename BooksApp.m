@@ -49,6 +49,8 @@
         CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
 
     [navBar setDelegate:self];
+    [navBar setBrowserDelegate:self];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"", nil]];
     [navBar hideButtons];
     //    [navBar setPrompt:@"Choose a book..."];
     [navBar disableAnimation];
@@ -132,46 +134,49 @@
       }
 
 
-
+    /*
     browserView = [[FileBrowser alloc] initWithFrame:
 		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
 
     chapterBrowserView = [[FileBrowser alloc] initWithFrame:
 		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
-
+    */
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
+
+    [navBar setTransitionView:transitionView];
     [transitionView setDelegate:self];
 
-    booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
+    /*    booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
     chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
     bookItem = [[EBookNavItem alloc] initWithTitle:[[[textView currentPath] lastPathComponent] stringByDeletingPathExtension] view:textView];
 
     [browserView setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"html", @"htm", nil]];
     [chapterBrowserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
-
+    
 
     [booksItem setDelegate:self];
     [chaptersItem setDelegate:self];
     [bookItem setDelegate:self];
-
+    */
     bookHasChapters = NO;
     readingText = NO;
 
 
 
-    path = @"/var/root/Media/EBooks/";
-
+    UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
+    [navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
+    /*
     [browserView setPath:path];
     [browserView setDelegate:self];
     [chapterBrowserView setDelegate:self];
-
+    */
 
     [window setContentView: mainView];
     [mainView addSubview:transitionView];
     [mainView addSubview:navBar];
     [mainView addSubview:bottomNavBar];
-
+    /*
     [navBar pushNavigationItem:booksItem];
     if ([defaults topViewIndex] > BROWSERVIEW)
       {
@@ -184,6 +189,7 @@
 	[navBar pushNavigationItem:bookItem];
 	readingText = YES;
       }
+
     switch ([defaults topViewIndex]) 
       {
       case BROWSERVIEW:
@@ -205,23 +211,15 @@
 	[invertButton setEnabled:YES];
 	break;
       }
-
+    */
     [textView setHeartbeatDelegate:self];
-    //[HTMLTextView setHeartbeatDelegate:self];
+
 
     [navBar enableAnimation];
     doneLaunching = YES;
 
 }
-/*
-- (void)toggleNavbars
-{
-  struct CGRect appRect = [UIHardware fullScreenApplicationContentRect];
-  struct CGRect topNavbarOn = CGMakeRect(appRect.origin.x, appRect.origin.y, appRect.size.width, 48.0f);
-  struct CGRect topNavbarOn = CGMakeRect(appRect.origin.x - 48.0, appRect.origin.y, appRect.size.width, 48.0f);
 
-}
-*/
 - (void)heartbeatCallback:(id)unused
 {
   if (!transitionHasBeenCalled)
@@ -261,7 +259,7 @@
   [navBar toggle];
   [bottomNavBar toggle];
 }
-
+/*  ****** DEPRECATED ******
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -281,12 +279,7 @@
 	NSString *leftTitle;
 	if (!([[textView currentPath] isEqualToString:file]))
 	  {
-	    /*
-	    if ([[file pathExtension] isEqualToString:@"txt"])
-	      textView = plainTextView;
-	    else
-	      textView = HTMLTextView;
-	    */
+
 	    [textView loadBookWithPath:file];
 	    [defaults setLastScrollPoint:1];
 	    //[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, 0.0f)];
@@ -312,6 +305,7 @@
 
       }
 }
+
 
 //The following method may be unneeded.
 // FIXME: make the nav-bar prettier!
@@ -344,6 +338,44 @@
   }
 }
 
+*/
+- (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file 
+{
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  BOOL isDir = NO;
+  if ([fileManager fileExistsAtPath:file isDirectory:&isDir] && isDir)
+    {
+      UINavigationItem *tempItem = [[UINavigationItem alloc]
+				     initWithTitle:[file lastPathComponent]];
+      [navBar pushNavigationItem:tempItem withBrowserPath:file];
+      [tempItem release];
+    }
+  else
+    {
+      readingText = YES;
+      UINavigationItem *tempItem = [[UINavigationItem alloc]
+		        initWithTitle:[[file lastPathComponent]
+					stringByDeletingPathExtension]];
+      [navBar pushNavigationItem:tempItem withView:textView];
+      [textView loadBookWithPath:file];
+
+      [minusButton setEnabled:YES];
+      [plusButton setEnabled:YES];
+      [invertButton setEnabled:YES];
+
+      [tempItem release];
+
+    }
+}
+
+- (void)textViewDidGoAway:(id)sender
+{
+  readingText = NO;
+  [minusButton setEnabled:NO];
+  [plusButton setEnabled:NO];
+  [invertButton setEnabled:NO];
+}
+/*
 - (void)transitionToView:(id)view
 {
   struct CGRect selectionRect;
@@ -391,6 +423,7 @@
       [transitionView transition:transType toView:view];
     }
 }
+*/
 
 - (void)notifyDidCompleteTransition:(id)unused
   // Delegate method?
@@ -462,15 +495,15 @@
 
 - (void) dealloc
 {
-  [booksItem release];
-  [chaptersItem release];
-  [bookItem release];
+  //  [booksItem release];
+  //[chaptersItem release];
+  //[bookItem release];
   [navBar release];
   [mainView release];
   // textView = nil;
   [textView release];
   //[HTMLTextView release];
-  [browserView release];
+  //[browserView release];
   [defaults release];
 [buttonImg release];
   [minusButton release];

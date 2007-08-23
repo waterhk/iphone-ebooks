@@ -20,15 +20,19 @@
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"
 
+#ifndef EBOOK_PATH
+#define EBOOK_PATH @"/var/root/Media/EBooks/"
+#endif
+
 
 @interface BooksApp : UIApplication {
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
 	UITransitionView *transitionView;
-	EBookNavItem *booksItem, *chaptersItem, *bookItem;
+	//EBookNavItem *booksItem, *chaptersItem, *bookItem;
         EBookView   *textView;  /* *plainTextView, *HTMLTextView;*/
-	FileBrowser *browserView;
-	FileBrowser *chapterBrowserView;
+	//FileBrowser *browserView;
+	//FileBrowser *chapterBrowserView;
 	NSString    *path;
 	NSError     *error;
 	//UIViewTapInfo  *tapinfo;
@@ -57,4 +61,5 @@
 - (void)invertText:(UINavBarButton *)button;
 - (void)setTextInverted:(BOOL)b;
 - (UIImage *)navBarImage:(NSString *)name;
+- (void)textViewDidGoAway:(id)sender;
 @end
