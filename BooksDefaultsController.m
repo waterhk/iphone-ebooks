@@ -1,112 +1,110 @@
 /// BooksDefaultsController.m
 
-#include <math.h>
-
 #import "BooksDefaultsController.h"
 
 @implementation BooksDefaultsController
 
 - (BooksDefaultsController *)init
 {
-  [super init];
+  self = [super init];
 
-  sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
+  //  sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:5];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:6];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
-  [temp setObject:[NSArray arrayWithObject:@"/var/root/Media/EBooks/"]
-	forKey:BROWSERFILESKEY];
+  [temp setObject:EBOOK_PATH forKey:BROWSERFILESKEY];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
-  [sharedDefaults registerDefaults:temp];
-
-  //  [sharedDefaults setInteger:TEXTVIEW forKey:TOPVIEWKEY];
-
-  //  NSLog(@"defaults dump\n%d %d %@\n",
-  //	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
-  //	[sharedDefaults integerForKey:TOPVIEWKEY],
-  //	[sharedDefaults objectForKey:FILEBEINGREADKEY]);
-
+  [[NSUserDefaults standardUserDefaults] registerDefaults:temp];
+  /*
+    NSLog(@"defaults dump\n%d %d %@\n%@\n",
+  	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
+  	[sharedDefaults integerForKey:TEXTSIZEKEY],
+  	[sharedDefaults objectForKey:FILEBEINGREADKEY],
+	  [sharedDefaults objectForKey:BROWSERFILESKEY]);
+  */
   [temp release];
   return self;
 }
 
 - (unsigned int)lastScrollPoint
 {
-  return [sharedDefaults integerForKey:LASTSCROLLPOINTKEY];
+  return [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
 }
 
 - (NSString *)fileBeingRead
 {
-  return [[sharedDefaults objectForKey:FILEBEINGREADKEY] autorelease];
+  return [[NSUserDefaults standardUserDefaults] objectForKey:FILEBEINGREADKEY];
 }
 
 - (int)textSize
 {
-  return [sharedDefaults integerForKey:TEXTSIZEKEY];
+  return [[NSUserDefaults standardUserDefaults] integerForKey:TEXTSIZEKEY];
 }
 
 - (BOOL)inverted
 {
-  return [sharedDefaults boolForKey:ISINVERTEDKEY];
+  return [[NSUserDefaults standardUserDefaults] boolForKey:ISINVERTEDKEY];
 }
 
 - (BOOL)readingText
 {
-  return [sharedDefaults boolForKey:READINGTEXTKEY];
+  return [[NSUserDefaults standardUserDefaults] boolForKey:READINGTEXTKEY];
 }
 
-- (NSArray *)browserArray
+- (NSString *)lastBrowserPath
 {
-  return [[sharedDefaults objectForKey:BROWSERFILESKEY] autorelease];
+  return [[NSUserDefaults standardUserDefaults] objectForKey:BROWSERFILESKEY];
 }
 
-- (void)setLastScrollPoint:(unsigned int)point
+- (void)setLastScrollPoint:(unsigned int)thePoint
 {
-  [sharedDefaults setInteger:point forKey:LASTSCROLLPOINTKEY];
+  NSLog(@"in");
+  [[NSUserDefaults standardUserDefaults] setInteger:thePoint forKey:LASTSCROLLPOINTKEY];
+  NSLog(@"out");
 }
 
-- (void)setBrowserArray:(NSArray *)browserArray
+- (void)setLastBrowserPath:(NSString *)browserPath
 {
-  [sharedDefaults setObject:browserArray forKey:BROWSERFILESKEY];
+  [[NSUserDefaults standardUserDefaults] setObject:browserPath forKey:BROWSERFILESKEY];
 }
 
 - (void)setFileBeingRead:(NSString *)file
 {
-  [sharedDefaults setObject:file forKey:FILEBEINGREADKEY];
+  [[NSUserDefaults standardUserDefaults] setObject:file forKey:FILEBEINGREADKEY];
 }
 
 - (void)setTextSize:(int)size
 {
-  [sharedDefaults setInteger:size forKey:TEXTSIZEKEY];
+  [[NSUserDefaults standardUserDefaults] setInteger:size forKey:TEXTSIZEKEY];
 }
 
 - (void)setInverted:(BOOL)isInverted
 {
-  [sharedDefaults setBool:isInverted forKey:ISINVERTEDKEY];
+  [[NSUserDefaults standardUserDefaults] setBool:isInverted forKey:ISINVERTEDKEY];
 }
 
 - (void)setReadingText:(BOOL)readingText
 {
-  [sharedDefaults setBool:readingText forKey:READINGTEXTKEY];
+  [[NSUserDefaults standardUserDefaults] setBool:readingText forKey:READINGTEXTKEY];
 }
 
 - (BOOL)synchronize
 {
-  return [sharedDefaults synchronize];
+  return [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)dealloc
 {
-  BOOL unused = [sharedDefaults synchronize];
+  BOOL unused = [[NSUserDefaults standardUserDefaults] synchronize];
   //  [fileBeingRead release];
-  [sharedDefaults release];
+  //  [sharedDefaults release];
   [super dealloc];
 }
 

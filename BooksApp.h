@@ -19,10 +19,7 @@
 #import "EBookNavItem.h"
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"
-
-#ifndef EBOOK_PATH
-#define EBOOK_PATH @"/var/root/Media/EBooks/"
-#endif
+#import "common.h"
 
 
 @interface BooksApp : UIApplication {

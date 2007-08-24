@@ -145,10 +145,11 @@
   i = [originalText replaceOccurrencesOfString:@"<img" withString:@"<!img"
 		    options:NSLiteralSearch range:fullRange];
   NSLog(@"Commented out %d images.\n", i);
-  outputHTML = [[NSString alloc] initWithString:originalText];
+  outputHTML = [NSString stringWithString:originalText];
   [originalText release];
-  return [outputHTML autorelease];
+  return outputHTML;
 }
+
 - (NSString *)currentPath;
 {
   return path;
@@ -339,7 +340,8 @@
   NSLog(@"replaced %d carriage return/newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
-  /* DEPRECATED.
+
+  /************** DEPRECATED.
   // Change UNIX newlines to <br> tags.
   i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
 		    options:NSLiteralSearch range:fullRange];
@@ -352,6 +354,7 @@
   NSLog(@"replaced %d carriage returns\n", i);
   j += i;
   */
+
   //Change double-newlines to </p><p>.
   i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
 		    options:NSLiteralSearch range:fullRange];
@@ -365,9 +368,9 @@
   j += i;
 
   NSLog(@"Replaced %d characters in textfile %@.\n", j, file);
-  outputHTML = [[NSString alloc] initWithFormat:@"%@%@\n</p>\n</body>\n</html>\n", header, originalText];
+  outputHTML = [NSString stringWithFormat:@"%@%@\n</p>\n</body>\n</html>\n", header, originalText];
   [originalText release];
-  return [outputHTML autorelease];
+  return outputHTML;
 }
 
 - (void)invertText:(BOOL)b

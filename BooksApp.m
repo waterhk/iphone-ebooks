@@ -100,10 +100,6 @@
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
-    /*    HTMLTextView = [[EBookView alloc] 
-        initWithFrame:
-          CGRectMake(0, 0, rect.size.width, rect.size.height)];
-    */
     [textView setTextSize:[defaults textSize]];
 
     textInverted = [defaults inverted];
@@ -112,105 +108,59 @@
     recentFile = [defaults fileBeingRead];
     readingText = [defaults readingText];
 
-    if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile] && 
-	readingText)
+    if (readingText)
       {
-	[textView loadBookWithPath:recentFile];
-
-	//NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
-
+	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
+	  {
+	    [textView loadBookWithPath:recentFile];
+	    
+	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
+	    
+	  }
+	else
+	  {  // Recent file has been deleted!  RESET!
+	    readingText = NO;
+	    [defaults setLastScrollPoint:0];
+	    [defaults setReadingText:NO];
+	    [defaults setFileBeingRead:@""];
+	    [defaults setLastBrowserPath:EBOOK_PATH];
+	  }
       }
-    else
-      {  // Recent file has been deleted!  RESET!
-	[defaults setLastScrollPoint:0];
-	[defaults setReadingText:NO];
-	[defaults setFileBeingRead:@""];
-	[defaults setBrowserArray:[NSArray arrayWithObject:EBOOK_PATH]];
-      }
 
-
-    /*
-    browserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
-
-    chapterBrowserView = [[FileBrowser alloc] initWithFrame:
-		  CGRectMake(0, 0.0f, rect.size.width, rect.size.height)];
-    */
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
 
-    [navBar setTransitionView:transitionView];
-    [transitionView setDelegate:self];
 
-    /*    booksItem = [[EBookNavItem alloc] initWithTitle:@"Books" view:browserView];
-    chaptersItem = [[EBookNavItem alloc] initWithTitle:@"Chapters" view:chapterBrowserView];
-    bookItem = [[EBookNavItem alloc] initWithTitle:[[[textView currentPath] lastPathComponent] stringByDeletingPathExtension] view:textView];
-
-    [browserView setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"html", @"htm", nil]];
-    [chapterBrowserView setExtensions:[NSArray arrayWithObjects:@"txt", @"html", @"htm", nil]];
-    
-
-    [booksItem setDelegate:self];
-    [chaptersItem setDelegate:self];
-    [bookItem setDelegate:self];
-
-    bookHasChapters = NO;
-    */
-    //readingText = NO;
-
-
-
-    UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
-    [navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
-    /*
-    [browserView setPath:path];
-    [browserView setDelegate:self];
-    [chapterBrowserView setDelegate:self];
-    */
 
     [window setContentView: mainView];
     [mainView addSubview:transitionView];
     [mainView addSubview:navBar];
     [mainView addSubview:bottomNavBar];
-    /*
-    [navBar pushNavigationItem:booksItem];
-    if ([defaults topViewIndex] > BROWSERVIEW)
-      {
-	[navBar pushNavigationItem:chaptersItem];
-	bookHasChapters = YES;  // FIXME.  
-	// We might be reading a book without chapters!
-      }
-    if ([defaults topViewIndex] == TEXTVIEW)
-      {
-	[navBar pushNavigationItem:bookItem];
-	readingText = YES;
-      }
 
-    switch ([defaults topViewIndex]) 
-      {
-      case BROWSERVIEW:
-	[transitionView transition:1 toView:browserView];
-	break;
-      case CHAPTERBROWSERVIEW:
-	[transitionView transition:1 toView:chapterBrowserView];
-	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
-	break;
-      case TEXTVIEW:
-	[transitionView transition:1 toView:textView];
+    [textView setHeartbeatDelegate:self];
 
-	//FIXME: The following fails if we're reading a book without chapters.
-	//This may have to wait until the browser architecture has
-	//been rewritten.
-	[chapterBrowserView setPath:[[textView currentPath] stringByDeletingLastPathComponent]];
-	[plusButton setEnabled:YES];
-	[minusButton setEnabled:YES];
-	[invertButton setEnabled:YES];
-	break;
-      }
-    */
-    NSArray *tempArray = [defaults browserArray];
-    NSEnumerator *pathEnum = [tempArray objectEnumerator];
-    NSString *curPath = [pathEnum nextObject];  // Should always be the base
+    [navBar setTransitionView:transitionView];
+    [transitionView setDelegate:self];
+
+    UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
+    [navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
+
+    NSString *tempString = [defaults lastBrowserPath];
+    NSMutableArray *tempArray = [[NSMutableArray alloc] init]; 
+
+    if (![tempString isEqualToString:EBOOK_PATH])
+      {
+	[tempArray addObject:[NSString stringWithString:tempString]];
+	while ((![(tempString = [tempString stringByDeletingLastPathComponent])
+		   isEqualToString:EBOOK_PATH]) && 
+	       (![tempString isEqualToString:@"/"])) //sanity check
+	  {
+	    [tempArray addObject:[NSString stringWithString:tempString]];
+	  } // while
+      } // if
+
+    NSEnumerator *pathEnum = [tempArray reverseObjectEnumerator];
+    NSString *curPath;  
     while (nil != (curPath = [pathEnum nextObject]))
       {
 	UINavigationItem *tempItem = [[UINavigationItem alloc]
@@ -225,11 +175,16 @@
 	        initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
 	[navBar pushNavigationItem:tempItem withView:textView];
+
+	[plusButton setEnabled:YES];
+	[minusButton setEnabled:YES];
+	[invertButton setEnabled:YES];
+
 	[tempItem release];
       }
 
-    [textView setHeartbeatDelegate:self];
 
+    [tempArray release];
 
     [navBar enableAnimation];
     doneLaunching = YES;
@@ -264,86 +219,6 @@
   [bottomNavBar toggle];
 }
 
-/*  ****** DEPRECATED ******
-- (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    BOOL isDir = NO;
-    if ([fileManager fileExistsAtPath:file isDirectory:&isDir] && isDir)
-      {
-	[chapterBrowserView setPath:file];
-	[chaptersItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
-
-	[navBar showBackButton:YES animated:YES];
-	[navBar pushNavigationItem:chaptersItem];
-
-	bookHasChapters = YES;
-      }
-    else
-      {
-	NSString *leftTitle;
-	if (!([[textView currentPath] isEqualToString:file]))
-	  {
-
-	    [textView loadBookWithPath:file];
-	    [defaults setLastScrollPoint:1];
-	    //[textView scrollPointVisibleAtTopLeft:CGPointMake(0.0f, 0.0f)];
-	    transitionHasBeenCalled = NO;
-	  }
-	// Slight optimization.  If the file is already loaded,
-	// don't bother reloading.
-
-	if (bookHasChapters)
-	  leftTitle = @"Chapters";
-	else
-	  leftTitle = @"Books";
-	[bookItem setTitle:[[file lastPathComponent] stringByDeletingPathExtension]];
-
-	[navBar showBackButton:YES animated:YES];
-	[navBar pushNavigationItem:bookItem];
-	[minusButton setEnabled:YES];
-	[plusButton setEnabled:YES];
-	[invertButton setEnabled:YES];
-
-	[textView becomeFirstResponder];
-	readingText = YES;
-
-      }
-}
-
-
-//The following method may be unneeded.
-// FIXME: make the nav-bar prettier!
-- (void)navigationBar:(UINavigationBar *)thebar buttonClicked:(int)button {
-  switch (button) {
-  case 0:// right
-    if (readingText)
-      {
-	[textView embiggenText]; // It's a perfectly cromulent method.
-      }
-    break;
-  case 1:// left
-    {
-      if (bookHasChapters && readingText)
-	{
-	  [navBar popNavigationItem];
-	  [navBar showButtonsWithLeftTitle:@"Books" rightTitle:nil leftBack:YES];
-	  [transitionView transition:2 toView:chapterBrowserView];
-	  readingText = NO;
-	}
-      else
-	{
-	  [navBar popNavigationItem];
-	  [navBar hideButtons];
-	  [transitionView transition:2 toView:browserView];
-	  bookHasChapters = NO;
-	  readingText = NO;
-	}
-    }
-  }
-}
-
-*/
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file 
 {
   NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -363,81 +238,41 @@
 					stringByDeletingPathExtension]];
       if (!([[textView currentPath] isEqualToString:file]))
 	{
-	  
+	  NSLog(@"Loading %@...", file);	  
 	  [textView loadBookWithPath:file];
+	  NSLog(@"Setting the scroll point...");
 	  [defaults setLastScrollPoint:1];
 	  transitionHasBeenCalled = NO;
 	}
       // Slight optimization.  If the file is already loaded,
       // don't bother reloading.
       [navBar pushNavigationItem:tempItem withView:textView];
-
+      NSLog(@"back in BooksApp...");
       [minusButton setEnabled:YES];
       [plusButton setEnabled:YES];
       [invertButton setEnabled:YES];
-
+      NSLog(@"did the buttons...");
       [tempItem release];
+      NSLog(@"released tempItem...");
       [navBar hide];
       [bottomNavBar hide];
+      NSLog(@"Marines, we are leaving...");
     }
 }
 
 - (void)textViewDidGoAway:(id)sender
 {
+  NSLog(@"textViewDidGoAway start...");
   struct CGRect selectionRect = [textView visibleRect];
+  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+  NSLog(@"set defaults ");
   readingText = NO;
   [minusButton setEnabled:NO];
   [plusButton setEnabled:NO];
   [invertButton setEnabled:NO];
+  NSLog(@"end.\n");
 }
-/*
-- (void)transitionToView:(id)view
-{
-  struct CGRect selectionRect;
-  int transType;
-  struct CGRect fullRect = [UIHardware fullScreenApplicationContentRect];
-  fullRect.origin.x = fullRect.origin.y = 0.0f;
-  if (doneLaunching)
-    {
-      if ([view isEqual:browserView]) // we must be going backward
-	{
-	  readingText = NO;
-	  [minusButton setEnabled:NO];
-	  [plusButton setEnabled:NO];
-	  [invertButton setEnabled:NO];
-	  transType = 2;
-	}
-      else if ([view isEqual:chapterBrowserView]) // eep! we don't know which way!
-	{
-
-	  if (readingText == YES)
-	    {
-	      [minusButton setEnabled:NO];
-	      [plusButton setEnabled:NO];
-          [invertButton setEnabled:NO];
-	      transType = 2;
-	    }
-	  else
-	    {
-	      transType = 1; 
-	    }
-	}
-      else
-	{
-	  view = textView;  // this is needed because of the txt/html fugliness
-
-	  transType = 1;
-	  //[textView scrollPointVisibleAtTopLeft:CGPointMake(selectionRect.origin.x, (float)[defaults lastScrollPoint]) animated:YES];
-	  [self hideNavbars];
-	  [minusButton setEnabled:YES];
-	  [plusButton setEnabled:YES];
-	  [invertButton setEnabled:YES];
-	}
-      [transitionView transition:transType toView:view];
-    }
-}
-*/
 
 - (void)notifyDidCompleteTransition:(id)unused
   // Delegate method?
@@ -460,7 +295,7 @@
   [defaults setInverted:textInverted];
 
   [defaults setReadingText:readingText];
-  [defaults setBrowserArray:[navBar browserPaths]];
+  [defaults setLastBrowserPath:[navBar topBrowserPath]];
   [defaults synchronize];
 
 }
@@ -507,18 +342,13 @@
 
 - (void) dealloc
 {
-  //  [booksItem release];
-  //[chaptersItem release];
-  //[bookItem release];
   [navBar release];
   [bottomNavBar release];
   [mainView release];
   // textView = nil;
   [textView release];
-  //[HTMLTextView release];
-  //[browserView release];
   [defaults release];
-[buttonImg release];
+  [buttonImg release];
   [minusButton release];
   [plusButton release];
   [invertButton release];

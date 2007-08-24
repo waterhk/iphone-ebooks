@@ -58,6 +58,6 @@
 - (void)setExtensions:(NSArray *)extensions;
 - (void)setBrowserDelegate:(id)bDelegate;
 - (FileBrowser *)topBrowser;
-- (NSArray *)browserPaths;
+- (NSString *)topBrowserPath;
 
 @end

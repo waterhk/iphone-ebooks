@@ -66,7 +66,9 @@
   if (_textIsOnTop)
     {
       _textIsOnTop = NO;
-      [_transView transition:2 toView:[_browserArray lastObject]];
+      if ([self isAnimationEnabled])
+	[_transView transition:2 toView:[_browserArray lastObject]];
+      NSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
       [super popNavigationItem];
       if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
 	[_browserDelegate textViewDidGoAway:self];
@@ -74,20 +76,16 @@
   else
     {
       [_browserArray removeLastObject];
-      [_transView transition:2 toView:[_browserArray lastObject]];
+
+      [_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
+      NSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
       [super popNavigationItem];
     }
 }
 
-- (NSArray *)browserPaths;
+- (NSString *)topBrowserPath;
 {
-  NSMutableArray *pathsArray = [NSMutableArray arrayWithCapacity:
-						 [_browserArray count]];
-  NSEnumerator *enumer = [_browserArray objectEnumerator];
-  FileBrowser *b;
-  while (nil != (b = [enumer nextObject]))
-    [pathsArray addObject:[b path]];
-  return [NSArray arrayWithArray:pathsArray];
+  return [[_browserArray lastObject] path];
 }
 
 - (void)pushNavigationItem:(UINavigationItem *)item
@@ -100,8 +98,9 @@
   [newBrowser setPath:browserPath];
   [newBrowser setDelegate:_browserDelegate];
   [_browserArray addObject:newBrowser];
-  [_transView transition:1 toView:newBrowser];
+  [_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
   [newBrowser release];  // we still have it in the array, don't worry!
+  NSLog(@"Pushed %@\n", browserPath);
   [super pushNavigationItem:item];
 }
 
@@ -116,8 +115,11 @@
       [self enableAnimation];
     }
   _textIsOnTop = YES;
-  [_transView transition:1 toView:view];
+  NSLog(@"Pushed text view\n");
+  [_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:view];
+  NSLog(@"transitioned");
   [super pushNavigationItem:item];
+  NSLog(@"called super");
 }
 
 - (FileBrowser *)topBrowser

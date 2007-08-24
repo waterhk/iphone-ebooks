@@ -91,14 +91,17 @@
         NSString *file;
         NSEnumerator *dirEnum = [tempArray objectEnumerator];
 	while (file = [dirEnum nextObject]) {
-		if (_extensions != nil && [_extensions count] > 0) {
-			NSString *extension = [[file pathExtension] lowercaseString];
-			if ([_extensions containsObject: extension]) {
-				[_files addObject: file];
-			}
+	  if ([file characterAtIndex:0] != (unichar)'.')
+	    {  // Skip invisibles, like .DS_Store
+	      if (_extensions != nil && [_extensions count] > 0) {
+		NSString *extension = [[file pathExtension] lowercaseString];
+		if ([_extensions containsObject: extension]) {
+		  [_files addObject: file];
+		}
 		} else {
 			[_files addObject: file];
 		}
+	    }
  	}
 
 	//[_files sortUsingSelector:@selector(caseInsensitiveCompare:)];
