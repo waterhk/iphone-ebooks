@@ -1,3 +1,8 @@
+v. 0.7 - By popular demand!  Arbitrary subdirectories are now allowed
+         within the EBooks folder.  Books.app will remember which
+	 subdirectory you were in on quit, too.
+	 Also fixed an NSUserDefaults-related bug.
+
 v. 0.6.1 - Kludgy fix for wide HTML images.  May not work with all
 	   files, but it's a start.
 
