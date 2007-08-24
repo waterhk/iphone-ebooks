@@ -10,7 +10,7 @@
 
   //  sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:6];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:10];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
@@ -18,6 +18,11 @@
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
   [temp setObject:EBOOK_PATH forKey:BROWSERFILESKEY];
+ 
+  [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
+  [temp setObject:@"1" forKey:AUTOHIDE];
+  [temp setObject:@"1" forKey:TOOLBAR];
+  [temp setObject:@"0" forKey:FLIPTOOLBAR];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
@@ -93,6 +98,46 @@
 - (void)setReadingText:(BOOL)readingText
 {
   [[NSUserDefaults standardUserDefaults] setBool:readingText forKey:READINGTEXTKEY];
+}
+
+- (void)setTextFont:(NSString *)font
+{
+  [[NSUserDefaults standardUserDefaults] setObject:font forKey:TEXTFONTKEY];
+}
+
+- (NSString *)textFont
+{
+  return [[NSUserDefaults standardUserDefaults] objectForKey:TEXTFONTKEY];
+}
+
+- (BOOL)autohide
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:AUTOHIDE];
+}
+
+- (BOOL)toolbar
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:TOOLBAR];
+}
+
+- (BOOL)flipped
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:FLIPTOOLBAR];
+}
+
+- (void)setAutohide:(BOOL)isAutohide
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isAutohide forKey:AUTOHIDE];
+}
+
+- (void)setToolbar:(BOOL)isToolbar
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isToolbar forKey:TOOLBAR];
+}
+
+- (void)setFlipped:(BOOL)isFlipped
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isFlipped forKey:FLIPTOOLBAR];
 }
 
 - (BOOL)synchronize

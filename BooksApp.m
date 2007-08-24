@@ -16,15 +16,13 @@
 
 */
 #import "BooksApp.h"
-
+#import "PreferencesController.h"
 
 @implementation BooksApp
 
 - (void) applicationDidFinishLaunching: (id) unused
 {
     NSString *recentFile;
-
-    UIWindow *window;
 
     struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
     rect.origin.x = rect.origin.y = 0.0f;
@@ -54,6 +52,19 @@
     [navBar hideButtons];
 
     [navBar disableAnimation];
+
+ 	prefsButton = [[UINavBarButton alloc] initWithFrame: 
+							CGRectMake(282,9,33,30)];
+	[prefsButton setAutosizesToFit:NO];							
+	[prefsButton setImage:[self navBarImage:@"prefs_up"] forState:0];
+	[prefsButton setImage:[self navBarImage:@"prefs_down"] forState:1];
+    [prefsButton setDrawContentsCentered:YES];
+    [prefsButton addTarget:self action:@selector(showPrefs) forEvents: (255)];
+    [prefsButton setNavBarButtonStyle:0];
+	[prefsButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [navBar addSubview:prefsButton];
+    [prefsButton setEnabled:YES];
+
 
     bottomNavBar = [[HideableNavBar alloc] initWithFrame:
        CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
@@ -100,10 +111,8 @@
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
-    [textView setTextSize:[defaults textSize]];
-
-    textInverted = [defaults inverted];
-    [textView invertText:textInverted];
+    [self refreshTextViewFromDefaults];
+	
 
     recentFile = [defaults fileBeingRead];
     readingText = [defaults readingText];
@@ -324,6 +333,9 @@
     {
       textInverted = !textInverted;
       [textView invertText:textInverted];
+	  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+      rect.origin.x = rect.origin.y = 0.0f;
+	  [textView setFrame:rect];
     }	
 }
 
@@ -338,6 +350,31 @@
 - (void)setTextInverted:(BOOL)b
 {
 	textInverted = b;
+}
+
+- (void)showPrefs
+{
+	NSLog(@"Showing Preferences View");
+	PreferencesController *prefsController = [[PreferencesController alloc] initWithAppController:self];
+}
+
+- (UIWindow *)appsMainWindow
+{
+	return window;
+}
+
+- (void)refreshTextViewFromDefaults
+{
+    [textView setTextSize:[defaults textSize]];
+
+    textInverted = [defaults inverted];
+    [textView invertText:textInverted];
+
+	[textView setTextFont:[defaults textFont]];
+		
+	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+    rect.origin.x = rect.origin.y = 0.0f;
+	[textView setFrame:rect];
 }
 
 - (void) dealloc

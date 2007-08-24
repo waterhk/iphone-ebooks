@@ -5,7 +5,7 @@ LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit 
 all:    Books
 
 Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o \
-BooksDefaultsController.o HideableNavBar.o
+BooksDefaultsController.o HideableNavBar.o PreferencesController.o
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m 

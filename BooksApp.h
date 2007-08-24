@@ -21,8 +21,10 @@
 #import "HideableNavBar.h"
 #import "common.h"
 
+@class PreferencesController;
 
 @interface BooksApp : UIApplication {
+	UIWindow 	*window;
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
 	UITransitionView *transitionView;
@@ -44,6 +46,7 @@
 	UINavBarButton *minusButton;
 	UINavBarButton *plusButton;
 	UINavBarButton *invertButton;
+	UINavBarButton *prefsButton;
 	
 	UIImage *buttonImg;
 	NSString *imgPath;
@@ -59,4 +62,7 @@
 - (void)setTextInverted:(BOOL)b;
 - (UIImage *)navBarImage:(NSString *)name;
 - (void)textViewDidGoAway:(id)sender;
+- (void)showPrefs;
+- (UIWindow *)appsMainWindow;
+- (void)refreshTextViewFromDefaults;
 @end
