@@ -11,6 +11,7 @@
   //  UIViewTapInfo *tapinfo;
   NSString      *path;
   float         size;
+  float 		scrollness;
   id            _heartbeatDelegate;
   struct CGRect lastVisibleRect;
 }
@@ -27,6 +28,8 @@
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
+- (void)pageDown;
+- (void)pageUp;
 - (int)textSize;
 - (void)setTextSize:(int)newSize;
 - (NSString *)HTMLFromTextFile:(NSString *)file;

@@ -21,8 +21,11 @@
  
   [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
   [temp setObject:@"1" forKey:AUTOHIDE];
-  [temp setObject:@"1" forKey:TOOLBAR];
+  [temp setObject:@"0" forKey:NAVBAR];
+  [temp setObject:@"0" forKey:TOOLBAR];
   [temp setObject:@"0" forKey:FLIPTOOLBAR];
+  [temp setObject:@"0" forKey:CHAPTERNAV];
+  [temp setObject:@"1" forKey:PAGENAV];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
@@ -115,6 +118,11 @@
   return [[NSUserDefaults standardUserDefaults] boolForKey:AUTOHIDE];
 }
 
+- (BOOL)navbar
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:NAVBAR];
+}
+
 - (BOOL)toolbar
 {
   return [[NSUserDefaults standardUserDefaults] boolForKey:TOOLBAR];
@@ -125,9 +133,24 @@
   return [[NSUserDefaults standardUserDefaults] boolForKey:FLIPTOOLBAR];
 }
 
+- (BOOL)chapternav
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:CHAPTERNAV];
+}
+
+- (BOOL)pagenav
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:PAGENAV];
+}
+
 - (void)setAutohide:(BOOL)isAutohide
 {
   [[NSUserDefaults standardUserDefaults] setBool:isAutohide forKey:AUTOHIDE];
+}
+
+- (void)setNavbar:(BOOL)isNavbar
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isNavbar forKey:NAVBAR];
 }
 
 - (void)setToolbar:(BOOL)isToolbar
@@ -138,6 +161,16 @@
 - (void)setFlipped:(BOOL)isFlipped
 {
   [[NSUserDefaults standardUserDefaults] setBool:isFlipped forKey:FLIPTOOLBAR];
+}
+
+- (void)setChapternav:(BOOL)isChpaternav
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isChpaternav forKey:CHAPTERNAV];
+}
+
+- (void)setPagenav:(BOOL)isPagenav
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isPagenav forKey:PAGENAV];
 }
 
 - (BOOL)synchronize

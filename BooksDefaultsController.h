@@ -24,8 +24,11 @@
 
 #define TEXTFONTKEY @"textFontKey"
 #define	AUTOHIDE @"autohideKey"
+#define NAVBAR @"navbarKey"
 #define TOOLBAR @"toolbarKey"
 #define FLIPTOOLBAR @"flipToolbarKey"
+#define CHAPTERNAV @"chapterNavKey"
+#define PAGENAV @"pageNavKey"
 
 - (unsigned int)lastScrollPoint;
 - (NSString *)fileBeingRead;
@@ -34,9 +37,12 @@
 - (BOOL)readingText;
 - (NSString *)lastBrowserPath;
 - (BOOL)autohide;
+- (BOOL)navbar;
 - (BOOL)toolbar;
 - (BOOL)flipped;
 - (NSString *)textFont;
+- (BOOL)chapternav;
+- (BOOL)pagenav;
 
 - (void)setLastScrollPoint:(unsigned int)thePoint;
 - (void)setFileBeingRead:(NSString *)file;
@@ -46,8 +52,11 @@
 - (void)setLastBrowserPath:(NSString *)browserPath;
 - (void)setTextFont:(NSString *)font;
 - (void)setAutohide:(BOOL)isAutohide;
+- (void)setNavbar:(BOOL)isNavbar;
 - (void)setToolbar:(BOOL)isToolbar;
 - (void)setFlipped:(BOOL)isFlipped;
+- (void)setChapternav:(BOOL)isChpaternav;
+- (void)setPagenav:(BOOL)isPagenav;
 
 - (BOOL)synchronize;
 

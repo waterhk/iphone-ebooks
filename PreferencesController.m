@@ -48,9 +48,12 @@
 	NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
 	[defaults setTextSize:[[fontSizePreferenceCell value]intValue]];
 	[defaults setInverted:[[[invertPreferenceCell control] valueForKey:@"value"] boolValue]];
-	[defaults setAutohide:[[[autoHidePreferenceCell control] valueForKey:@"value"] boolValue]];
 	[defaults setToolbar:[[[showToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+	[defaults setNavbar:[[[showNavbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+	[defaults setChapternav:[[[chapterButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
+	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+
 
 	if ([defaults synchronize]){
 		NSLog(@"Synced defaults from prefs pane.");
@@ -102,28 +105,46 @@
 	[invertSwitchControl setValue:inverted];
 	[invertPreferenceCell setControl:invertSwitchControl];
 	
-	// Options
-	autoHidePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
-	BOOL autohide = [defaults autohide];
-	[autoHidePreferenceCell setTitle:@"Auto-Hide"];
-	UISwitchControl *hideSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
-	[hideSitchControl setValue:autohide];
-	[autoHidePreferenceCell setControl:hideSitchControl];
-	
+	// Auto-Hide
+	showNavbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL navbar = [defaults navbar];
+	[showNavbarPreferenceCell setTitle:@"Navigation Bar"];
+	UISwitchControl *showNavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[showNavSitchControl setValue:navbar];
+	[showNavbarPreferenceCell setControl:showNavSitchControl];
+
 	showToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL toolbar = [defaults toolbar];
 	[showToolbarPreferenceCell setTitle:@"Bottom Toolbar"];
-	UISwitchControl *showtoolbarSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
-	[showtoolbarSitchControl setValue:toolbar];
-	[showToolbarPreferenceCell setControl:showtoolbarSitchControl];
+	UISwitchControl *showToolbarSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[showToolbarSitchControl setValue:toolbar];
+	[showToolbarPreferenceCell setControl:showToolbarSitchControl];
+	
+	// Toolbar Options
+	chapterButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL chapternav = [defaults chapternav];
+	[chapterButtonsPreferenceCell setTitle:@"Chapter Navigation"];
+	UISwitchControl *showChapternavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[showChapternavSitchControl setValue:chapternav];
+	[showChapternavSitchControl setAlternateColors:YES];
+	[chapterButtonsPreferenceCell setControl:showChapternavSitchControl];
+	
+	pageButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL pagenav = [defaults pagenav];
+	[pageButtonsPreferenceCell setTitle:@"Page Navigation"];
+	UISwitchControl *showPagenavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[showPagenavSitchControl setValue:pagenav];
+	[showPagenavSitchControl setAlternateColors:YES];
+	[pageButtonsPreferenceCell setControl:showPagenavSitchControl];
 	
 	flippedToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL flipped = [defaults flipped];
-	[flippedToolbarPreferenceCell setTitle:@"Flip Toolbar"];
+	[flippedToolbarPreferenceCell setTitle:@"Left Handed"];
 	UISwitchControl *flippedSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[flippedSitchControl setValue:flipped];
+	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
-	
+
 }
 
 - (void)testAlert {
@@ -193,7 +214,7 @@
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
 	NSLog(@"PreferencesController: numberOfGroupsInPreferencesTable:");
-	return 3;
+	return 4;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
@@ -209,6 +230,9 @@
 		rowCount = 2;
 		break;
 	case 2:
+		rowCount = 2;
+		break;
+	case 3:
 		rowCount = 3;
 		break;
 	}
@@ -247,12 +271,25 @@
 		switch (row)
 		{
 		case 0:
-			NSLog(@"PreferencesController: autoHidePreferenceCell:");
-			prefCell = autoHidePreferenceCell;
+			NSLog(@"PreferencesController: showNavbarPreferenceCell:");
+			prefCell = showNavbarPreferenceCell;
 			break;
 		case 1:
 			NSLog(@"PreferencesController: showToolbarPreferenceCell:");
 			prefCell = showToolbarPreferenceCell;
+			break;
+		}
+		break;
+	case 3:
+		switch (row)
+		{
+		case 0:
+			NSLog(@"PreferencesController: chapterButtonsPreferenceCell:");
+			prefCell = chapterButtonsPreferenceCell;
+			break;
+		case 1:
+			NSLog(@"PreferencesController: pageButtonsPreferenceCell:");
+			prefCell = pageButtonsPreferenceCell;
 			break;
 		case 2:
 			NSLog(@"PreferencesController: flippedToolbarPreferenceCell:");
@@ -278,7 +315,10 @@
 		title = @"Text Display";
 		break;
 	case 2:
-		title = @"Options (Coming soon)";
+		title = @"Auto-Hide";
+		break;
+	case 3:
+		title = @"Toolbar Options";
 		break;
 	}
 	return title;

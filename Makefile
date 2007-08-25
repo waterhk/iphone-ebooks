@@ -30,5 +30,11 @@ package: Books
 	cp emsmall_down.png Books.app/emsmall_down.png
 	cp prefs_up.png Books.app/prefs_up.png
 	cp prefs_down.png Books.app/prefs_down.png
-	
-	
+	cp down_down.png Books.app/down_down.png	
+	cp down_up.png Books.app/down_up.png	
+	cp up_down.png Books.app/up_down.png
+	cp up_up.png Books.app/up_up.png
+	cp left_down.png Books.app/left_down.png
+	cp left_up.png Books.app/left_up.png
+	cp right_down.png Books.app/right_down.png
+	cp right_up.png Books.app/right_up.png

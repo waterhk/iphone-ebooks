@@ -221,7 +221,7 @@
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
-      float scrollness = contentRect.size.height;
+      scrollness = contentRect.size.height;
       //      NSLog(@"scrollness %f\n",scrollness);
       scrollness /= size;
       //      NSLog(@"scrollness %f\n",scrollness);
@@ -234,16 +234,12 @@
       if (CGRectContainsPoint(topTapRect, clicked.origin))
 	{
 	  //scroll back one screen...
-	  [self scrollByDelta:CGSizeMake(0, -1*scrollness)
-		animated:YES];
-	  [self hideNavbars];
+		[self pageUp]; // Had to move this to access it from BooksApp
 	}
       else if (CGRectContainsPoint(botTapRect,clicked.origin))
 	{
 	  //scroll forward one screen...
-	  [self scrollByDelta:CGSizeMake(0, scrollness)
-		animated:YES];
-	  [self hideNavbars];
+		[self pageDown]; // Had to move this to access it from BooksApp
 	}
       else if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{  // If the old rect equals the new, then we must not be scrolling
@@ -257,6 +253,25 @@
   BOOL unused = [self releaseRubberBandIfNecessary];
   lastVisibleRect = [self visibleRect];
   [super mouseUp:event];
+}
+
+// These two are so the toolbar buttons work!
+// BUT: The the amount of the scroll needs to be adjusted based on the
+// the defaults for showing the NAVBAR and TOOLBAR.
+// Right now it scrolls based on full screen and thus, to far. Zach?
+
+- (void)pageDown
+{
+	  [self scrollByDelta:CGSizeMake(0, scrollness)
+		animated:YES];
+	  [self hideNavbars];
+}
+
+-(void)pageUp
+{
+	  [self scrollByDelta:CGSizeMake(0, -1*scrollness)
+		animated:YES];
+	  [self hideNavbars];
 }
 
 - (int)textSize

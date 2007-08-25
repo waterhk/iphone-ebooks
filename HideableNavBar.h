@@ -30,6 +30,7 @@
 #import <UIKit/UITransitionView.h>
 #import <UIKit/UINavigationItem.h>
 #import "FileBrowser.h"
+#import "BooksDefaultsController.h"
 
 @interface HideableNavBar : UINavigationBar
 {
@@ -51,7 +52,7 @@
 
 - (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath;
 - (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view;
-- (void)hide;
+- (void)hide:(BOOL)forced;
 - (void)show;
 - (void)toggle;
 - (BOOL)hidden;

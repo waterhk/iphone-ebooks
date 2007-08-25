@@ -127,16 +127,25 @@
   return [_browserArray lastObject];
 }
 
-- (void)hide
+- (void)hide:(BOOL)forced
 {
-  if (!hidden)
-    {
-      if (isTop)
-	[self hideTopNavBar];
-      else
-	[self hideBotNavBar];
-      hidden = YES;
-    }
+	if (!hidden) {	
+		if (isTop && forced) {
+			[self hideTopNavBar];
+		} else if (forced) {
+			[self hideBotNavBar];
+		}
+
+		if (!forced) {
+			BooksDefaultsController	*defaults = [[BooksDefaultsController alloc] init];
+			if (isTop) {
+				if ([defaults navbar]) [self hideTopNavBar];
+			} else {
+				if ([defaults toolbar]) [self hideBotNavBar];
+			}
+			[defaults release];
+		}
+	}
 }
 
 - (void)show
@@ -156,8 +165,9 @@
   if (hidden)
     [self show];
   else
-    [self hide];
+    [self hide:NO];
 }
+
 - (BOOL)hidden;
 {
   return hidden;
@@ -187,7 +197,7 @@
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [translate setEndTransform: trans];
   [animator addAnimation:translate withDuration:.25 start:YES];
-
+  hidden = YES;
 }
 
 - (void)showBotNavBar
@@ -209,7 +219,7 @@
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [translate setEndTransform: trans];
   [animator addAnimation:translate withDuration:.25 start:YES];
-
+  hidden = YES;
 }
 
 - (void)setTransitionView:(UITransitionView *)view

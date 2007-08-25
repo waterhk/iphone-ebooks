@@ -36,11 +36,14 @@
 	UIView						*appView;
 	
 	UISegmentedControl 			*fontChoiceControl;
+	UISegmentedControl 			*flippedToolbarControl;
 	UIPreferencesTextTableCell 	*fontChoicePreferenceCell;
     UIPreferencesTextTableCell 	*fontSizePreferenceCell;
 	UIPreferencesControlTableCell *invertPreferenceCell;
-	UIPreferencesControlTableCell *autoHidePreferenceCell;
 	UIPreferencesControlTableCell *showToolbarPreferenceCell;
+	UIPreferencesControlTableCell *showNavbarPreferenceCell;
+	UIPreferencesControlTableCell *chapterButtonsPreferenceCell;
+	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
 	
 	struct CGRect contentRect;
@@ -52,6 +55,9 @@
 - (void)hidePreferences;
 - (void)createPreferenceCells;
 - (void)testAlert;
+
+#define RIGHTHANDED 0
+#define LEFTHANDED 1
 
 // Hacks until font chooser is sorted out
 #define TIMES 0

@@ -47,6 +47,8 @@
 	UINavBarButton *plusButton;
 	UINavBarButton *invertButton;
 	UINavBarButton *prefsButton;
+	UINavBarButton *downButton;
+	UINavBarButton *upButton;
 	
 	UIImage *buttonImg;
 	NSString *imgPath;
