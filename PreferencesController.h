@@ -59,10 +59,9 @@
 #define RIGHTHANDED 0
 #define LEFTHANDED 1
 
-// Hacks until font chooser is sorted out
-#define TIMES 0
-#define VERDANA 1
-#define GEORGIA 2
+#define GEORGIA 0
+#define HELVETICA 1
+#define TIMES 2
 
 - (int)currentFontIndex;
 - (NSString *)fontNameForIndex:(int)index;

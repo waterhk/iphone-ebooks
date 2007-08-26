@@ -88,9 +88,9 @@
 	
 	// Font
 	fontChoiceControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
-    [fontChoiceControl insertSegment:0 withTitle:@"Times" animated:NO];
-    [fontChoiceControl insertSegment:1 withTitle:@"Verdana" animated:NO];
-    [fontChoiceControl insertSegment:2 withTitle:@"Georgia" animated:NO];
+    [fontChoiceControl insertSegment:0 withTitle:@"Georgia" animated:NO];
+    [fontChoiceControl insertSegment:1 withTitle:@"Helvetica" animated:NO];
+    [fontChoiceControl insertSegment:2 withTitle:@"Times" animated:NO];
     [fontChoiceControl selectSegment:[self currentFontIndex]];
 	fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	[fontChoicePreferenceCell setDrawsBackground:NO];
@@ -161,14 +161,15 @@
 
 }
 
-// Temp font methods
+// TODO: Figure out the UIFontChooser and let them choose anything. Important for internationalization
+
 - (int)currentFontIndex {
 	
 	NSString	*font = [defaults textFont];	
 	if ([font isEqualToString:@"TimesNewRoman"]) {
 		return TIMES;
-	} else if ([font isEqualToString:@"Verdana"]) {
-		return VERDANA;
+	} else if ([font isEqualToString:@"Helvetica"]) {
+		return HELVETICA;
 	} else if ([font isEqualToString:@"Georgia"]) {
 		return GEORGIA;
 	} else {
@@ -181,13 +182,13 @@
 	switch (index)
 	{
 		case 0:
-			font = [NSString stringWithString:@"TimesNewRoman"];
+			font = [NSString stringWithString:@"Georgia"];
 			break;
 		case 1:
-			font = [NSString stringWithString:@"Verdana"];
+			font = [NSString stringWithString:@"Helvetica"];
 			break;
 		case 2:
-			font = [NSString stringWithString:@"Georgia"];
+			font = [NSString stringWithString:@"TimesNewRoman"];
 			break;	
 	}
 	NSLog(@"%s Font selected is %@", _cmd, font);
