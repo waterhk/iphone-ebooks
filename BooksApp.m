@@ -53,18 +53,18 @@
 
     [navBar disableAnimation];
 
- 	prefsButton = [[UINavBarButton alloc] initWithFrame: 
-							CGRectMake(275,9,40,30)];
-	[prefsButton setAutosizesToFit:NO];							
-	[prefsButton setImage:[self navBarImage:@"prefs_up"] forState:0];
-	[prefsButton setImage:[self navBarImage:@"prefs_down"] forState:1];
+    prefsButton = [[UINavBarButton alloc] initWithFrame: 
+					    CGRectMake(275,9,40,30)];
+    [prefsButton setAutosizesToFit:NO];							
+    [prefsButton setImage:[self navBarImage:@"prefs_up"] forState:0];
+    [prefsButton setImage:[self navBarImage:@"prefs_down"] forState:1];
     [prefsButton setDrawContentsCentered:YES];
-    [prefsButton addTarget:self action:@selector(showPrefs) forEvents: (255)];
+    [prefsButton addTarget:self action:@selector(showPrefs:) forEvents: (255)];
     [prefsButton setNavBarButtonStyle:0];
-	[prefsButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [prefsButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
     [navBar addSubview:prefsButton];
     [prefsButton setEnabled:YES];
-
+    [navBar setRightMargin:45];
 
     bottomNavBar = [[HideableNavBar alloc] initWithFrame:
        CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
@@ -171,8 +171,9 @@
     [window setContentView: mainView];
     [mainView addSubview:transitionView];
     [mainView addSubview:navBar];
-	[mainView addSubview:bottomNavBar];
-	if (!readingText) [bottomNavBar hide:YES];
+    [mainView addSubview:bottomNavBar];
+    if (!readingText) 
+      [bottomNavBar hide:YES];
 
     [textView setHeartbeatDelegate:self];
 
@@ -213,7 +214,7 @@
 				stringByDeletingPathExtension]];
 	[navBar pushNavigationItem:tempItem withView:textView];
 
-	// Depreciated: We hide the toolbar now when in the browser.
+	// Deprecated: We hide the toolbar now when in the browser.
 	/*
 	[plusButton setEnabled:YES];
 	[minusButton setEnabled:YES];
@@ -289,7 +290,7 @@
       [navBar pushNavigationItem:tempItem withView:textView];
       NSLog(@"back in BooksApp...");
 
-	  // Depreciated: We hide the toolbar now when in the browser.
+	  // Deprecated: We hide the toolbar now when in the browser.
       /*
 	  [minusButton setEnabled:YES];
       [plusButton setEnabled:YES];
@@ -300,12 +301,12 @@
       [tempItem release];
       NSLog(@"released tempItem...");
       [navBar hide:NO];
-      [bottomNavBar hide:YES];
+      [bottomNavBar hide:NO];
       NSLog(@"Marines, we are leaving...");
     }
 }
 
-// Depreciated?
+// Deprecated?  NO.--zbg
 - (void)textViewDidGoAway:(id)sender
 {
   NSLog(@"textViewDidGoAway start...");
@@ -325,7 +326,7 @@
   
   NSLog(@"end.\n");
 }
-
+/*
 - (void)notifyDidCompleteTransition:(id)unused
   // Delegate method?
 {
@@ -336,7 +337,7 @@
       transitionHasBeenCalled = YES;
     }
 }
-
+*/
 - (void) applicationWillSuspend
 {
 
@@ -374,10 +375,10 @@
     {
       textInverted = !textInverted;
       [textView invertText:textInverted];
-	  [defaults setInverted:textInverted];
-	  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+      [defaults setInverted:textInverted];
+      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
       rect.origin.x = rect.origin.y = 0.0f;
-	  [textView setFrame:rect];
+      [textView setFrame:rect];
     }	
 }
 
@@ -410,10 +411,13 @@
 	textInverted = b;
 }
 
-- (void)showPrefs
+- (void)showPrefs:(UINavBarButton *)button
 {
+  if (![button isPressed]) // mouseUp only
+    {
 	NSLog(@"Showing Preferences View");
 	PreferencesController *prefsController = [[PreferencesController alloc] initWithAppController:self];
+    }
 }
 
 - (UIWindow *)appsMainWindow
@@ -428,13 +432,17 @@
     textInverted = [defaults inverted];
     [textView invertText:textInverted];
 
-	[textView setTextFont:[defaults textFont]];
+    [textView setTextFont:[defaults textFont]];
 	
-	if (readingText)[self toggleNavbars];
-	
-	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+    if (readingText)
+      {  // Let's avoid the weird toggle behavior.
+	[navBar hide:NO];
+	[bottomNavBar hide:NO];
+      }
+
+    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
     rect.origin.x = rect.origin.y = 0.0f;
-	[textView setFrame:rect];
+    [textView setFrame:rect];
 }
 
 - (void) dealloc

@@ -16,7 +16,6 @@
 #import <UIKit/UIFontChooser.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
-#import "EBookNavItem.h"
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"
 #import "common.h"
@@ -64,7 +63,7 @@
 - (void)setTextInverted:(BOOL)b;
 - (UIImage *)navBarImage:(NSString *)name;
 - (void)textViewDidGoAway:(id)sender;
-- (void)showPrefs;
+- (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;
 - (void)refreshTextViewFromDefaults;
 @end

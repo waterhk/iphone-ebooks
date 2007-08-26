@@ -24,7 +24,7 @@
 	UIView *preferencesView = [[[UIView alloc] initWithFrame:contentRect] autorelease];
 	
 	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
-	[navigationBar showButtonsWithLeftTitle:@"Back" rightTitle:nil leftBack:YES];
+	[navigationBar showButtonsWithLeftTitle:nil rightTitle:@"Done" leftBack:NO];
 	[navigationBar setBarStyle:0];
 	[navigationBar setDelegate:self]; 
 	[preferencesView addSubview:navigationBar];
@@ -38,6 +38,8 @@
 	UIWindow	*mainWindow = [controller appsMainWindow];
 	appView = [[mainWindow contentView] retain];
 	// Instead of just switching views, these should transition. How?
+
+
 	[mainWindow setContentView:preferencesView];
 	
 }
@@ -205,7 +207,7 @@
 {
 	switch (button) 
 	{
-	case 1: 
+	case 0: // Changed to comport with Apple's UI
 		[self hidePreferences]; 
 		break;
 	}
