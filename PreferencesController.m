@@ -29,12 +29,8 @@
 				    contentRect.size.height);
 	preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
 	
-	// FIXME: Are you sure about the right side? Done I get, but everything I can find has the leftBack
-	// I'm taking Calendar (among other things) as my model, as well as
-	// the Bookmarks view in MobileSafari.  The Done button should also
-	// be blue, ideally.
 	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
-	[navigationBar showButtonsWithLeftTitle:nil rightTitle:@"Done" leftBack:NO];
+	[navigationBar showLeftButton:nil withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
 	[navigationBar setBarStyle:0];
 	[navigationBar setDelegate:self]; 
 	[preferencesView addSubview:navigationBar];
@@ -103,16 +99,6 @@
 	//preferencesTable = nil;
 	//[preferencesView release];
 	//preferencesView = nil;	
-}
-
-// FIXME: Is this method even called?
-- (UIPreferencesTable *)createPrefsPane {
-	
-	UIPreferencesTable *prefs = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
-	[prefs setDataSource:self];
-	[prefs setDelegate:self];
-	
-	return prefs;
 }
 
 - (void)createPreferenceCells {
