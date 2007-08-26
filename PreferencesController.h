@@ -17,6 +17,10 @@
 #import <UIKit/UIAlertSheet.h>
 #import <UIKit/CDStructures.h>
 #import <UIKit/UIAlertSheet.h>
+#import <UIKit/UIAnimator.h>
+#import <UIKit/UIAnimation.h>
+#import <UIKit/UITransformAnimation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 #import <UIKit/UITextView.h> // For testing: remove
 
@@ -34,7 +38,7 @@
 	UIPreferencesTable			*preferencesTable;
 	
 	UIView						*appView;
-	
+	UIView                                          *preferencesView;
 	UISegmentedControl 			*fontChoiceControl;
 	UISegmentedControl 			*flippedToolbarControl;
 	UIPreferencesTextTableCell 	*fontChoicePreferenceCell;

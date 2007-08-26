@@ -21,10 +21,18 @@
 }
 
 - (void)showPreferences {
-	UIView *preferencesView = [[[UIView alloc] initWithFrame:contentRect] autorelease];
+  if (nil == preferencesView)
+    {
+        struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
+				    contentRect.size.height,
+				    contentRect.size.width,
+				    contentRect.size.height);
+	preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
 	
 	// FIXME: Are you sure about the right side? Done I get, but everything I can find has the leftBack
-	
+	// I'm taking Calendar (among other things) as my model, as well as
+	// the Bookmarks view in MobileSafari.  The Done button should also
+	// be blue, ideally.
 	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
 	[navigationBar showButtonsWithLeftTitle:nil rightTitle:@"Done" leftBack:NO];
 	[navigationBar setBarStyle:0];
@@ -34,7 +42,6 @@
 	preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
 	[preferencesTable setDataSource:self];
 	[preferencesTable setDelegate:self];
-	[preferencesTable reloadData];
 	[preferencesView addSubview:preferencesTable];
 	
 	UIWindow	*mainWindow = [controller appsMainWindow];
@@ -42,11 +49,33 @@
 	
 	// TODO: Instead of just switching views, these should transition. How?
 
-	[mainWindow setContentView:preferencesView];
-	
+	//	[mainWindow setContentView:preferencesView];
+	[appView addSubview:preferencesView];
+    } // if nil == preferencesView
+
+	[preferencesTable reloadData];
+
+	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
+	UIAnimator *animator = [[UIAnimator alloc] init];
+	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
+	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+	[translate setEndTransform:trans];
+	[animator addAnimation:translate withDuration:1 start:YES]; //FIXME: should be 0.5
 }
 
 - (void)hidePreferences {
+	// Instead of just switching views, these should transition. How?
+	//	[[controller appsMainWindow] setContentView:appView];
+	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
+	UIAnimator *animator = [[UIAnimator alloc] init];
+
+	[preferencesView setFrame:contentRect];
+	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, contentRect.size.height);
+	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+	[translate setEndTransform:trans];
+	[animator addAnimation:translate withDuration:1 start:YES];
+
+
 	// Save defaults here
 	[defaults setTextFont:[self fontNameForIndex:[fontChoiceControl selectedSegment]]];
 	NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
@@ -63,18 +92,20 @@
 		NSLog(@"Synced defaults from prefs pane.");
 	}
 	
-	// Instead of just switching views, these should transition. How?
+
 	[controller refreshTextViewFromDefaults];
-	[[controller appsMainWindow] setContentView:appView];
+	//[preferencesView removeFromSuperview];
+
+	//[appView release];
+	//appView = nil;
 	
-	[appView release];
-	appView = nil;
-	
-	[preferencesTable release];
-	preferencesTable = nil;
-	
+	//[preferencesTable release];
+	//preferencesTable = nil;
+	//[preferencesView release];
+	//preferencesView = nil;	
 }
 
+// FIXME: Is this method even called?
 - (UIPreferencesTable *)createPrefsPane {
 	
 	UIPreferencesTable *prefs = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
@@ -338,10 +369,15 @@
 
 
 - (void)dealloc {
-	
-	[defaults release];
-	[controller release];
-	[super dealloc];
+  if (preferencesView != nil)
+    {
+      [preferencesView release];
+      [appView release];
+      [preferencesTable release];
+    }
+  [defaults release];
+  [controller release];
+  [super dealloc];
 }
 
 @end
