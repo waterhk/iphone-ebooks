@@ -11,7 +11,9 @@
 		contentRect = [UIHardware fullScreenApplicationContentRect];
 		contentRect.origin.x = 0.0f;
 		contentRect.origin.y = 0.0f;
-		
+
+		needsInAnimation = needsOutAnimation = NO;
+
 		defaults = [[BooksDefaultsController alloc] init];
 		[self createPreferenceCells];
 		[self showPreferences];
@@ -50,18 +52,32 @@
     } // if nil == preferencesView
 
 	[preferencesTable reloadData];
+	//	[preferencesView startHeartbeat:@selector(checkForAnimation:)
+	//	 inRunLoopMode:nil];
+	needsInAnimation = YES;
+	[self checkForAnimation:nil]; //FIXME: called from a notification?
 
+}
+
+- (void)checkForAnimation:(id)unused
+{
+  if (needsInAnimation)
+    {
+        struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
+				    contentRect.size.height,
+				    contentRect.size.width,
+				    contentRect.size.height);
+	[preferencesView setFrame:offscreenRect];
 	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
 	UIAnimator *animator = [[UIAnimator alloc] init];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
 	[translate setEndTransform:trans];
 	[animator addAnimation:translate withDuration:1 start:YES]; //FIXME: should be 0.5
-}
-
-- (void)hidePreferences {
-	// Instead of just switching views, these should transition. How?
-	//	[[controller appsMainWindow] setContentView:appView];
+	needsInAnimation = NO;
+    }
+  else if (needsOutAnimation)
+    {
 	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
 	UIAnimator *animator = [[UIAnimator alloc] init];
 
@@ -70,6 +86,15 @@
 	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
 	[translate setEndTransform:trans];
 	[animator addAnimation:translate withDuration:1 start:YES];
+
+	needsOutAnimation = NO;
+	//[preferencesView stopHeartbeat:nil];
+    }
+}
+
+- (void)hidePreferences {
+	// Instead of just switching views, these should transition. How?
+	//	[[controller appsMainWindow] setContentView:appView];
 
 
 	// Save defaults here
@@ -90,6 +115,9 @@
 	
 
 	[controller refreshTextViewFromDefaults];
+	needsOutAnimation = YES;
+	[self checkForAnimation:nil]; //FIXME: this will be called from a notification
+	//TODO: the darned animation doesn't work right, possibly because it doesn't wait for the prefs to actually be done before it attempts to start the animation???  how can this be fixed????
 	//[preferencesView removeFromSuperview];
 
 	//[appView release];

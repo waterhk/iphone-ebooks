@@ -5,6 +5,7 @@
 
 #import <UIKit/UIKit.h>
 #import <UIKit/UIView.h>
+#import <UIKit/UIView-Geometry.h>
 #import <UIKit/UINavigationBar.h>
 #import <UIKit/UITransitionView.h>
 #import <UIKit/UIPreferencesTable.h>
@@ -20,6 +21,7 @@
 #import <UIKit/UIAnimator.h>
 #import <UIKit/UIAnimation.h>
 #import <UIKit/UITransformAnimation.h>
+#import <UIKit/UIViewHeartbeat.h>
 #import <CoreGraphics/CoreGraphics.h>
 
 #import <UIKit/UITextView.h> // For testing: remove
@@ -51,6 +53,8 @@
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
 	
 	struct CGRect contentRect;
+
+	BOOL needsInAnimation, needsOutAnimation; // here's hoping.
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
@@ -59,6 +63,8 @@
 - (void)hidePreferences;
 - (void)createPreferenceCells;
 - (void)testAlert;
+
+- (void)checkForAnimation:(id)unused;
 
 #define RIGHTHANDED 0
 #define LEFTHANDED 1
