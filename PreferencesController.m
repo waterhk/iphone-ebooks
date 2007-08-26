@@ -23,6 +23,8 @@
 - (void)showPreferences {
 	UIView *preferencesView = [[[UIView alloc] initWithFrame:contentRect] autorelease];
 	
+	// FIXME: Are you sure about the right side? Done I get, but everything I can find has the leftBack
+	
 	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
 	[navigationBar showButtonsWithLeftTitle:nil rightTitle:@"Done" leftBack:NO];
 	[navigationBar setBarStyle:0];
@@ -37,8 +39,8 @@
 	
 	UIWindow	*mainWindow = [controller appsMainWindow];
 	appView = [[mainWindow contentView] retain];
-	// Instead of just switching views, these should transition. How?
-
+	
+	// TODO: Instead of just switching views, these should transition. How?
 
 	[mainWindow setContentView:preferencesView];
 	
