@@ -31,10 +31,10 @@
 
   [self scrollToMakeCaretVisible:NO];
 
-  [self setScrollDecelerationFactor:0.99f];
+  [self setScrollDecelerationFactor:0.994f];
   //  NSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
   [self setTapDelegate:self];
-
+  [self setScrollerIndicatorsPinToContent:NO];
   lastVisibleRect = [self visibleRect];
   return self;
 }
@@ -221,15 +221,16 @@
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
+      BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
       if (CGRectContainsPoint(topTapRect, clicked.origin))
 	{
 	  //scroll back one screen...
-	  [self pageUpWithTopBar:NO bottomBar:YES]; //FIXME:must somehow check defaults here
+	  [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
 	}
       else if (CGRectContainsPoint(botTapRect,clicked.origin))
 	{
 	  //scroll forward one screen...
-	  [self pageDownWithTopBar:YES bottomBar:NO]; //FIXME:must somehow check defaults here
+	  [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
 	}
       else if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{  // If the old rect equals the new, then we must not be scrolling
@@ -239,6 +240,7 @@
 	{ //we are, in fact, scrolling
 	  [self hideNavbars];
 	}
+      [defaults release];
     }
   BOOL unused = [self releaseRubberBandIfNecessary];
   lastVisibleRect = [self visibleRect];
@@ -249,7 +251,10 @@
 // BUT: The the amount of the scroll needs to be adjusted based on the
 // the defaults for showing the NAVBAR and TOOLBAR.
 // Right now it scrolls based on full screen and thus, to far. Zach?
-
+// FIXED: I think.
+// TODO: Adjust the bottom and top buffers.  The scrolling works, but
+// the text can wind up behind the toolbars at the bottom & top
+// of the text.
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
 {
   struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
@@ -260,7 +265,6 @@
   scrollness *= size;
   // That little dance above was so we only scroll in
   // multiples of the text size.  And it doesn't even work!
-
   [self scrollByDelta:CGSizeMake(0, scrollness)	animated:YES];
   [self hideNavbars];
 }

@@ -199,7 +199,7 @@
       [tempItem release];
       NSLog(@"released tempItem...");
       [navBar hide:NO];
-      if ([defaults toolbar])
+      if (![defaults toolbar])
 	[bottomNavBar show];
       else
 	[bottomNavBar hide:NO];
