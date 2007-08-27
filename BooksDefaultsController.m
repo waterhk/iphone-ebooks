@@ -178,8 +178,8 @@
 
 - (BOOL)synchronize
 {
-  return [[NSUserDefaults standardUserDefaults] synchronize];
   if (_toolbarShouldUpdate) [[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
+  return [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)dealloc
