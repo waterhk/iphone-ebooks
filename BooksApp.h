@@ -65,6 +65,7 @@
 - (void)setTextInverted:(BOOL)b;
 - (void)setupNavbar;
 - (void)setupToolbar;
+- (void)updateToolbar:(NSNotification *)notification;
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector;
 - (UIImage *)navBarImage:(NSString *)name;
 - (void)textViewDidGoAway:(id)sender;

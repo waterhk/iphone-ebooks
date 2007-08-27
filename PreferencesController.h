@@ -40,7 +40,7 @@
 	UIPreferencesTable			*preferencesTable;
 	
 	UIView						*appView;
-	UIView                                          *preferencesView;
+	UIView                      *preferencesView;
 	UISegmentedControl 			*fontChoiceControl;
 	UISegmentedControl 			*flippedToolbarControl;
 	UIPreferencesTextTableCell 	*fontChoicePreferenceCell;

@@ -35,6 +35,11 @@
 
     defaults = [[BooksDefaultsController alloc] init];
 
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(updateToolbar:)
+												 name:@"toolbarDefaultsChanged"
+											   object:nil];
+
     window = [[UIWindow alloc] initWithContentRect: rect];
 
     [window orderFront: self];
@@ -45,7 +50,7 @@
 
 	[self setupNavbar];
 	[self setupToolbar];
-	    
+
     textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
@@ -344,13 +349,20 @@
     [bottomNavBar setBarStyle:0];
     [bottomNavBar setDelegate:self];
 
-	// TODO: Wire up the defaults and auto rebuild this when the defaults change
-	
 	if ([defaults flipped]) {
+		// TODO: Figure out how to flip these images horizontally
 		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(5,9,40,30) selector:@selector(pageUp:)];
 		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(45,9,40,30) selector:@selector(pageDown:)];
-		leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:)];
-		rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:)];
+		//
+		
+		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:)];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:)];
+		} else {
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:)];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:)];	
+		}
+		
 		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:)];
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:)];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:)];
@@ -358,8 +370,15 @@
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:)];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:)];
 		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:)];
-		leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:)];
-		rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:)];
+		
+		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:)];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:)];
+		} else {
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:)];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:)];	
+		}
+		
 		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:)];
 		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:)];
 	}
@@ -367,10 +386,15 @@
 	[bottomNavBar addSubview:minusButton];
 	[bottomNavBar addSubview:plusButton];
 	[bottomNavBar addSubview:invertButton];
-	[bottomNavBar addSubview:leftButton];
-	[bottomNavBar addSubview:rightButton];
-	[bottomNavBar addSubview:upButton];
-	[bottomNavBar addSubview:downButton];
+	
+	if ([defaults chapternav]) {
+		[bottomNavBar addSubview:leftButton];
+		[bottomNavBar addSubview:rightButton];
+	}
+	if ([defaults pagenav]) {	
+		[bottomNavBar addSubview:upButton];
+		[bottomNavBar addSubview:downButton];
+	}
 }
 
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector 
@@ -394,6 +418,14 @@
   imgPath = [bundle pathForResource:name ofType:@"png"];
   buttonImg = [[UIImage alloc]initWithContentsOfFile:imgPath];
   return buttonImg;
+}
+
+- (void)updateToolbar:(NSNotification *)notification
+{
+	NSLog(@"%s Got toolbar update notification.", _cmd);
+	[bottomNavBar removeFromSuperview];
+	[self setupToolbar];
+	[mainView addSubview:bottomNavBar];
 }
 
 - (void)setTextInverted:(BOOL)b

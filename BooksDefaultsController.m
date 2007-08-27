@@ -161,16 +161,19 @@
 - (void)setFlipped:(BOOL)isFlipped
 {
   [[NSUserDefaults standardUserDefaults] setBool:isFlipped forKey:FLIPTOOLBAR];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
 }
 
 - (void)setChapternav:(BOOL)isChpaternav
 {
   [[NSUserDefaults standardUserDefaults] setBool:isChpaternav forKey:CHAPTERNAV];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
 }
 
 - (void)setPagenav:(BOOL)isPagenav
 {
   [[NSUserDefaults standardUserDefaults] setBool:isPagenav forKey:PAGENAV];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
 }
 
 - (BOOL)synchronize

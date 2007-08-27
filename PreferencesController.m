@@ -47,8 +47,6 @@
 	UIWindow	*mainWindow = [controller appsMainWindow];
 	appView = [[mainWindow contentView] retain];
 	
-	// TODO: Instead of just switching views, these should transition. How?
-
 	//	[mainWindow setContentView:preferencesView];
 	[appView addSubview:preferencesView];
 	translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
@@ -190,8 +188,8 @@
 
 }
 
-- (void)testAlert {
-        NSString *version = [[NSBundle mainBundle]
+- (void)aboutAlert { // I like it, good idea.
+    NSString *version = [[NSBundle mainBundle]
 			      objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 	  version = @"??";
@@ -259,20 +257,18 @@
 		[self hidePreferences]; 
 		break;
 	case 1:
-	        [self testAlert];
-	        break;
+		[self aboutAlert];
+	    break;
 	}
 }
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
-	NSLog(@"PreferencesController: numberOfGroupsInPreferencesTable:");
 	return 4;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
 {
-	NSLog(@"PreferencesController: numberOfRowsInGroup:");
 	int rowCount = 0;
 	switch (group)
 	{
@@ -302,7 +298,6 @@
 		switch (row)
 		{
 		case 0:
-			NSLog(@"PreferencesController: fontChoicePreferenceCell:");
 			prefCell = fontChoicePreferenceCell;
 			break;
 		}
@@ -311,11 +306,9 @@
 		switch (row)
 		{
 		case 0:
-			NSLog(@"PreferencesController: fontSizePreferenceCell:");
 			prefCell = fontSizePreferenceCell;
 			break;
 		case 1:
-			NSLog(@"PreferencesController: invertPreferenceCell:");
 			prefCell = invertPreferenceCell;
 			break;
 		}
@@ -324,11 +317,9 @@
 		switch (row)
 		{
 		case 0:
-			NSLog(@"PreferencesController: showNavbarPreferenceCell:");
 			prefCell = showNavbarPreferenceCell;
 			break;
 		case 1:
-			NSLog(@"PreferencesController: showToolbarPreferenceCell:");
 			prefCell = showToolbarPreferenceCell;
 			break;
 		}
@@ -337,15 +328,12 @@
 		switch (row)
 		{
 		case 0:
-			NSLog(@"PreferencesController: chapterButtonsPreferenceCell:");
 			prefCell = chapterButtonsPreferenceCell;
 			break;
 		case 1:
-			NSLog(@"PreferencesController: pageButtonsPreferenceCell:");
 			prefCell = pageButtonsPreferenceCell;
 			break;
 		case 2:
-			NSLog(@"PreferencesController: flippedToolbarPreferenceCell:");
 			prefCell = flippedToolbarPreferenceCell;
 			break;
 		}
@@ -356,8 +344,6 @@
 
 - (id)preferencesTable:(id)preferencesTable titleForGroup:(int)group
 {
-	NSLog(@"PreferencesController: titleForGroup:");
-
 	NSString *title = nil;
 	switch (group)
 	{
@@ -379,7 +365,6 @@
 
 - (float)preferencesTable:(id)preferencesTable heightForRow:(int)row inGroup:(int)group withProposedHeight:(float)proposedHeight;
 {
-	NSLog(@"PreferencesController: heightForRow:");	
 	return 48.0f;
 }
 
