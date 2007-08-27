@@ -13,7 +13,6 @@
 		contentRect.origin.y = 0.0f;
 
 		needsInAnimation = needsOutAnimation = NO;
-
 		defaults = [[BooksDefaultsController alloc] init];
 		[self createPreferenceCells];
 		[self showPreferences];
@@ -32,10 +31,13 @@
 	preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
 	
 	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
-	[navigationBar showLeftButton:nil withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
+	[navigationBar showLeftButton:@"About..." withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
 	[navigationBar setBarStyle:0];
 	[navigationBar setDelegate:self]; 
 	[preferencesView addSubview:navigationBar];
+	UINavigationItem *title = [[UINavigationItem alloc] 
+				    initWithTitle:@"Preferences"];
+	[navigationBar pushNavigationItem:[title autorelease]];
 	
 	preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
 	[preferencesTable setDataSource:self];
@@ -49,13 +51,21 @@
 
 	//	[mainWindow setContentView:preferencesView];
 	[appView addSubview:preferencesView];
+	translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
+	animator = [[UIAnimator alloc] init];
+	[[NSNotificationCenter defaultCenter]
+	  addObserver:self
+	  selector:@selector(checkForAnimation:)
+	  name:PREFS_NEEDS_ANIMATE
+	  object:nil];
     } // if nil == preferencesView
+  
+  [preferencesTable reloadData];
 
-	[preferencesTable reloadData];
-	//	[preferencesView startHeartbeat:@selector(checkForAnimation:)
-	//	 inRunLoopMode:nil];
-	needsInAnimation = YES;
-	[self checkForAnimation:nil]; //FIXME: called from a notification?
+  needsInAnimation = YES;
+  [[NSNotificationCenter defaultCenter] 
+    postNotificationName:PREFS_NEEDS_ANIMATE
+    object:self];
 
 }
 
@@ -68,35 +78,28 @@
 				    contentRect.size.width,
 				    contentRect.size.height);
 	[preferencesView setFrame:offscreenRect];
-	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
-	UIAnimator *animator = [[UIAnimator alloc] init];
+	
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
 	[translate setEndTransform:trans];
-	[animator addAnimation:translate withDuration:1 start:YES]; //FIXME: should be 0.5
+	[animator addAnimation:translate withDuration:0.5 start:YES]; 
 	needsInAnimation = NO;
     }
   else if (needsOutAnimation)
     {
-	UITransformAnimation *translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
-	UIAnimator *animator = [[UIAnimator alloc] init];
 
 	[preferencesView setFrame:contentRect];
-	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, contentRect.size.height);
-	[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
-	[translate setEndTransform:trans];
-	[animator addAnimation:translate withDuration:1 start:YES];
+	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
+	[translate setStartTransform:trans];
+	[translate setEndTransform:CGAffineTransformMake(1,0,0,1,0,0)];
+	[animator addAnimation:translate withDuration:0.5 start:YES];
 
 	needsOutAnimation = NO;
-	//[preferencesView stopHeartbeat:nil];
+
     }
 }
 
 - (void)hidePreferences {
-	// Instead of just switching views, these should transition. How?
-	//	[[controller appsMainWindow] setContentView:appView];
-
-
 	// Save defaults here
 	[defaults setTextFont:[self fontNameForIndex:[fontChoiceControl selectedSegment]]];
 	NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
@@ -116,17 +119,8 @@
 
 	[controller refreshTextViewFromDefaults];
 	needsOutAnimation = YES;
-	[self checkForAnimation:nil]; //FIXME: this will be called from a notification
-	//TODO: the darned animation doesn't work right, possibly because it doesn't wait for the prefs to actually be done before it attempts to start the animation???  how can this be fixed????
-	//[preferencesView removeFromSuperview];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
 
-	//[appView release];
-	//appView = nil;
-	
-	//[preferencesTable release];
-	//preferencesTable = nil;
-	//[preferencesView release];
-	//preferencesView = nil;	
 }
 
 - (void)createPreferenceCells {
@@ -197,12 +191,18 @@
 }
 
 - (void)testAlert {
+        NSString *version = [[NSBundle mainBundle]
+			      objectForInfoDictionaryKey:@"CFBundleVersion"];
+	if (nil == version)
+	  version = @"??";
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz and Chris Born.\niphoneebooks.googlecode.com", version];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
-	[alertSheet setTitle:@"Preferences Alert"];
-	[alertSheet setBodyText:@"There is nothing to see here yet. Stay tuned."];
-	[alertSheet addButtonWithTitle:@"OK"];
+	[alertSheet setTitle:@"About Books"];
+	[alertSheet setBodyText:bodyText];
+	[alertSheet addButtonWithTitle:@"Whatever"];
 	[alertSheet setDelegate: self];
-	[alertSheet presentSheetFromAboveView: [[controller appsMainWindow] contentView]];
+	[alertSheet popupAlertAnimated:YES];
+	//	[alertSheet presentSheetFromAboveView: [[controller appsMainWindow] contentView]];
 
 }
 
@@ -258,6 +258,9 @@
 	case 0: // Changed to comport with Apple's UI
 		[self hidePreferences]; 
 		break;
+	case 1:
+	        [self testAlert];
+	        break;
 	}
 }
 
@@ -385,9 +388,12 @@
 - (void)dealloc {
   if (preferencesView != nil)
     {
+      [[NSNotificationCenter defaultCenter] removeObserver:self];
       [preferencesView release];
       [appView release];
       [preferencesTable release];
+      [translate release];
+      [animator release];
     }
   [defaults release];
   [controller release];

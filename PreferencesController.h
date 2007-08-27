@@ -55,6 +55,8 @@
 	struct CGRect contentRect;
 
 	BOOL needsInAnimation, needsOutAnimation; // here's hoping.
+	UIAnimator *animator;
+	UITransformAnimation *translate;
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
@@ -63,6 +65,8 @@
 - (void)hidePreferences;
 - (void)createPreferenceCells;
 - (void)testAlert;
+
+#define PREFS_NEEDS_ANIMATE @"prefsNeedsAnimateNotification"
 
 - (void)checkForAnimation:(id)unused;
 
