@@ -134,7 +134,29 @@
     [bottomNavBar addSubview:upButton];
     [upButton setEnabled:YES];
 	
-
+	rightButton = [[UINavBarButton alloc] initWithFrame: 
+					     CGRectMake(192,9,40,30)];
+    [rightButton setAutosizesToFit:NO];							
+    [rightButton setImage:[self navBarImage:@"right_up"] forState:0];
+    [rightButton setImage:[self navBarImage:@"right_down"] forState:1];
+    [rightButton setDrawContentsCentered:YES];
+    [rightButton addTarget:self action:@selector(chapForward:) forEvents: (255)];
+    [rightButton setNavBarButtonStyle:0];
+    [rightButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [bottomNavBar addSubview:rightButton];
+    [rightButton setEnabled:YES];
+	
+    leftButton = [[UINavBarButton alloc] initWithFrame: 
+					     CGRectMake(152,9,40,30)];
+    [leftButton setAutosizesToFit:NO];							
+    [leftButton setImage:[self navBarImage:@"left_up"] forState:0];
+    [leftButton setImage:[self navBarImage:@"left_down"] forState:1];
+    [leftButton setDrawContentsCentered:YES];
+    [leftButton addTarget:self action:@selector(chapBack:) forEvents: (255)];
+    [leftButton setNavBarButtonStyle:0];
+    [leftButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [bottomNavBar addSubview:leftButton];
+    [leftButton setEnabled:YES];
 
     textView = [[EBookView alloc] 
         initWithFrame:
@@ -395,6 +417,22 @@
   if (![button isPressed])
     {
 		[textView pageUp];
+    }	
+}
+
+- (void)chapForward:(UINavBarButton *)button 
+{
+  if (![button isPressed])
+    {
+		// TODO: Put chapter forward code here;
+    }	
+}
+
+- (void)chapBack:(UINavBarButton *)button 
+{
+  if (![button isPressed])
+    {
+		// TODO: Put chapter back code here;
     }	
 }
 
