@@ -274,6 +274,7 @@
       textInverted = !textInverted;
       [textView invertText:textInverted];
       [defaults setInverted:textInverted];
+	  [self toggleStatusBarColor];
       struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
       rect.origin.x = rect.origin.y = 0.0f;
       [textView setFrame:rect];
@@ -454,7 +455,9 @@
     textInverted = [defaults inverted];
     [textView invertText:textInverted];
 
-    [textView setTextFont:[defaults textFont]];
+ 	[textView setTextFont:[defaults textFont]];
+	
+	[self toggleStatusBarColor];
 	
     if (readingText)
       {  // Let's avoid the weird toggle behavior.
@@ -465,6 +468,15 @@
     struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
     rect.origin.x = rect.origin.y = 0.0f;
     [textView setFrame:rect];
+}
+
+- (void)toggleStatusBarColor 	// Thought this might be a nice touch
+{
+	if ([defaults inverted]) {
+		[self setStatusBarMode:3 duration:0.0];
+    } else {
+		[self setStatusBarMode:0 duration:0.0];
+	}
 }
 
 - (void) dealloc
