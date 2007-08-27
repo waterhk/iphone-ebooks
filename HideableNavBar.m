@@ -114,6 +114,7 @@
       [super popNavigationItem];
       [self enableAnimation];
     }
+
   _textIsOnTop = YES;
   NSLog(@"Pushed text view\n");
   [_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:view];

@@ -30,7 +30,9 @@
 	int _rowCount;
 	id _delegate;
 }
+
 int numberCompare(id, id, void *);
+
 - (id)initWithFrame:(CGRect)rect;
 - (NSString *)path;
 - (void)setPath: (NSString *)path;
@@ -41,5 +43,7 @@ int numberCompare(id, id, void *);
 - (void)tableRowSelected:(NSNotification *)notification;
 - (NSString *)selectedFile;
 - (void)setExtensions:(NSArray *)extensions;
-
+- (void)selectCellForFilename:(NSString *)thePath;
+- (NSString *)fileBeforeFileNamed:(NSString *)thePath;
+- (NSString *)fileAfterFileNamed:(NSString *)thePath;
 @end

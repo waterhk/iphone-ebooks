@@ -303,7 +303,20 @@
 {
   if (![button isPressed])
     {
-		// TODO: Put chapter forward code here;
+      NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
+      if (nil != nextFile)
+	{
+	  EBookView *tempView = textView;
+	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
+	  [textView loadBookWithPath:nextFile];
+	  UINavigationItem *tempItem = 
+	    [[UINavigationItem alloc] initWithTitle:
+		   [[nextFile lastPathComponent] 
+		     stringByDeletingPathExtension]];
+	  [navBar pushNavigationItem:tempItem withView:textView];
+	  [tempItem release];
+	  [tempView autorelease];
+	}
     }	
 }
 
@@ -311,7 +324,20 @@
 {
   if (![button isPressed])
     {
-		// TODO: Put chapter back code here;
+      NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
+      if (nil != prevFile)
+	{
+	  EBookView *tempView = textView;
+	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
+	  [textView loadBookWithPath:prevFile];
+	  UINavigationItem *tempItem = 
+	    [[UINavigationItem alloc] initWithTitle:
+		   [[prevFile lastPathComponent] 
+		     stringByDeletingPathExtension]];
+	  [navBar pushNavigationItem:tempItem withView:textView];
+	  [tempItem release];
+	  [tempView autorelease];
+	}
     }	
 }
 

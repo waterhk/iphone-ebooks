@@ -133,6 +133,7 @@ int numberCompare(id firstString, id secondString, void *context)
 }
 
 - (void)tableRowSelected:(NSNotification *)notification {
+  NSLog(@"tableRowSelected!");
 	if( [_delegate respondsToSelector:@selector( fileBrowser:fileSelected: )] )
 		[_delegate fileBrowser:self fileSelected:[self selectedFile]];
 }
@@ -142,6 +143,62 @@ int numberCompare(id firstString, id secondString, void *context)
 		return nil;
 
 	return [_path stringByAppendingPathComponent: [_files objectAtIndex: [_table selectedRow]]];
+}
+
+- (void)selectCellForFilename:(NSString *)thePath
+  // Please don't call this method!  It is here as an object lesson.
+
+{
+  NSString *filename = [thePath lastPathComponent];
+  int i;
+  for (i = 0; i < _rowCount ; i++)
+    {
+      if ([filename isEqualToString:[_files objectAtIndex:i]])
+      {
+	[_table selectRow:i byExtendingSelection:NO];
+	return;
+      }
+    }
+      NSLog(@"In theory we should never get here.");
+}
+
+- (NSString *)fileBeforeFileNamed:(NSString *)thePath
+{
+  int theRow = -1;
+  NSString *filename = [thePath lastPathComponent];
+  int i;
+  for (i = 0; i < _rowCount ; i++)
+    {
+      if ([filename isEqualToString:[_files objectAtIndex:i]])
+      {
+	theRow = i;
+      }
+    }
+  if (theRow < 1)
+    return nil;
+
+  return [_path stringByAppendingPathComponent: 
+		  [_files objectAtIndex: theRow - 1]];
+}
+
+
+  - (NSString *)fileAfterFileNamed:(NSString *)thePath
+{
+  int theRow = -1;
+  NSString *filename = [thePath lastPathComponent];
+  int i;
+  for (i = 0; i < _rowCount ; i++)
+    {
+      if ([filename isEqualToString:[_files objectAtIndex:i]])
+      {
+	theRow = i;
+      }
+    }
+  if ((theRow < 0) || (theRow+1 >= _rowCount))
+    return nil;
+
+  return [_path stringByAppendingPathComponent: 
+		  [_files objectAtIndex: theRow + 1]];
 }
 
 @end
