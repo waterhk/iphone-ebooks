@@ -18,9 +18,9 @@
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
   [temp setObject:EBOOK_PATH forKey:BROWSERFILESKEY];
- 
+
   [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
-  [temp setObject:@"1" forKey:AUTOHIDE];
+  [temp setObject:@"1" forKey:AUTOHIDE]; //CHANGED: Not used anymore. Autohide setting for each bar
   [temp setObject:@"1" forKey:NAVBAR];
   [temp setObject:@"1" forKey:TOOLBAR];
   [temp setObject:@"0" forKey:FLIPTOOLBAR];

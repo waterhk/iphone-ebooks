@@ -60,7 +60,6 @@
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
-- (UIPreferencesTable *)createPrefsPane;
 - (void)showPreferences;
 - (void)hidePreferences;
 - (void)createPreferenceCells;

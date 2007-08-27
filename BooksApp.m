@@ -43,121 +43,9 @@
 
     mainView = [[UIView alloc] initWithFrame: rect];
 
-    navBar = [[HideableNavBar alloc] initWithFrame:
-        CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
-
-    [navBar setDelegate:self];
-    [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", nil]];
-    [navBar hideButtons];
-
-    [navBar disableAnimation];
-
-    prefsButton = [[UINavBarButton alloc] initWithFrame: 
-					    CGRectMake(275,9,40,30)];
-    [prefsButton setAutosizesToFit:NO];							
-    [prefsButton setImage:[self navBarImage:@"prefs_up"] forState:0];
-    [prefsButton setImage:[self navBarImage:@"prefs_down"] forState:1];
-    [prefsButton setDrawContentsCentered:YES];
-    [prefsButton addTarget:self action:@selector(showPrefs:) forEvents: (255)];
-    [prefsButton setNavBarButtonStyle:0];
-    [prefsButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [navBar addSubview:prefsButton];
-    [prefsButton setEnabled:YES];
-    [navBar setRightMargin:45];
-
-    bottomNavBar = [[HideableNavBar alloc] initWithFrame:
-       CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
-		  rect.size.width, 48.0f)];
-
-    [bottomNavBar setBarStyle:0];
-    [bottomNavBar setDelegate:self];
-
-    minusButton = [[UINavBarButton alloc] initWithFrame:
-       					   CGRectMake(5,9,40,30)];
-    [minusButton setAutosizesToFit:NO];
-    [minusButton setImage:[self navBarImage:@"emsmall_up"] forState:0];
-    [minusButton setImage:[self navBarImage:@"emsmall_down"] forState:1];
-    [minusButton setNavBarButtonStyle:0];
-    [minusButton setDrawContentsCentered:YES];
-    [minusButton addTarget:self action:@selector(ensmallenText:) forEvents:(255)];
-    [bottomNavBar addSubview:minusButton];
-    [minusButton setEnabled:YES];
-
-    plusButton = [[UINavBarButton alloc] initWithFrame:
-	      				   CGRectMake(45,9,40,30)];
-    [plusButton setAutosizesToFit:NO];
-    [plusButton setImage:[self navBarImage:@"embig_up"] forState:0];
-    [plusButton setImage:[self navBarImage:@"embig_down"] forState:1];
-    [plusButton setDrawContentsCentered:YES];
-    [plusButton addTarget:self action:@selector(embiggenText:) forEvents: (255)];
-    [plusButton setNavBarButtonStyle:0];
-    [bottomNavBar addSubview:plusButton];
-    [plusButton setEnabled:YES];
-
-    invertButton = [[UINavBarButton alloc] initWithFrame: 
-					     CGRectMake(88,9,40,30)];
-    [invertButton setAutosizesToFit:NO];							
-    [invertButton setImage:[self navBarImage:@"inv_up"] forState:0];
-    [invertButton setImage:[self navBarImage:@"inv_down"] forState:1];
-    [invertButton setDrawContentsCentered:YES];
-    [invertButton addTarget:self action:@selector(invertText:) forEvents: (255)];
-    [invertButton setNavBarButtonStyle:0];
-    [invertButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [bottomNavBar addSubview:invertButton];
-    [invertButton setEnabled:YES];
-
-	// Need to wrap this in a default vaule condition.
-	// Crap, need to move all this button crud into something nicer.
-	
-    downButton = [[UINavBarButton alloc] initWithFrame: 
-					     CGRectMake(275,9,40,30)];
-    [downButton setAutosizesToFit:NO];							
-    [downButton setImage:[self navBarImage:@"down_up"] forState:0];
-    [downButton setImage:[self navBarImage:@"down_down"] forState:1];
-    [downButton setDrawContentsCentered:YES];
-    [downButton addTarget:self action:@selector(pageDown:) forEvents: (255)];
-    [downButton setNavBarButtonStyle:0];
-    [downButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [bottomNavBar addSubview:downButton];
-    [downButton setEnabled:YES];
-
-    upButton = [[UINavBarButton alloc] initWithFrame: 
-					     CGRectMake(235,9,40,30)];
-    [upButton setAutosizesToFit:NO];							
-    [upButton setImage:[self navBarImage:@"up_up"] forState:0];
-    [upButton setImage:[self navBarImage:@"up_down"] forState:1];
-    [upButton setDrawContentsCentered:YES];
-    [upButton addTarget:self action:@selector(pageUp:) forEvents: (255)];
-    [upButton setNavBarButtonStyle:0];
-    [upButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [bottomNavBar addSubview:upButton];
-    [upButton setEnabled:YES];
-	
-	rightButton = [[UINavBarButton alloc] initWithFrame: 
-					     CGRectMake(192,9,40,30)];
-    [rightButton setAutosizesToFit:NO];							
-    [rightButton setImage:[self navBarImage:@"right_up"] forState:0];
-    [rightButton setImage:[self navBarImage:@"right_down"] forState:1];
-    [rightButton setDrawContentsCentered:YES];
-    [rightButton addTarget:self action:@selector(chapForward:) forEvents: (255)];
-    [rightButton setNavBarButtonStyle:0];
-    [rightButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [bottomNavBar addSubview:rightButton];
-    [rightButton setEnabled:YES];
-	
-    leftButton = [[UINavBarButton alloc] initWithFrame: 
-					     CGRectMake(152,9,40,30)];
-    [leftButton setAutosizesToFit:NO];							
-    [leftButton setImage:[self navBarImage:@"left_up"] forState:0];
-    [leftButton setImage:[self navBarImage:@"left_down"] forState:1];
-    [leftButton setDrawContentsCentered:YES];
-    [leftButton addTarget:self action:@selector(chapBack:) forEvents: (255)];
-    [leftButton setNavBarButtonStyle:0];
-    [leftButton drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [bottomNavBar addSubview:leftButton];
-    [leftButton setEnabled:YES];
-
+	[self setupNavbar];
+	[self setupToolbar];
+	    
     textView = [[EBookView alloc] 
         initWithFrame:
           CGRectMake(0, 0, rect.size.width, rect.size.height)];
@@ -236,13 +124,6 @@
 				stringByDeletingPathExtension]];
 	[navBar pushNavigationItem:tempItem withView:textView];
 
-	// Deprecated: We hide the toolbar now when in the browser.
-	/*
-	[plusButton setEnabled:YES];
-	[minusButton setEnabled:YES];
-	[invertButton setEnabled:YES];
-	*/
-	
 	[tempItem release];
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
@@ -314,13 +195,6 @@
       [navBar pushNavigationItem:tempItem withView:textView];
       NSLog(@"back in BooksApp...");
 
-	  // Deprecated: We hide the toolbar now when in the browser.
-      /*
-	  [minusButton setEnabled:YES];
-      [plusButton setEnabled:YES];
-      [invertButton setEnabled:YES];
-      */
-
 	  NSLog(@"did the buttons...");
       [tempItem release];
       NSLog(@"released tempItem...");
@@ -333,7 +207,6 @@
     }
 }
 
-// Deprecated?  NO.--zbg
 - (void)textViewDidGoAway:(id)sender
 {
   NSLog(@"textViewDidGoAway start...");
@@ -344,13 +217,6 @@
   readingText = NO;
   [bottomNavBar hide:YES];
 
-  // Depreciated: We hide the toolbar now when in the browser.
-  /*
-  [minusButton setEnabled:NO];
-  [plusButton setEnabled:NO];
-  [invertButton setEnabled:NO];
-  */
-  
   NSLog(@"end.\n");
 }
 /*
@@ -441,6 +307,85 @@
     {
 		// TODO: Put chapter back code here;
     }	
+}
+
+// CHANGED: Moved navbar and toolbar setup here from applicationDidFinishLaunching
+
+- (void)setupNavbar
+{
+	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+    rect.origin.x = rect.origin.y = 0.0f;
+
+	navBar = [[HideableNavBar alloc] initWithFrame:
+        CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
+
+    [navBar setDelegate:self];
+    [navBar setBrowserDelegate:self];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", nil]];
+    [navBar hideButtons];
+
+    [navBar disableAnimation];
+    [navBar setRightMargin:45];
+
+	prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:)];
+
+    [navBar addSubview:prefsButton];
+}
+
+- (void)setupToolbar
+{
+	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+    rect.origin.x = rect.origin.y = 0.0f;
+
+	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
+       CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
+		  rect.size.width, 48.0f)];
+
+    [bottomNavBar setBarStyle:0];
+    [bottomNavBar setDelegate:self];
+
+	// TODO: Wire up the defaults and auto rebuild this when the defaults change
+	
+	if ([defaults flipped]) {
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(5,9,40,30) selector:@selector(pageUp:)];
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(45,9,40,30) selector:@selector(pageDown:)];
+		leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:)];
+		rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:)];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:)];
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:)];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:)];
+	} else {
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:)];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:)];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:)];
+		leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:)];
+		rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:)];
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:)];
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:)];
+	}
+	
+	[bottomNavBar addSubview:minusButton];
+	[bottomNavBar addSubview:plusButton];
+	[bottomNavBar addSubview:invertButton];
+	[bottomNavBar addSubview:leftButton];
+	[bottomNavBar addSubview:rightButton];
+	[bottomNavBar addSubview:upButton];
+	[bottomNavBar addSubview:downButton];
+}
+
+- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector 
+{
+	UINavBarButton	*button = [[UINavBarButton alloc] initWithFrame:rect];
+	
+    [button setAutosizesToFit:NO];							
+    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name]] forState:0];
+    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name]] forState:1];
+    [button setDrawContentsCentered:YES];
+    [button addTarget:self action:selector forEvents: (255)];
+    [button setNavBarButtonStyle:0];
+    [button drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+    [button setEnabled:YES];
+	return button;
 }
 
 - (UIImage *)navBarImage:(NSString *)name
