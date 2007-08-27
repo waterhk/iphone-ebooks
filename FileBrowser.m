@@ -104,10 +104,15 @@
 	    }
  	}
 
-	//[_files sortUsingSelector:@selector(caseInsensitiveCompare:)];
+	[_files sortUsingFunction:&numberCompare context:NULL];
 	_rowCount = [_files count];
 	[_table reloadData];
 	[tempArray release];
+}
+
+int numberCompare(id firstString, id secondString, void *context)
+{
+  return [firstString compare:secondString options:NSNumericSearch];
 }
 
 - (void)setDelegate:(id)delegate {

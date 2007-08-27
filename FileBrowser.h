@@ -30,7 +30,7 @@
 	int _rowCount;
 	id _delegate;
 }
-
+int numberCompare(id, id, void *);
 - (id)initWithFrame:(CGRect)rect;
 - (NSString *)path;
 - (void)setPath: (NSString *)path;
