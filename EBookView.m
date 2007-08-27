@@ -221,25 +221,15 @@
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
-      scrollness = contentRect.size.height;
-      //      NSLog(@"scrollness %f\n",scrollness);
-      scrollness /= size;
-      //      NSLog(@"scrollness %f\n",scrollness);
-      scrollness = floor(scrollness - 1.0f);
-      //      NSLog(@"scrollness %f\n",scrollness);
-      scrollness *= size;  
-      //      NSLog(@"scrollness %f\n",scrollness);
-      // That little dance above was so we only scroll in
-      // multiples of the text size.  And it doesn't even work!
       if (CGRectContainsPoint(topTapRect, clicked.origin))
 	{
 	  //scroll back one screen...
-		[self pageUp]; // Had to move this to access it from BooksApp
+	  [self pageUpWithTopBar:NO bottomBar:YES]; //FIXME:must somehow check defaults here
 	}
       else if (CGRectContainsPoint(botTapRect,clicked.origin))
 	{
 	  //scroll forward one screen...
-		[self pageDown]; // Had to move this to access it from BooksApp
+	  [self pageDownWithTopBar:YES bottomBar:NO]; //FIXME:must somehow check defaults here
 	}
       else if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{  // If the old rect equals the new, then we must not be scrolling
@@ -260,18 +250,33 @@
 // the defaults for showing the NAVBAR and TOOLBAR.
 // Right now it scrolls based on full screen and thus, to far. Zach?
 
-- (void)pageDown
+- (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
 {
-	  [self scrollByDelta:CGSizeMake(0, scrollness)
-		animated:YES];
-	  [self hideNavbars];
+  struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
+  float  scrollness = contentRect.size.height;
+  scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
+  scrollness /= size;
+  scrollness = floor(scrollness - 1.0f);
+  scrollness *= size;
+  // That little dance above was so we only scroll in
+  // multiples of the text size.  And it doesn't even work!
+
+  [self scrollByDelta:CGSizeMake(0, scrollness)	animated:YES];
+  [self hideNavbars];
 }
 
--(void)pageUp
+-(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
 {
-	  [self scrollByDelta:CGSizeMake(0, -1*scrollness)
-		animated:YES];
-	  [self hideNavbars];
+  struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
+  float  scrollness = contentRect.size.height;
+  scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
+  scrollness /= size;
+  scrollness = floor(scrollness - 1.0f);
+  scrollness *= size;
+  // That little dance above was so we only scroll in
+  // multiples of the text size.  And it doesn't even work!
+  [self scrollByDelta:CGSizeMake(0, -scrollness) animated:YES];
+  [self hideNavbars];
 }
 
 - (int)textSize

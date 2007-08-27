@@ -244,6 +244,8 @@
 	*/
 	
 	[tempItem release];
+	[navBar hide:NO];
+	[bottomNavBar hide:NO];
       }
 
 
@@ -408,7 +410,8 @@
 {
   if (![button isPressed])
     {
-		[textView pageDown];
+		[textView pageDownWithTopBar:![defaults navbar]
+			  bottomBar:![defaults toolbar]];
     }	
 }
 
@@ -416,7 +419,8 @@
 {
   if (![button isPressed])
     {
-		[textView pageUp];
+		[textView pageUpWithTopBar:![defaults navbar]
+			  bottomBar:![defaults toolbar]];
     }	
 }
 
