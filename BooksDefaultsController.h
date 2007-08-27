@@ -13,6 +13,7 @@
   BOOL _inverted;
   NSString *_browserPath;
   NSUserDefaults *sharedDefaults;
+  BOOL _toolbarShouldUpdate;
 }
 
 #define LASTSCROLLPOINTKEY @"lastScrollPointKey"
