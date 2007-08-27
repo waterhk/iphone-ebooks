@@ -300,6 +300,7 @@
 }
 
 - (void)chapForward:(UINavBarButton *)button 
+  //TODO: fix in the case where the next "file" is a directory
 {
   if (![button isPressed])
     {
@@ -309,10 +310,13 @@
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView loadBookWithPath:nextFile];
+	  [textView setHeartbeatDelegate:self];
 	  UINavigationItem *tempItem = 
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[nextFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
+	  [defaults setLastScrollPoint:0];
+	  [self refreshTextViewFromDefaults];
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [tempItem release];
 	  [tempView autorelease];
@@ -321,6 +325,7 @@
 }
 
 - (void)chapBack:(UINavBarButton *)button 
+  //TODO: fix in the case where the previous "file" is a directory
 {
   if (![button isPressed])
     {
@@ -330,10 +335,13 @@
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView loadBookWithPath:prevFile];
+	  [textView setHeartbeatDelegate:self];
 	  UINavigationItem *tempItem = 
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[prevFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
+	  [defaults setLastScrollPoint:0];
+	  [self refreshTextViewFromDefaults];
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [tempItem release];
 	  [tempView autorelease];
@@ -359,7 +367,7 @@
     [navBar disableAnimation];
     [navBar setRightMargin:45];
 
-	prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:)];
+    prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:)];
 
     [navBar addSubview:prefsButton];
 }
@@ -497,6 +505,10 @@
 }
 
 - (void)toggleStatusBarColor 	// Thought this might be a nice touch
+  //TODO: This looks weird with the navbars down.  Perhaps we should change
+  //the navbars to the black type?  Or have the status bar be black only
+  //when the top navbar is hidden?  Also I'd prefer to have the status
+  //bar white when in the browser view, since the browser is white.
 {
 	if ([defaults inverted]) {
 		[self setStatusBarMode:3 duration:0.0];
