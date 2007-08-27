@@ -295,7 +295,7 @@
       [navBar pushNavigationItem:tempItem withBrowserPath:file];
       [tempItem release];
     }
-  else
+  else // not a directory
     {
       readingText = YES;
       UINavigationItem *tempItem = [[UINavigationItem alloc]
@@ -325,7 +325,10 @@
       [tempItem release];
       NSLog(@"released tempItem...");
       [navBar hide:NO];
-      [bottomNavBar hide:NO];
+      if ([defaults toolbar])
+	[bottomNavBar show];
+      else
+	[bottomNavBar hide:NO];
       NSLog(@"Marines, we are leaving...");
     }
 }

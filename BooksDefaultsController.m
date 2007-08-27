@@ -21,10 +21,10 @@
  
   [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
   [temp setObject:@"1" forKey:AUTOHIDE];
-  [temp setObject:@"0" forKey:NAVBAR];
-  [temp setObject:@"0" forKey:TOOLBAR];
+  [temp setObject:@"1" forKey:NAVBAR];
+  [temp setObject:@"1" forKey:TOOLBAR];
   [temp setObject:@"0" forKey:FLIPTOOLBAR];
-  [temp setObject:@"0" forKey:CHAPTERNAV];
+  [temp setObject:@"1" forKey:CHAPTERNAV];
   [temp setObject:@"1" forKey:PAGENAV];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
