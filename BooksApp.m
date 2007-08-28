@@ -300,12 +300,12 @@
 }
 
 - (void)chapForward:(UINavBarButton *)button 
-  //TODO: fix in the case where the next "file" is a directory
 {
   if (![button isPressed])
     {
+      BOOL isDir;
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
-      if (nil != nextFile)
+      if ((nil != nextFile) && [[NSFileManager defaultManager] fileExistsAtPath:nextFile isDirectory:&isDir] && !isDir)
 	{
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -325,12 +325,12 @@
 }
 
 - (void)chapBack:(UINavBarButton *)button 
-  //TODO: fix in the case where the previous "file" is a directory
 {
   if (![button isPressed])
     {
+      BOOL isDir;
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
-      if (nil != prevFile)
+      if ((nil != prevFile) && [[NSFileManager defaultManager] fileExistsAtPath:prevFile isDirectory:&isDir] && !isDir)
 	{
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
