@@ -1,3 +1,8 @@
+v. 0.7.5 - (Unreleased internal numbering.)  New Preferences panel allows
+           choice of fonts, among other things.  Hiding of navbars now
+  	   optional (hiding on by default).  Added About... button.
+           Welcome Chris Born as an official project member.
+
 v. 0.7 - By popular demand!  Arbitrary subdirectories are now allowed
          within the EBooks folder.  Books.app will remember which
 	 subdirectory you were in on quit, too.
