@@ -188,15 +188,15 @@
 		        initWithTitle:[[file lastPathComponent]
 					stringByDeletingPathExtension]];
       if (!([[textView currentPath] isEqualToString:file]))
+      // Slight optimization.  If the file is already loaded,
+      // don't bother reloading.
 	{
-	  NSLog(@"Loading %@...", file);	  
+	  //NSLog(@"Loading %@...", file);	  
 	  [textView loadBookWithPath:file];
-	  NSLog(@"Setting the scroll point...");
+	  //NSLog(@"Setting the scroll point...");
 	  [defaults setLastScrollPoint:1];
 	  transitionHasBeenCalled = NO;
 	}
-      // Slight optimization.  If the file is already loaded,
-      // don't bother reloading.
       [navBar pushNavigationItem:tempItem withView:textView];
       NSLog(@"back in BooksApp...");
 
@@ -214,11 +214,11 @@
 
 - (void)textViewDidGoAway:(id)sender
 {
-  NSLog(@"textViewDidGoAway start...");
+  //  NSLog(@"textViewDidGoAway start...");
   struct CGRect selectionRect = [textView visibleRect];
-  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
+  //  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
-  NSLog(@"set defaults ");
+  //  NSLog(@"set defaults ");
   readingText = NO;
   [bottomNavBar hide:YES];
 
@@ -300,7 +300,6 @@
 }
 
 - (void)chapForward:(UINavBarButton *)button 
-  //TODO: fix in the case where the next "file" is a directory
 {
   if (![button isPressed])
     {
@@ -325,7 +324,6 @@
 }
 
 - (void)chapBack:(UINavBarButton *)button 
-  //TODO: fix in the case where the previous "file" is a directory
 {
   if (![button isPressed])
     {
@@ -342,7 +340,7 @@
 		     stringByDeletingPathExtension]];
 	  [defaults setLastScrollPoint:0];
 	  [self refreshTextViewFromDefaults];
-	  [navBar pushNavigationItem:tempItem withView:textView];
+	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -497,6 +495,13 @@
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
       }
+    //TODO: Figure out how to adjust the top of the textView if
+    //the top nav bar is always-on.  There is no equivalent top-buffer
+    //method.
+    if (![defaults toolbar])
+      [textView setBottomBufferHeight:48];
+    else
+      [textView setBottomBufferHeight:0];
 
     struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
     rect.origin.x = rect.origin.y = 0.0f;
@@ -510,9 +515,9 @@
   //bar white when in the browser view, since the browser is white.
 {
 	if ([defaults inverted]) {
-		[self setStatusBarMode:3 duration:0.0];
+		[self setStatusBarMode:3 duration:0.5];
     } else {
-		[self setStatusBarMode:0 duration:0.0];
+		[self setStatusBarMode:0 duration:0.5];
 	}
 }
 

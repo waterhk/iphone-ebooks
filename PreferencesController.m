@@ -101,7 +101,12 @@
 	// Save defaults here
 	[defaults setTextFont:[self fontNameForIndex:[fontChoiceControl selectedSegment]]];
 	NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
-	[defaults setTextSize:[[fontSizePreferenceCell value]intValue]];
+	int proposedSize = [[fontSizePreferenceCell value] intValue];
+	proposedSize = (proposedSize > 36) ? 36 : proposedSize;
+	proposedSize = (proposedSize < 10) ? 10 : proposedSize;
+	//FIXME: should probably set max and min font sizes via a constant
+	//in common.h
+	[defaults setTextSize: proposedSize];
 	[defaults setInverted:[[[invertPreferenceCell control] valueForKey:@"value"] boolValue]];
 	[defaults setToolbar:[[[showToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
 	[defaults setNavbar:[[[showNavbarPreferenceCell control] valueForKey:@"value"] boolValue]];
@@ -197,11 +202,9 @@
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
-	[alertSheet addButtonWithTitle:@"Whatever"];
+	[alertSheet addButtonWithTitle:@"Zowie!"];
 	[alertSheet setDelegate: self];
 	[alertSheet popupAlertAnimated:YES];
-	//	[alertSheet presentSheetFromAboveView: [[controller appsMainWindow] contentView]];
-
 }
 
 // TODO: Figure out the UIFontChooser and let them choose anything. Important for internationalization

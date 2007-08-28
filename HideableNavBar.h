@@ -52,6 +52,7 @@
 
 - (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath;
 - (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view;
+- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view reverseTransition:(BOOL)reversed;
 - (void)hide:(BOOL)forced;
 - (void)show;
 - (void)toggle;

@@ -1,3 +1,9 @@
+v. 0.8 - Chapter navigation buttons on the bottom toolbar!
+       - Browsers now use human, not computer, numbering, so chap2 comes
+         before chap10.
+       - Many minor bug fixes and internal code changes.
+       - Implemented some customizations for the bottom toolbar.
+
 v. 0.7.5 - (Unreleased internal numbering.)  New Preferences panel allows
            choice of fonts, among other things.  Hiding of navbars now
   	   optional (hiding on by default).  Added About... button.

@@ -107,6 +107,13 @@
 - (void)pushNavigationItem:(UINavigationItem *)item
 		  withView:(UIView *)view
 {
+  [self pushNavigationItem:item withView:view reverseTransition:NO];
+}
+
+- (void)pushNavigationItem:(UINavigationItem *)item
+		  withView:(UIView *)view
+	 reverseTransition:(BOOL)reversed
+{
   // Here, cometh funky code, in anticipation of multiple text views.
   if (_textIsOnTop)
     {
@@ -117,7 +124,9 @@
 
   _textIsOnTop = YES;
   NSLog(@"Pushed text view\n");
-  [_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:view];
+  int transitionType = reversed ? 2 : 1;
+  [_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
+	      toView:view];
   NSLog(@"transitioned");
   [super pushNavigationItem:item];
   NSLog(@"called super");
