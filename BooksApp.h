@@ -66,8 +66,8 @@
 - (void)setupNavbar;
 - (void)setupToolbar;
 - (void)updateToolbar:(NSNotification *)notification;
-- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector;
-- (UIImage *)navBarImage:(NSString *)name;
+- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped;
+- (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
 - (void)textViewDidGoAway:(id)sender;
 - (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;

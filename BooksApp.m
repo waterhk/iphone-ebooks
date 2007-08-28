@@ -300,12 +300,12 @@
 }
 
 - (void)chapForward:(UINavBarButton *)button 
+  //TODO: fix in the case where the next "file" is a directory
 {
   if (![button isPressed])
     {
-      BOOL isDir;
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
-      if ((nil != nextFile) && [[NSFileManager defaultManager] fileExistsAtPath:nextFile isDirectory:&isDir] && !isDir)
+      if (nil != nextFile)
 	{
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -325,12 +325,12 @@
 }
 
 - (void)chapBack:(UINavBarButton *)button 
+  //TODO: fix in the case where the previous "file" is a directory
 {
   if (![button isPressed])
     {
-      BOOL isDir;
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
-      if ((nil != prevFile) && [[NSFileManager defaultManager] fileExistsAtPath:prevFile isDirectory:&isDir] && !isDir)
+      if (nil != prevFile)
 	{
 	  EBookView *tempView = textView;
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -367,7 +367,7 @@
     [navBar disableAnimation];
     [navBar setRightMargin:45];
 
-    prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:)];
+    prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:) flipped:NO];
 
     [navBar addSubview:prefsButton];
 }
@@ -385,37 +385,35 @@
     [bottomNavBar setDelegate:self];
 
 	if ([defaults flipped]) {
-		// TODO: Figure out how to flip these images horizontally
-		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(5,9,40,30) selector:@selector(pageUp:)];
-		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(45,9,40,30) selector:@selector(pageDown:)];
-		//
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
 		
 		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:)];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:)];
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
 		} else {
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:)];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:)];	
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
 		}
 		
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:)];
-		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:)];
-		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:)];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:) flipped:NO];
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
 	} else {
-		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:)];
-		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:)];
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:)];
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:) flipped:NO];
 		
 		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:)];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:)];
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
 		} else {
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:)];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:)];	
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];	
 		}
 		
-		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:)];
-		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:)];
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
 	}
 	
 	[bottomNavBar addSubview:minusButton];
@@ -432,13 +430,13 @@
 	}
 }
 
-- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector 
+- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped 
 {
 	UINavBarButton	*button = [[UINavBarButton alloc] initWithFrame:rect];
 	
     [button setAutosizesToFit:NO];							
-    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name]] forState:0];
-    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name]] forState:1];
+    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
+    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
     [button setDrawContentsCentered:YES];
     [button addTarget:self action:selector forEvents: (255)];
     [button setNavBarButtonStyle:0];
@@ -447,11 +445,12 @@
 	return button;
 }
 
-- (UIImage *)navBarImage:(NSString *)name
+- (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped
 {
   NSBundle *bundle = [NSBundle mainBundle];
   imgPath = [bundle pathForResource:name ofType:@"png"];
   buttonImg = [[UIImage alloc]initWithContentsOfFile:imgPath];
+  if (flipped) [buttonImg setOrientation:4];
   return buttonImg;
 }
 
