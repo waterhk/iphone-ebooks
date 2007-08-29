@@ -191,18 +191,15 @@
 		        initWithTitle:[[file lastPathComponent]
 					stringByDeletingPathExtension]];
       sameFile = [[textView currentPath] isEqualToString:file];
+      [navBar pushNavigationItem:tempItem withView:textView];
       if (!sameFile)
       // Slight optimization.  If the file is already loaded,
       // don't bother reloading.
 	{
 	  [textView loadBookWithPath:file];
-	}
-      [navBar pushNavigationItem:tempItem withView:textView];
-      if (!sameFile)
-	{
 	  [textView scrollPointVisibleAtTopLeft:
 	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	  [self refreshTextViewFromDefaults];
+	  //	  [self refreshTextViewFromDefaults];
 	}
       //NSLog(@"back in BooksApp...");
 
