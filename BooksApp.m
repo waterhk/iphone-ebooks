@@ -149,6 +149,7 @@
     {
       if ((textView != nil) && (defaults != nil))
 	{
+	  //	  [self refreshTextViewFromDefaults];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  transitionHasBeenCalled = YES;
@@ -184,21 +185,25 @@
     }
   else // not a directory
     {
+      BOOL sameFile;
       readingText = YES;
       UINavigationItem *tempItem = [[UINavigationItem alloc]
 		        initWithTitle:[[file lastPathComponent]
 					stringByDeletingPathExtension]];
-      if (!([[textView currentPath] isEqualToString:file]))
+      sameFile = [[textView currentPath] isEqualToString:file];
+      if (!sameFile)
       // Slight optimization.  If the file is already loaded,
       // don't bother reloading.
 	{
-	  //NSLog(@"Loading %@...", file);	  
 	  [textView loadBookWithPath:file];
-	  //NSLog(@"Setting the scroll point...");
-	  //[defaults setLastScrollPoint:0];
-	  transitionHasBeenCalled = NO;
 	}
       [navBar pushNavigationItem:tempItem withView:textView];
+      if (!sameFile)
+	{
+	  [textView scrollPointVisibleAtTopLeft:
+	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  [self refreshTextViewFromDefaults];
+	}
       //NSLog(@"back in BooksApp...");
 
       //  NSLog(@"did the buttons...");
@@ -321,9 +326,11 @@
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[nextFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  [self refreshTextViewFromDefaults];
 	  transitionHasBeenCalled = NO;
 	  [navBar pushNavigationItem:tempItem withView:textView];
+	  [textView scrollPointVisibleAtTopLeft:
+	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  [self refreshTextViewFromDefaults];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -348,9 +355,11 @@
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[prevFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  [self refreshTextViewFromDefaults];
 	  transitionHasBeenCalled = NO;
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
+	  [textView scrollPointVisibleAtTopLeft:
+		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:YES];
+	  [self refreshTextViewFromDefaults];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -505,6 +514,7 @@
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
       }
+
     if (![defaults navbar])
       [textView setMarginTop:48];
     else

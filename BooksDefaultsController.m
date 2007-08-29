@@ -53,7 +53,7 @@
       [[NSUserDefaults standardUserDefaults] setObject:persistenceSanityCheck forKey:PERSISTENCEKEY];
     }
 
-  NSLog(@"Persistence dictionary:\n%@", [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]);
+  //  NSLog(@"Persistence dictionary:\n%@", [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]);
   return self;
 }
 
@@ -69,7 +69,10 @@
   if (nil == scrollpointString)
     return 0;
   else
-    return [scrollpointString intValue];
+    {
+      // NSLog(@"scroll point: %d", (unsigned int)[scrollpointString intValue]);
+      return (unsigned int)[scrollpointString intValue];
+    }
 }
 
 - (NSString *)fileBeingRead
