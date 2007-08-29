@@ -112,7 +112,39 @@
 
 int numberCompare(id firstString, id secondString, void *context)
 {
-  return [firstString compare:secondString options:NSNumericSearch];
+  int ret;
+  BOOL underscoreFound = NO;
+  unsigned int i;
+  //This for loop is here because rangeOfString: was segfaulting
+  for (i = ([firstString length]-1); i >= 0; i--)
+    {
+      if ([firstString characterAtIndex:i] == (unichar)'_')
+	{
+	  //NSLog(@"underscore at index: %d", i);	
+	  underscoreFound = YES;
+	  break;
+	}
+    }
+  if (underscoreFound) //avoid MutableString overhead if possible
+    {
+  //Here's a lovely little kludge to make Baen Books' HTML
+  //filenames sort correctly.
+      unsigned int firstLength = [firstString length];
+      unsigned int secondLength = [secondString length];
+      NSMutableString *firstMutable = [[NSMutableString alloc] initWithString:firstString];
+      NSMutableString *secondMutable = [[NSMutableString alloc] initWithString:secondString];
+      [firstMutable replaceOccurrencesOfString:@"_" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, firstLength)];
+      [secondMutable replaceOccurrencesOfString:@"_" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, secondLength)];
+
+      ret = [firstMutable compare:secondMutable options:NSNumericSearch];
+      [firstMutable release];
+      [secondMutable release];
+    }
+  else
+    {
+      ret = [firstString compare:secondString options:NSNumericSearch];
+    }
+  return ret;
 }
 
 - (void)setDelegate:(id)delegate {
