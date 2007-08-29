@@ -1,3 +1,7 @@
+v. 0.8.1 - HTML files from Baen Books (webscription.net) were not
+           sorting correctly, despite numbering fixes in 0.8.  Fixed.
+           (Talk about an obscure problem...)
+
 v. 0.8 - Chapter navigation buttons on the bottom toolbar!
        - Browsers now use human, not computer, numbering, so chap2 comes
          before chap10.
