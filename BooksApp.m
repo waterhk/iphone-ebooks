@@ -77,6 +77,7 @@
 	    [defaults setReadingText:NO];
 	    [defaults setFileBeingRead:@""];
 	    [defaults setLastBrowserPath:EBOOK_PATH];
+	    [defaults removeScrollPointForFile:recentFile];
 	  }
       }
 
@@ -149,7 +150,7 @@
       if ((textView != nil) && (defaults != nil))
 	{
 	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPoint]) animated:NO];
+		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  transitionHasBeenCalled = YES;
 	}
     }
@@ -194,21 +195,21 @@
 	  //NSLog(@"Loading %@...", file);	  
 	  [textView loadBookWithPath:file];
 	  //NSLog(@"Setting the scroll point...");
-	  [defaults setLastScrollPoint:1];
+	  //[defaults setLastScrollPoint:0];
 	  transitionHasBeenCalled = NO;
 	}
       [navBar pushNavigationItem:tempItem withView:textView];
-      NSLog(@"back in BooksApp...");
+      //NSLog(@"back in BooksApp...");
 
-	  NSLog(@"did the buttons...");
+      //  NSLog(@"did the buttons...");
       [tempItem release];
-      NSLog(@"released tempItem...");
+      //NSLog(@"released tempItem...");
       [navBar hide:NO];
       if (![defaults toolbar])
 	[bottomNavBar show];
       else
 	[bottomNavBar hide:NO];
-      NSLog(@"Marines, we are leaving...");
+      //NSLog(@"Marines, we are leaving...");
     }
 }
 
@@ -217,7 +218,8 @@
   //  NSLog(@"textViewDidGoAway start...");
   struct CGRect selectionRect = [textView visibleRect];
   //  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
-  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
+	    forFile:[textView currentPath]];
   //  NSLog(@"set defaults ");
   readingText = NO;
   [bottomNavBar hide:YES];
@@ -242,7 +244,8 @@
   struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
-  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y];
+  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
+	    forFile:[textView currentPath]];
   [defaults setReadingText:readingText];
   [defaults setLastBrowserPath:[navBar topBrowserPath]];
   [defaults synchronize];
@@ -307,15 +310,19 @@
       if (nil != nextFile)
 	{
 	  EBookView *tempView = textView;
+	  struct CGRect visRect = [tempView visibleRect];
+	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
+		    forFile:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView loadBookWithPath:nextFile];
 	  [textView setHeartbeatDelegate:self];
+
 	  UINavigationItem *tempItem = 
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[nextFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  [defaults setLastScrollPoint:0];
 	  [self refreshTextViewFromDefaults];
+	  transitionHasBeenCalled = NO;
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [tempItem release];
 	  [tempView autorelease];
@@ -331,6 +338,9 @@
       if (nil != prevFile)
 	{
 	  EBookView *tempView = textView;
+	  struct CGRect visRect = [tempView visibleRect];
+	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
+		    forFile:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView loadBookWithPath:prevFile];
 	  [textView setHeartbeatDelegate:self];
@@ -338,8 +348,8 @@
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[prevFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  [defaults setLastScrollPoint:0];
 	  [self refreshTextViewFromDefaults];
+	  transitionHasBeenCalled = NO;
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [tempItem release];
 	  [tempView autorelease];
@@ -486,18 +496,19 @@
     textInverted = [defaults inverted];
     [textView invertText:textInverted];
 
- 	[textView setTextFont:[defaults textFont]];
+    [textView setTextFont:[defaults textFont]];
 	
-	[self toggleStatusBarColor];
+    [self toggleStatusBarColor];
 	
     if (readingText)
       {  // Let's avoid the weird toggle behavior.
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
       }
-    //TODO: Figure out how to adjust the top of the textView if
-    //the top nav bar is always-on.  There is no equivalent top-buffer
-    //method.
+    if (![defaults navbar])
+      [textView setMarginTop:48];
+    else
+      [textView setMarginTop:0];
     if (![defaults toolbar])
       [textView setBottomBufferHeight:48];
     else

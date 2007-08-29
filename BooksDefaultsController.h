@@ -23,6 +23,8 @@
 #define ISINVERTEDKEY @"isInvertedKey"
 #define BROWSERFILESKEY @"browserPathsKey"
 
+#define PERSISTENCEKEY @"persistenceDictionaryKey"
+
 #define TEXTFONTKEY @"textFontKey"
 #define	AUTOHIDE @"autohideKey"
 #define NAVBAR @"navbarKey"
@@ -32,6 +34,7 @@
 #define PAGENAV @"pageNavKey"
 
 - (unsigned int)lastScrollPoint;
+- (unsigned int)lastScrollPointForFile:(NSString *)file;
 - (NSString *)fileBeingRead;
 - (int)textSize;
 - (BOOL)inverted;
@@ -46,6 +49,8 @@
 - (BOOL)pagenav;
 
 - (void)setLastScrollPoint:(unsigned int)thePoint;
+- (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
+- (void)removeScrollPointForFile:(NSString *)theFile;
 - (void)setFileBeingRead:(NSString *)file;
 - (void)setTextSize:(int)size;
 - (void)setInverted:(BOOL)isInverted;

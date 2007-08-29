@@ -10,7 +10,7 @@
 
   //  sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:10];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:14];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
@@ -26,10 +26,13 @@
   [temp setObject:@"0" forKey:FLIPTOOLBAR];
   [temp setObject:@"1" forKey:CHAPTERNAV];
   [temp setObject:@"1" forKey:PAGENAV];
+  [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
 
   //  NSLog(@"temp dictionary: %@\n", temp);
 
   [[NSUserDefaults standardUserDefaults] registerDefaults:temp];
+
+
   /*
     NSLog(@"defaults dump\n%d %d %@\n%@\n",
   	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
@@ -38,12 +41,35 @@
 	  [sharedDefaults objectForKey:BROWSERFILESKEY]);
   */
   [temp release];
+  NSMutableDictionary *persistenceSanityCheck =
+    [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
+  if (0 == [persistenceSanityCheck count])
+    {
+      NSLog(@"sanity check!");
+      //This is here for backward compatibility with old persistence system
+      NSString *file = [[NSUserDefaults standardUserDefaults] objectForKey:FILEBEINGREADKEY];
+      NSString *pointString = [[NSUserDefaults standardUserDefaults] objectForKey:LASTSCROLLPOINTKEY];
+      [persistenceSanityCheck setObject:pointString forKey:file];
+      [[NSUserDefaults standardUserDefaults] setObject:persistenceSanityCheck forKey:PERSISTENCEKEY];
+    }
+
+  NSLog(@"Persistence dictionary:\n%@", [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]);
   return self;
 }
 
 - (unsigned int)lastScrollPoint
 {
   return [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
+}
+
+- (unsigned int)lastScrollPointForFile:(NSString *)filename
+{
+  NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY];
+  NSString *scrollpointString = [blah objectForKey:filename];
+  if (nil == scrollpointString)
+    return 0;
+  else
+    return [scrollpointString intValue];
 }
 
 - (NSString *)fileBeingRead
@@ -73,9 +99,22 @@
 
 - (void)setLastScrollPoint:(unsigned int)thePoint
 {
-  NSLog(@"in");
   [[NSUserDefaults standardUserDefaults] setInteger:thePoint forKey:LASTSCROLLPOINTKEY];
-  NSLog(@"out");
+}
+
+- (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
+  NSString *thePointString = [NSString stringWithFormat:@"%d", thePoint];
+  [tempDict setObject:thePointString forKey:file];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
+}
+
+- (void)removeScrollPointForFile:(NSString *)file
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
+  [tempDict removeObjectForKey:file];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
 }
 
 - (void)setLastBrowserPath:(NSString *)browserPath
