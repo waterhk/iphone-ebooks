@@ -30,7 +30,7 @@
 		float components[4] = {1.0, 1.0, 1.0, 1.0};
 		struct CGColor *white = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
 		[self setBackgroundColor:white];
-		_table = [[UITable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)]; //assume we have a bottom navbar !let's not
+		_table = [[UITable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)]; 
 		[_table addTableColumn: col];
 		[_table setSeparatorStyle: 1];
 		[_table setDelegate: self];
@@ -42,6 +42,7 @@
 
 		_delegate = nil;
 
+		defaults = [[BooksDefaultsController alloc] init];
 		[self addSubview: _table];
 	}
 	return self;
@@ -160,7 +161,22 @@ int numberCompare(id firstString, id secondString, void *context)
 	UISimpleTableCell *cell = [[UISimpleTableCell alloc] init];
 	[cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
 	if ([[NSFileManager defaultManager] fileExistsAtPath:[_path stringByAppendingPathComponent:[_files objectAtIndex:row]] isDirectory:&isDir] && isDir)
+	  {
 	     [cell setShowDisclosure:YES];
+	  }
+	else if (![defaults scrollPointExistsForFile:[_path stringByAppendingPathComponent:[_files objectAtIndex:row]]])
+	  //FIXME: It'd be great to have unread indicators for directories,
+	  //a la podcast dirs & episodes.  For now, unread indicators only
+	  //apply for text/HTML files.
+	  {
+	    UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"]; // ooh, a new way!
+	    [cell setIcon:img];
+	  }
+	else // just to make things look nicer.
+	  {
+	    UIImage *img2 = [UIImage applicationImageNamed:@"ReadIndicator.png"]; // ooh, a new way!
+	    [cell setIcon:img2];
+	  }
 	return cell;
 }
 
@@ -192,6 +208,7 @@ int numberCompare(id firstString, id secondString, void *context)
       }
     }
       NSLog(@"In theory we should never get here.");
+      //In actuality, we in fact got an infinite loop.
 }
 
 - (NSString *)fileBeforeFileNamed:(NSString *)thePath

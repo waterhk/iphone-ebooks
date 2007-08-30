@@ -48,8 +48,11 @@
       NSLog(@"sanity check!");
       //This is here for backward compatibility with old persistence system
       NSString *file = [[NSUserDefaults standardUserDefaults] objectForKey:FILEBEINGREADKEY];
-      NSString *pointString = [[NSUserDefaults standardUserDefaults] objectForKey:LASTSCROLLPOINTKEY];
+      int point = [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
+      float adjustedPoint = (float)point / [[NSUserDefaults standardUserDefaults] integerForKey:TEXTSIZEKEY];
+      NSString *pointString = [NSString stringWithFormat:@"%d", (int)adjustedPoint];
       [persistenceSanityCheck setObject:pointString forKey:file];
+
       [[NSUserDefaults standardUserDefaults] setObject:persistenceSanityCheck forKey:PERSISTENCEKEY];
     }
 
@@ -62,7 +65,14 @@
   return [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
 }
 
+- (BOOL)scrollPointExistsForFile:(NSString *)filename
+{
+  NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY];
+  return (nil != [blah objectForKey:filename]);
+}
+
 - (unsigned int)lastScrollPointForFile:(NSString *)filename
+  // Returns scroll point adjusted by the font size.
 {
   NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY];
   NSString *scrollpointString = [blah objectForKey:filename];
@@ -70,8 +80,9 @@
     return 0;
   else
     {
+      int fontsize = [[NSUserDefaults standardUserDefaults] integerForKey:TEXTSIZEKEY];
       // NSLog(@"scroll point: %d", (unsigned int)[scrollpointString intValue]);
-      return (unsigned int)[scrollpointString intValue];
+      return (unsigned int)([scrollpointString intValue] * fontsize);
     }
 }
 
@@ -106,18 +117,42 @@
 }
 
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file
+  // Adjusts the scroll point based on the font size.
 {
   NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
+  thePoint /= [[NSUserDefaults standardUserDefaults] integerForKey:TEXTSIZEKEY];
   NSString *thePointString = [NSString stringWithFormat:@"%d", thePoint];
   [tempDict setObject:thePointString forKey:file];
   [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
 }
 
 - (void)removeScrollPointForFile:(NSString *)file
+  // Call this method when deleting a single text/HTML file from
+  // the FileBrowser.
 {
   NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
   [tempDict removeObjectForKey:file];
   [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
+}
+
+- (void)removeScrollPointsForDirectory:(NSString *)dir
+  // This method should be called when deleting a folder from the
+  // FileBrowser, so the prefs file doesn't get crusty with deleted
+  // books.
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
+  NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager]
+					enumeratorAtPath:dir];
+ if (nil != enumerator)
+   {
+     NSString *subpath;
+     while (nil != (subpath = [enumerator nextObject]))
+       {
+	 [tempDict removeObjectForKey:[dir stringByAppendingPathComponent:subpath]];
+       }
+   }
+ [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
+ //phew!
 }
 
 - (void)setLastBrowserPath:(NSString *)browserPath

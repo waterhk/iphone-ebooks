@@ -61,25 +61,6 @@
     recentFile = [defaults fileBeingRead];
     readingText = [defaults readingText];
 
-    if (readingText)
-      {
-	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
-	  {
-	    [textView loadBookWithPath:recentFile];
-	    
-	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
-	    
-	  }
-	else
-	  {  // Recent file has been deleted!  RESET!
-	    readingText = NO;
-	    [defaults setLastScrollPoint:0];
-	    [defaults setReadingText:NO];
-	    [defaults setFileBeingRead:@""];
-	    [defaults setLastBrowserPath:EBOOK_PATH];
-	    [defaults removeScrollPointForFile:recentFile];
-	  }
-      }
 
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
@@ -125,14 +106,30 @@
 
     if (readingText)
       {
-	UINavigationItem *tempItem = [[UINavigationItem alloc]
-	        initWithTitle:[[recentFile lastPathComponent] 
+	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
+	  {
+	    UINavigationItem *tempItem = [[UINavigationItem alloc]
+		       initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
-	[navBar pushNavigationItem:tempItem withView:textView];
+	    [navBar pushNavigationItem:tempItem withView:textView];
 
-	[tempItem release];
-	[navBar hide:NO];
-	[bottomNavBar hide:NO];
+	    [tempItem release];
+	    [navBar hide:NO];
+	    [bottomNavBar hide:NO];
+	    [textView loadBookWithPath:recentFile];
+	    
+	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
+	    
+	  }
+	else
+	  {  // Recent file has been deleted!  RESET!
+	    readingText = NO;
+	    [defaults setLastScrollPoint:0];
+	    [defaults setReadingText:NO];
+	    [defaults setFileBeingRead:@""];
+	    [defaults setLastBrowserPath:EBOOK_PATH];
+	    [defaults removeScrollPointForFile:recentFile];
+	  }
       }
 
 
@@ -316,18 +313,17 @@
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
-	  [textView loadBookWithPath:nextFile];
 	  [textView setHeartbeatDelegate:self];
 
 	  UINavigationItem *tempItem = 
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[nextFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  transitionHasBeenCalled = NO;
 	  [navBar pushNavigationItem:tempItem withView:textView];
+	  [self refreshTextViewFromDefaults];
+	  [textView loadBookWithPath:nextFile];
 	  [textView scrollPointVisibleAtTopLeft:
 	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	  [self refreshTextViewFromDefaults];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -346,17 +342,18 @@
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
-	  [textView loadBookWithPath:prevFile];
 	  [textView setHeartbeatDelegate:self];
 	  UINavigationItem *tempItem = 
 	    [[UINavigationItem alloc] initWithTitle:
 		   [[prevFile lastPathComponent] 
 		     stringByDeletingPathExtension]];
-	  transitionHasBeenCalled = NO;
+
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
-	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:YES];
 	  [self refreshTextViewFromDefaults];
+	  [textView loadBookWithPath:prevFile];
+	  [textView scrollPointVisibleAtTopLeft:
+		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+
 	  [tempItem release];
 	  [tempView autorelease];
 	}

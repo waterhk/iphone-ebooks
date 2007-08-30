@@ -20,6 +20,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreGraphics/CGColor.h>
 #import <CoreGraphics/CGColorSpace.h>
+#import "BooksDefaultsController.h"
 
 @interface FileBrowser : UIView 
 {
@@ -29,6 +30,7 @@
 	NSString *_path;
 	int _rowCount;
 	id _delegate;
+	BooksDefaultsController *defaults;
 }
 
 int numberCompare(id, id, void *);
