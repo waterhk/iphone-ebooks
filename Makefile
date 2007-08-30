@@ -42,4 +42,4 @@ package: Books
 	cp right_down.png Books.app/right_down.png
 	cp right_up.png Books.app/right_up.png
 	cp UnreadIndicator.png Books.app/UnreadIndicator.png
-	cp UnreadIndicator.png Books.app/ReadIndicator.png
+	cp ReadIndicator.png Books.app/ReadIndicator.png

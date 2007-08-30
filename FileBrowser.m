@@ -169,13 +169,14 @@ int numberCompare(id firstString, id secondString, void *context)
 	  //a la podcast dirs & episodes.  For now, unread indicators only
 	  //apply for text/HTML files.
 	  {
-	    UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"]; // ooh, a new way!
+	    UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"];
 	    [cell setIcon:img];
 	  }
 	else // just to make things look nicer.
 	  {
-	    UIImage *img2 = [UIImage applicationImageNamed:@"ReadIndicator.png"]; // ooh, a new way!
+	    UIImage *img2 = [UIImage applicationImageNamed:@"ReadIndicator.png"];
 	    [cell setIcon:img2];
+	    
 	  }
 	return cell;
 }
