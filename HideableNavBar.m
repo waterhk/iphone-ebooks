@@ -69,6 +69,7 @@
       if ([self isAnimationEnabled])
 	[_transView transition:2 toView:[_browserArray lastObject]];
       NSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
+      [[_browserArray lastObject] reloadData]; // to remove the "unread" dot
       [super popNavigationItem];
       if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
 	[_browserDelegate textViewDidGoAway:self];
@@ -78,6 +79,7 @@
       [_browserArray removeLastObject];
 
       [_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
+      [[_browserArray lastObject] reloadData]; // to remove the "unread" dot
       NSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
       [super popNavigationItem];
     }
