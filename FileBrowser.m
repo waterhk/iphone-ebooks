@@ -17,7 +17,7 @@
 */
 
 #import "FileBrowser.h"
-#import <UIKit/UISimpleTableCell.h>
+#import <UIKit/UIImageAndTextTableCell.h>
 
 @implementation FileBrowser 
 - (id)initWithFrame:(struct CGRect)frame{
@@ -158,24 +158,52 @@ int numberCompare(id firstString, id secondString, void *context)
 
 - (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col {
         BOOL isDir = NO;
-	UISimpleTableCell *cell = [[UISimpleTableCell alloc] init];
+	UIImageAndTextTableCell *cell = [[UIImageAndTextTableCell alloc] init];
 	[cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
-	if ([[NSFileManager defaultManager] fileExistsAtPath:[_path stringByAppendingPathComponent:[_files objectAtIndex:row]] isDirectory:&isDir] && isDir)
+	NSString *fullPath = [_path stringByAppendingPathComponent:[_files objectAtIndex:row]];
+	if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath isDirectory:&isDir] && isDir)
 	  {
 	     [cell setShowDisclosure:YES];
+	     UIImage *coverart = nil;
+	     coverart = [UIImage imageAtPath:[fullPath stringByAppendingPathComponent:@"cover.jpg"]];
+	     if (nil == coverart)
+	     {
+	       coverart = [UIImage imageAtPath:[fullPath stringByAppendingPathComponent:@"cover.png"]];
+	     }
+	     if (nil != coverart)
+	       {
+		 struct CGImage *coverRef = [coverart imageRef];
+		 int height = CGImageGetHeight(coverRef);
+		 int width = CGImageGetWidth(coverRef);
+		 if (height >= width)
+		   {
+		     float frac = (float)width / height;
+		     width = (int)(46*frac);
+		     height = 46;
+		   }
+		 else
+		   {
+		     float frac = (float)height / width;
+		     height = (int)(46*frac);
+		     width = 46;
+		   }
+		 //NSLog("new w: %d h: %d", width, height);
+		 [cell setImage:coverart];
+		 [[cell iconImageView] setFrame:CGRectMake(-10,0,width,height)];
+	       }
 	  }
-	else if (![defaults scrollPointExistsForFile:[_path stringByAppendingPathComponent:[_files objectAtIndex:row]]])
+	else if (![defaults scrollPointExistsForFile:fullPath])
 	  //FIXME: It'd be great to have unread indicators for directories,
 	  //a la podcast dirs & episodes.  For now, unread indicators only
 	  //apply for text/HTML files.
 	  {
 	    UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"];
-	    [cell setIcon:img];
+	    [cell setImage:img];
 	  }
 	else // just to make things look nicer.
 	  {
 	    UIImage *img2 = [UIImage applicationImageNamed:@"ReadIndicator.png"];
-	    [cell setIcon:img2];
+	    [cell setImage:img2];
 	    
 	  }
 	return cell;

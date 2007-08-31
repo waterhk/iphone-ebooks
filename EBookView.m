@@ -145,6 +145,10 @@
   i = [originalText replaceOccurrencesOfString:@"<img" withString:@"<!img"
 		    options:NSLiteralSearch range:fullRange];
   NSLog(@"Commented out %d images.\n", i);
+  fullRange = NSMakeRange(0, [originalText length]);
+  i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
+  i = [originalText replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
+  NSLog(@"Removed %d width style tags.\n", i);
   outputHTML = [NSString stringWithString:originalText];
   [originalText release];
   return outputHTML;
