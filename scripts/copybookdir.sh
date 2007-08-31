@@ -6,6 +6,8 @@
 # MAJOR LIMITATION: does not currently work with files/directories 
 # which contain spaces.
 
+# set -x
+
 which iphuc > /dev/null
 
 if [ $? = 1 ]; then
@@ -16,17 +18,16 @@ fi
 if [ $# -lt 1 ]; then
     echo "Usage: $0 /path/to/directory"
     echo "You need to provide a directory!"
-    echo ""
+    echo
     echo "WARNING: This script will copy over every visible"
     echo "file in the directory you specify!  Make sure you're"
     echo "entering the correct directory and that it contains only"
     echo ".txt or .htm(l) files."
-    echo ""
+    echo
 
     exit 1
 fi
 
-OLDPWD=${PWD}
 cd "$1"
 
 if [ $? = 1 ]; then
@@ -34,11 +35,7 @@ if [ $? = 1 ]; then
     exit 1
 fi
 
-FILES=`ls`
-
-FULLPATH=${PWD}
-
-BASE=`basename $1`
+BASE=$(echo $(basename "$1") | sed 's/ /\\ /g')
 
 echo "Please connect your iPhone to your computer via USB
 and press enter."
@@ -49,8 +46,10 @@ read p
     echo "cd EBooks"
     echo "mkdir /EBooks/${BASE}"
     echo "cd ${BASE}"
-    for i in ${FILES}; do
-         echo "putfile ${FULLPATH}/$i $i"
+    for f in "$1/"*; do
+         f=`echo $f | sed 's/ /\\\\ /g'`
+         n=`basename "$f"`
+         echo "putfile $f $n"
     done
     echo "exit"
 ) | iphuc > /tmp/iphuc.out
@@ -58,20 +57,16 @@ read p
 grep Failed /tmp/iphuc.out
 
 if [ $? = 1 ]; then
-    echo ""
+    echo
     echo "The following files have been copied:"
-    for i in ${FILES}; do
-	echo "   ${FULLPATH}/$i $i"
+    for f in "$1/"*; do
+         n=`basename "$f"`
+         echo "   $f $n"
     done
-    cd ${OLDPWD}
     exit 0
 else
-    echo ""
+    echo
     echo "Errors occurred.  Some files may not have been copied."
     echo "See /tmp/iphuc.out for details."
-    cd ${OLDPWD}
     exit 1
 fi
-
-
-
