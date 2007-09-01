@@ -18,15 +18,17 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <UIKit/UITableCellRemoveControl.h>
 #import <CoreGraphics/CGColor.h>
 #import <CoreGraphics/CGColorSpace.h>
 #import "BooksDefaultsController.h"
+#import "FileTable.h"
 
 @interface FileBrowser : UIView 
 {
 	NSMutableArray *_extensions;
 	NSMutableArray *_files;
-	UITable *_table;
+	FileTable *_table;
 	NSString *_path;
 	int _rowCount;
 	id _delegate;
@@ -48,4 +50,6 @@ int numberCompare(id, id, void *);
 - (void)selectCellForFilename:(NSString *)thePath;
 - (NSString *)fileBeforeFileNamed:(NSString *)thePath;
 - (NSString *)fileAfterFileNamed:(NSString *)thePath;
+- (void)shouldDeleteFileFromCell:(NSNotification *)aNotification;
+
 @end

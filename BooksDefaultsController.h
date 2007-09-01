@@ -51,6 +51,7 @@
 - (void)setLastScrollPoint:(unsigned int)thePoint;
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
 - (void)removeScrollPointForFile:(NSString *)theFile;
+- (void)removeScrollPointsForDirectory:(NSString *)dir;
 - (void)setFileBeingRead:(NSString *)file;
 - (void)setTextSize:(int)size;
 - (void)setInverted:(BOOL)isInverted;

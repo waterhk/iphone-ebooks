@@ -17,6 +17,7 @@
 */
 
 #import "FileBrowser.h"
+#import "FileBrowser.m"
 #import <UIKit/UIImageAndTextTableCell.h>
 
 @implementation FileBrowser 
@@ -30,12 +31,12 @@
 		float components[4] = {1.0, 1.0, 1.0, 1.0};
 		struct CGColor *white = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
 		[self setBackgroundColor:white];
-		_table = [[UITable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)]; 
+		_table = [[FileTable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)]; 
 		[_table addTableColumn: col];
 		[_table setSeparatorStyle: 1];
 		[_table setDelegate: self];
 		[_table setDataSource: self];
-
+		[_table allowDelete:YES];
 		_extensions = [[NSMutableArray alloc] init];
 		_files = [[NSMutableArray alloc] init];
 		_rowCount = 0;
@@ -44,11 +45,17 @@
 
 		defaults = [[BooksDefaultsController alloc] init];
 		[self addSubview: _table];
+		[[NSNotificationCenter defaultCenter] 
+		  addObserver:self
+		  selector:@selector(shouldDeleteFileFromCell:)
+		  name:SHOULDDELETEFILE
+		  object:nil];
 	}
 	return self;
 }
 
 - (void)dealloc {
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_path release];
 	[_files release];
 	[_extensions release];
@@ -158,9 +165,10 @@ int numberCompare(id firstString, id secondString, void *context)
 
 - (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col {
         BOOL isDir = NO;
-	UIImageAndTextTableCell *cell = [[UIImageAndTextTableCell alloc] init];
+	DeletableCell *cell = [[DeletableCell alloc] init];
 	[cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
 	NSString *fullPath = [_path stringByAppendingPathComponent:[_files objectAtIndex:row]];
+	[cell setPath:fullPath];
 	if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath isDirectory:&isDir] && isDir)
 	  {
 	     [cell setShowDisclosure:YES];
@@ -206,6 +214,10 @@ int numberCompare(id firstString, id secondString, void *context)
 	    [cell setImage:img2];
 	    
 	  }
+	/*	//FIXME: This is an experiment
+	UITableCellRemoveControl *remover = [[UITableCellRemoveControl alloc] initWithTarget:cell];
+	[remover showRemoveButton:YES animated:YES];
+	*/
 	return cell;
 }
 
@@ -277,6 +289,22 @@ int numberCompare(id firstString, id secondString, void *context)
 
   return [_path stringByAppendingPathComponent: 
 		  [_files objectAtIndex: theRow + 1]];
+}
+
+- (void)shouldDeleteFileFromCell:(NSNotification *)aNotification
+{
+  BOOL isDir = NO;
+  DeletableCell *theCell = (DeletableCell *)[aNotification object];
+  NSString *path = [theCell path];
+  NSLog(@"Cell path: %@", path);
+  if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir)
+    {
+      [defaults removeScrollPointsForDirectory:path];
+    }
+  else
+    [defaults removeScrollPointForFile:path];
+  BOOL success = [[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
+  // Presumably we should check the success value here...
 }
 
 @end
