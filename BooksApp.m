@@ -225,21 +225,19 @@
 
   NSLog(@"end.\n");
 }
-/*
-- (void)notifyDidCompleteTransition:(id)unused
-  // Delegate method?
-{
-  
-  if (!transitionHasBeenCalled)
-    {
-      NSLog(@"notifyDidComplete\n");
-      transitionHasBeenCalled = YES;
-    }
-}
-*/
+
 - (void) applicationWillSuspend
 {
+  /*
+  //  struct CGImage *defaultPNG =  [self createApplicationDefaultPNG];
+  NSString *defaultPNGPath = [[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"];
+  struct CGRect snapshotRect = [self applicationSnapshotRectForOrientation:0];
+  struct CGImage *defaultPNG = [textView createSnapshotWithRect:snapshotRect];
+  UIImage *defaultPNGImage = [[UIImage alloc] initWithImageRef:defaultPNG];
 
+  NSData *imgData = [[NSData alloc] initWithBytes:defaultPNG length:sizeof(defaultPNG)];
+  [imgData writeToFile:defaultPNGPath atomically:YES];
+  */
   struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
@@ -248,7 +246,7 @@
   [defaults setReadingText:readingText];
   [defaults setLastBrowserPath:[navBar topBrowserPath]];
   [defaults synchronize];
-
+  //[imgData release];
 }
 
 - (void)embiggenText:(UINavBarButton *)button
@@ -490,6 +488,11 @@
 - (UIWindow *)appsMainWindow
 {
 	return window;
+}
+
+- (void)anotherApplicationFinishedLaunching:(struct __GSEvent *)event
+{
+  [self applicationWillSuspend];
 }
 
 - (void)refreshTextViewFromDefaults

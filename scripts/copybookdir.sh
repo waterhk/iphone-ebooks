@@ -2,13 +2,15 @@
 
 # copybookdir, for Books.app v0.2
 # This script copies a local directory into the iPhone's Media/EBooks
-# directory.  If you have a single file, use copybook.sh.
+# directory.  If you have a single file, use iPHUC directly.
 # MAJOR LIMITATION: does not currently work with files/directories 
 # which contain spaces.
 
 # set -x
 
 which iphuc > /dev/null
+
+OLDPWD=${PWD}
 
 if [ $? = 1 ]; then
     echo "iPHUC does not appear to be installed in your path!"
@@ -35,7 +37,10 @@ if [ $? = 1 ]; then
     exit 1
 fi
 
+FULLPATH=$(echo $PWD)
+echo $FULLPATH
 BASE=$(echo $(basename "$1") | sed 's/ /\\ /g')
+
 
 echo "Please connect your iPhone to your computer via USB
 and press enter."
@@ -46,7 +51,7 @@ read p
     echo "cd EBooks"
     echo "mkdir /EBooks/${BASE}"
     echo "cd ${BASE}"
-    for f in "$1/"*; do
+    for f in "$FULLPATH/"*; do
          f=`echo $f | sed 's/ /\\\\ /g'`
          n=`basename "$f"`
          echo "putfile $f $n"
@@ -59,7 +64,7 @@ grep Failed /tmp/iphuc.out
 if [ $? = 1 ]; then
     echo
     echo "The following files have been copied:"
-    for f in "$1/"*; do
+    for f in "$FULLPATH/"*; do
          n=`basename "$f"`
          echo "   $f $n"
     done
@@ -70,3 +75,5 @@ else
     echo "See /tmp/iphuc.out for details."
     exit 1
 fi
+
+cd "$OLDPWD"
