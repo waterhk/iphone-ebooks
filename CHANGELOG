@@ -1,3 +1,17 @@
+v. 0.9 - Global persistence works!  Books.app remembers where you left off
+         in every darn file you read.
+       - Added "unread" indicators for easily telling where you've left
+         off.  (Only applies to files, not folders.)
+       - Cover art available!  Put a "cover.jpg" or "cover.png" file in
+         the root level of your book's directory, and it will display in
+         the file browser.
+       - Delete books from the file browser!  Swipe your finger across the
+         book (or directory thereof) and watch the magic.
+       - Officially released improved copybookdir.sh, provided by Aaron Davies.
+         Thanks, Aaron!
+       - Some HTML files with width tags may display better.  This is
+         a horrible kludge.
+
 v. 0.8.1 - HTML files from Baen Books (webscription.net) were not
            sorting correctly, despite numbering fixes in 0.8.  Fixed.
            (Talk about an obscure problem...)
