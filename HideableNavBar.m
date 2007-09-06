@@ -189,9 +189,11 @@
 {
   struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
-  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 48.0f, hardwareRect.size.width, 48.0f)];
+  //CHANGED: The "68" comes from SummerBoard--if we just use 48, 
+  // the top nav bar shows under the status bar.
+  [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
 
-  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-48);
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-68);
   [translate setStartTransform: trans];
   [translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
  
@@ -205,7 +207,7 @@
   hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
-  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -48.0);
+  struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -68.0);
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
   [translate setEndTransform: trans];
   [animator addAnimation:translate withDuration:.25 start:YES];

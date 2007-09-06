@@ -136,6 +136,8 @@
     [tempArray release];
 
     [navBar enableAnimation];
+
+    [self setStatusBarCustomText:@"?"];
     doneLaunching = YES;
 
 }
@@ -229,13 +231,13 @@
 - (void) applicationWillSuspend
 {
   /*
-  //  struct CGImage *defaultPNG =  [self createApplicationDefaultPNG];
+  //struct CGImage *defaultPNG =  [self createApplicationDefaultPNG];
   NSString *defaultPNGPath = [[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"];
   struct CGRect snapshotRect = [self applicationSnapshotRectForOrientation:0];
   struct CGImage *defaultPNG = [textView createSnapshotWithRect:snapshotRect];
-  UIImage *defaultPNGImage = [[UIImage alloc] initWithImageRef:defaultPNG];
+  //UIImage *defaultPNGImage = [[UIImage alloc] initWithImageRef:defaultPNG];
 
-  NSData *imgData = [[NSData alloc] initWithBytes:defaultPNG length:sizeof(defaultPNG)];
+ NSData *imgData = [[NSData alloc] initWithBytes:*defaultPNG length:CGImageGetBytesPerRow(defaultPNG)*CGImageGetHeight(defaultPNG)];
   [imgData writeToFile:defaultPNGPath atomically:YES];
   */
   struct CGRect selectionRect;
