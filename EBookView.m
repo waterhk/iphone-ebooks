@@ -31,7 +31,7 @@
 
   [self scrollToMakeCaretVisible:NO];
 
-  [self setScrollDecelerationFactor:0.994f];
+  [self setScrollDecelerationFactor:0.995f];
   //  NSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
   [self setTapDelegate:self];
   [self setScrollerIndicatorsPinToContent:NO];
@@ -149,6 +149,8 @@
   i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
   i = [originalText replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
   NSLog(@"Removed %d width style tags.\n", i);
+  i = [originalText replaceOccurrencesOfString:@"</body>" withString:@"<br /></body>" options:NSLiteralSearch range:fullRange];
+  i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:@"<br /></BODY>" options:NSLiteralSearch range:fullRange];
   outputHTML = [NSString stringWithString:originalText];
   [originalText release];
   return outputHTML;
@@ -396,7 +398,7 @@
   j += i;
 
   NSLog(@"Replaced %d characters in textfile %@.\n", j, file);
-  outputHTML = [NSString stringWithFormat:@"%@%@\n</p>\n</body>\n</html>\n", header, originalText];
+  outputHTML = [NSString stringWithFormat:@"%@%@\n</p><br /><br />\n</body>\n</html>\n", header, originalText];
   [originalText release];
   return outputHTML;
 }
