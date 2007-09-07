@@ -539,6 +539,11 @@
       }
 }
 
+- (NSString *)currentBrowserPath
+{
+  return [[navBar topBrowser] path];
+}
+
 - (void)toggleStatusBarColor 	// Thought this might be a nice touch
   //TODO: This looks weird with the navbars down.  Perhaps we should change
   //the navbars to the black type?  Or have the status bar be black only

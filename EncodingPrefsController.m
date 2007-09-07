@@ -27,11 +27,6 @@
   [encodingTable reloadData];
 }
 
--(void)transitionToEncodingPrefs:(UITransitionView *)tView
-{
-  [tView transition:0 toView:encodingTable];
-}
- 
 -(UITable *)table
 {
   return encodingTable;

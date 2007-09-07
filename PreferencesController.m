@@ -287,7 +287,7 @@
       [self makeEncodingPrefsPane];
       break;
     case 15: // mark current book as new
-      //[defaults removeScrollPointsForDirectory:@"efniefin"];
+      [defaults removeScrollPointsForDirectory:[controller currentBrowserPath]];
       [markCurrentBookAsNewCell setEnabled:NO];
       [markCurrentBookAsNewCell setSelected:NO withFade:YES];
       break;

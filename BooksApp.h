@@ -74,5 +74,5 @@
 - (void)refreshTextViewFromDefaults;
 - (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly;
 - (void)toggleStatusBarColor;
-
+- (NSString *)currentBrowserPath;
 @end
