@@ -30,7 +30,7 @@
 				    contentRect.size.height);
 	preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
 	
-	UINavigationBar *navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
+	navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
 	[navigationBar showLeftButton:@"About..." withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
 	[navigationBar setBarStyle:0];
 	[navigationBar setDelegate:self]; 
@@ -38,12 +38,13 @@
 	UINavigationItem *title = [[UINavigationItem alloc] 
 				    initWithTitle:@"Preferences"];
 	[navigationBar pushNavigationItem:[title autorelease]];
-	
-	preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+	transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+
+	preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
 	[preferencesTable setDataSource:self];
 	[preferencesTable setDelegate:self];
-	[preferencesView addSubview:preferencesTable];
-	
+	[preferencesView addSubview:transitionView];
+	[transitionView transition:0 toView:preferencesTable];
 	UIWindow	*mainWindow = [controller appsMainWindow];
 	appView = [[mainWindow contentView] retain];
 	
@@ -55,6 +56,12 @@
 	  addObserver:self
 	  selector:@selector(checkForAnimation:)
 	  name:PREFS_NEEDS_ANIMATE
+	  object:nil];
+
+	[[NSNotificationCenter defaultCenter]
+	  addObserver:self
+	  selector:@selector(shouldTransitionBackToPrefsView:)
+	  name:ENCODINGSELECTED
 	  object:nil];
     } // if nil == preferencesView
   
@@ -95,6 +102,15 @@
 	needsOutAnimation = NO;
 
     }
+}
+
+- (void)shouldTransitionBackToPrefsView:(NSNotification *)aNotification
+{
+  [transitionView transition:2 toView:preferencesTable];
+  [navigationBar popNavigationItem];
+  NSString *newValue = [aNotification object];
+  [defaultEncodingPreferenceCell setValue:newValue];
+  [defaultEncodingPreferenceCell setSelected:NO];
 }
 
 - (void)hidePreferences {
@@ -216,7 +232,36 @@
 	//CHANGED: Zach's additions 9/6/07
 
 	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
-	[defaultEncodingPreferenceCell setValue:@"Automatic"];
+
+	NSString *encString;
+	switch ([defaults defaultTextEncoding])
+	  {
+	  case AUTOMATIC_ENCODING:
+	    encString = @"Automatic";
+	    break;
+	  case NSASCIIStringEncoding:
+	    encString = @"ASCII";
+	    break;
+	  case NSUTF8StringEncoding:
+	    encString = @"Unicode (UTF-8)";
+	    break;
+	  case NSISOLatin1StringEncoding:
+	    encString = @"ISO Latin-1";
+	    break;
+	  case NSUnicodeStringEncoding:
+	    encString = @"Unicode (UTF-16)";
+	    break;
+	  case NSWindowsCP1252StringEncoding:
+	    encString = @"Windows Latin-1";
+	    break;
+	  case NSMacOSRomanStringEncoding:
+	    encString = @"Mac OS Roman";
+	    break;
+	  default:
+	    encString = @"Undefined encoding";
+	    break;
+	  }
+	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
 
 	markCurrentBookAsNewCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
@@ -240,74 +285,30 @@
     case 15: // mark current book as new
       //[defaults removeScrollPointsForDirectory:@"efniefin"];
       [markCurrentBookAsNewCell setEnabled:NO];
-      [markCurrentBookAsNewCell setSelected:NO];
+      [markCurrentBookAsNewCell setSelected:NO withFade:YES];
       break;
     case 16: // mark all books as new
       [defaults removeAllScrollPoints];
       [markAllBooksAsNewCell setEnabled:NO];
-      [markAllBooksAsNewCell setSelected:NO];
+      [markAllBooksAsNewCell setSelected:NO withFade:YES];
       break;
     default:
+      [[preferencesTable cellAtRow:i column:0] setSelected:NO];
       break;
     }
 }
 
 - (void)makeEncodingPrefsPane
 {
-  UIPickerView *encodingPicker = [[UIPickerView alloc] initWithFrame:CGRectMake(0,240,320,240)];
-  [encodingPicker setDelegate:self];
-  [[encodingPicker createTableWithFrame:CGRectMake(0,0,320,240)] setDataSource:self];
-  [preferencesView addSubview:encodingPicker];
-  [encodingPicker setAllowsMultipleSelection:NO];
-}
+  UINavigationItem *encodingItem = [[UINavigationItem alloc] initWithTitle:@"Text Encoding"];
+  EncodingPrefsController *encodingPrefs = [[EncodingPrefsController alloc] init];
+  NSLog(@"pushing nav item...");
+  [navigationBar pushNavigationItem:encodingItem];
+  NSLog(@"attempting transition...");
+  [transitionView transition:1 toView:[encodingPrefs table]];
 
--(int)numberOfColumns
-{
-  return 1;
-}
-
--(int)dataSourceGetRowCount
-{
-  return 6;
-}
-
--(BOOL)dataSourceSupportsVariableRowHeights
-{
-  return NO;
-}
--(float)tableRowHeight
-{
-  return 48.0f;
-}
-- (id)dataSourceCreateCellForRow:(int)row column:(int)col reusing:(id)reusing
-{
-  NSLog(@"tablecellforrow wid a picker!");
-  UIPickerTableCell *theCell = [[UIPickerTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
-  NSString *title;
-  switch (row)
-    {
-    case 0:
-      title = @"Automatic";
-      [theCell setChecked:YES];
-      break;
-    case 1:
-      title = @"UTF-8";
-      break;
-    case 2:
-      title = @"ISO Latin-1";
-      break;
-    case 3:
-      title = @"Windows Latin-1";
-      break;
-    case 4:
-      title = @"Mac OS Roman";
-      break;
-    case 5:
-      title = @"ASCII";
-      break;
-    }
-  [theCell setTitle:title];
-  return theCell;
+  NSLog(@"attempted transition...");
+  [encodingPrefs reloadData];
 }
 
 - (void)aboutAlert { // I like it, good idea.
@@ -530,6 +531,7 @@
       [preferencesTable release];
       [translate release];
       [animator release];
+      [transitionView release];
     }
   [defaults release];
   [controller release];

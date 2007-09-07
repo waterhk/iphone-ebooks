@@ -33,6 +33,8 @@
 #define CHAPTERNAV @"chapterNavKey"
 #define PAGENAV @"pageNavKey"
 
+#define TEXTENCODINGKEY @"textEncodingKey"
+
 - (unsigned int)lastScrollPoint;
 - (unsigned int)lastScrollPointForFile:(NSString *)file;
 - (NSString *)fileBeingRead;
@@ -47,6 +49,7 @@
 - (NSString *)textFont;
 - (BOOL)chapternav;
 - (BOOL)pagenav;
+- (int)defaultTextEncoding;
 
 - (void)setLastScrollPoint:(unsigned int)thePoint;
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
@@ -65,6 +68,7 @@
 - (void)setFlipped:(BOOL)isFlipped;
 - (void)setChapternav:(BOOL)isChpaternav;
 - (void)setPagenav:(BOOL)isPagenav;
+- (void)setDefaultTextEncoding:(int)enc;
 
 - (BOOL)synchronize;
 

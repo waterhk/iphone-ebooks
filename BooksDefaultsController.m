@@ -10,7 +10,7 @@
 
   //  sharedDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:14];
+  NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:15];
 
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
@@ -27,7 +27,7 @@
   [temp setObject:@"1" forKey:CHAPTERNAV];
   [temp setObject:@"1" forKey:PAGENAV];
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
-
+  [temp setObject:@"0" forKey:TEXTENCODINGKEY];
   //  NSLog(@"temp dictionary: %@\n", temp);
 
   [[NSUserDefaults standardUserDefaults] registerDefaults:temp];
@@ -109,6 +109,11 @@
 - (NSString *)lastBrowserPath
 {
   return [[NSUserDefaults standardUserDefaults] objectForKey:BROWSERFILESKEY];
+}
+
+- (int)defaultTextEncoding
+{
+  return [[NSUserDefaults standardUserDefaults] integerForKey:TEXTENCODINGKEY];
 }
 
 - (void)setLastScrollPoint:(unsigned int)thePoint
@@ -258,6 +263,11 @@
 {
   [[NSUserDefaults standardUserDefaults] setBool:isPagenav forKey:PAGENAV];
   _toolbarShouldUpdate = YES;
+}
+
+- (void)setDefaultTextEncoding:(int)enc
+{
+  [[NSUserDefaults standardUserDefaults] setInteger:enc forKey:TEXTENCODINGKEY];
 }
 
 - (BOOL)synchronize

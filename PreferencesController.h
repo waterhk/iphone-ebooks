@@ -31,16 +31,17 @@
 #import "common.h"
 #import "BooksApp.h"
 #import "BooksDefaultsController.h"
-
+#import "EncodingPrefsController.h"
 
 @interface PreferencesController : NSObject {
 	
-	UINavigationBar				*navBar;
+	UINavigationBar				*navigationBar;
 	UITextView					*textView;
 	BooksDefaultsController		*defaults;
 	BooksApp					*controller;
 	UIAlertSheet				*alertSheet;
 	UIPreferencesTable			*preferencesTable;
+	UITransitionView                        *transitionView;
 	
 	UIView						*appView;
 	UIView                      *preferencesView;
@@ -73,8 +74,10 @@
 - (void)makeEncodingPrefsPane;
 
 #define PREFS_NEEDS_ANIMATE @"prefsNeedsAnimateNotification"
+#define ENCODINGSELECTED @"encodingSelectedNotification"
 
 - (void)checkForAnimation:(id)unused;
+- (void)shouldTransitionBackToPrefsView:(NSNotification *)aNotification;
 
 #define RIGHTHANDED 0
 #define LEFTHANDED 1
