@@ -102,12 +102,15 @@
   NSStringEncoding encoding;
   NSMutableString *originalText;
   NSString *outputHTML;
+  NSLog(@"Checking encoding...");
   originalText = [[NSMutableString alloc]
 		   initWithContentsOfFile:thePath
 		   usedEncoding:&encoding
 		   error:NULL];
+  NSLog(@"Encoding: %d",encoding);
   if (nil == originalText)
     {
+      NSLog(@"Trying UTF-8 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:thePath
 		       encoding: NSUTF8StringEncoding
@@ -115,6 +118,7 @@
     }
   if (nil == originalText)
     {
+      NSLog(@"Trying ISO Latin-1 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:thePath
 		       encoding: NSISOLatin1StringEncoding
@@ -122,6 +126,7 @@
     }
   if (nil == originalText)
     {
+      NSLog(@"Trying Mac OS Roman encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:thePath
 		       encoding: NSMacOSRomanStringEncoding
@@ -129,13 +134,17 @@
     }
   if (nil == originalText)
     {
+      NSLog(@"Trying ASCII encoding...");
       originalText = [[NSMutableString alloc] 
 		       initWithContentsOfFile:thePath
 		       encoding: NSASCIIStringEncoding
 		       error:NULL];
     }
   if (nil == originalText)
-    return nil;
+    {
+      NSLog(@"Encoding check failed!");
+      return nil;
+    }
 
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
@@ -307,39 +316,56 @@
 {
   NSStringEncoding encoding;
   NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
+  NSLog(@"Trying to determine encoding...");
   NSMutableString *originalText = [[NSMutableString alloc] 
 				    initWithContentsOfFile:file
 				    usedEncoding:&encoding
 				    error:NULL];
+  NSLog(@"Found encoding: %d", encoding);
   NSString *outputHTML;
 
   if (nil == originalText)
     {
+      NSLog(@"Checking UTF-8 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:file
 		       encoding:NSUTF8StringEncoding error:NULL];
     }
-  if (nil == originalText)
+  /*  if (nil == originalText)
     {
+      NSLog(@"Checking ISO Latin-1 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:file
 		       encoding:NSISOLatin1StringEncoding error:NULL];
     }
+  */
   if (nil == originalText)
     {
+      NSLog(@"Checking Windows Latin-1 encoding...");
+      originalText = [[NSMutableString alloc]
+		       initWithContentsOfFile:file
+		       encoding:NSWindowsCP1252StringEncoding error:NULL];
+    }
+  if (nil == originalText)
+    {
+      NSLog(@"Checking Mac OS Roman encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:file
 		       encoding:NSMacOSRomanStringEncoding error:NULL];
     }
   if (nil == originalText)
     {
+      NSLog(@"Checking ASCII encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:file
 		       encoding:NSASCIIStringEncoding error:NULL];
     }
   if (nil == originalText)
-    return nil;
+    {
+      NSLog(@"Error!  Encoding not found.");
 
+      return nil;
+    }
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
   unsigned int i,j;

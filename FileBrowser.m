@@ -222,7 +222,7 @@ int numberCompare(id firstString, id secondString, void *context)
 }
 
 - (void)tableRowSelected:(NSNotification *)notification {
-  NSLog(@"tableRowSelected!");
+  //NSLog(@"tableRowSelected!");
 	if( [_delegate respondsToSelector:@selector( fileBrowser:fileSelected: )] )
 		[_delegate fileBrowser:self fileSelected:[self selectedFile]];
 }

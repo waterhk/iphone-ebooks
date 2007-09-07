@@ -143,7 +143,11 @@
 	NSString	*str = [NSString stringWithFormat:@"%d",[defaults textSize]];
 	[fontSizePreferenceCell setValue:str];
 	[fontSizePreferenceCell setTitle:@"Font Size"];
-	
+
+	//	fontSizePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
+	//	UIPopup *popup = [[UIPopup alloc] initWithFrame:CGRectMake(0,0,40,40)];
+	//	[fontSizePreferenceCell setControl:popup];
+
 	invertPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL inverted = [defaults inverted];
 	[invertPreferenceCell setTitle:@"Invert Color"];
@@ -191,6 +195,96 @@
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
 
+	//CHANGED: Zach's additions 9/6/07
+
+	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	[defaultEncodingPreferenceCell setValue:@"Automatic"];
+	[defaultEncodingPreferenceCell setShowDisclosure:YES];
+
+	markCurrentBookAsNewCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	[markCurrentBookAsNewCell setTitle:@"Mark Current Folder as New"];
+	[markCurrentBookAsNewCell setShowDisclosure:NO];
+
+	markAllBooksAsNewCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	[markAllBooksAsNewCell setTitle:@"Mark All Books as New"];
+	[markAllBooksAsNewCell setShowDisclosure:NO];
+}
+
+- (void)tableRowSelected:(NSNotification *)notification 
+{
+  int i = [preferencesTable selectedRow];
+  NSLog(@"Selected!Prefs! Row %d!", i);
+  switch (i)
+    {
+    case 13: // text encoding
+      [self makeEncodingPrefsPane];
+      break;
+    case 15: // mark current book as new
+      //[defaults removeScrollPointsForDirectory:@"efniefin"];
+      [markCurrentBookAsNewCell setEnabled:NO];
+      [markCurrentBookAsNewCell setSelected:NO];
+      break;
+    case 16: // mark all books as new
+      [defaults removeAllScrollPoints];
+      [markAllBooksAsNewCell setEnabled:NO];
+      [markAllBooksAsNewCell setSelected:NO];
+      break;
+    default:
+      break;
+    }
+}
+
+- (void)makeEncodingPrefsPane
+{
+  UIPickerView *encodingPicker = [[UIPickerView alloc] initWithFrame:CGRectMake(0,240,320,240)];
+  [encodingPicker setDelegate:self];
+  //  [encodingPicker createTableWithFrame:CGRectMake(0,0,320,240)];
+  [preferencesView addSubview:encodingPicker];
+  [encodingPicker setAllowsMultipleSelection:NO];
+}
+
+-(int)numberOfColumns
+{
+  return 1;
+}
+
+-(int)numberOfRowsInColumn
+{
+  return 6;
+}
+-(float)tableRowHeight
+{
+  return 48.0f;
+}
+- (id)table:(id)table cellForRow:(int)row column:(int)col
+{
+  NSLog(@"tablecellforrow wid a picker!");
+  UIPickerTableCell *theCell = [[UIPickerTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
+  NSString *title;
+  switch (row)
+    {
+    case 0:
+      title = @"Automatic";
+      [theCell setChecked:YES];
+      break;
+    case 1:
+      title = @"UTF-8";
+      break;
+    case 2:
+      title = @"ISO Latin-1";
+      break;
+    case 3:
+      title = @"Windows Latin-1";
+      break;
+    case 4:
+      title = @"Mac OS Roman";
+      break;
+    case 5:
+      title = @"ASCII";
+      break;
+    }
+  [theCell setTitle:title];
+  return theCell;
 }
 
 - (void)aboutAlert { // I like it, good idea.
@@ -202,7 +296,7 @@
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
-	[alertSheet addButtonWithTitle:@"Zowie!"];
+	[alertSheet addButtonWithTitle:@"Yowza!"];
 	[alertSheet setDelegate: self];
 	[alertSheet popupAlertAnimated:YES];
 }
@@ -267,7 +361,7 @@
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
-	return 4;
+	return 6;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
@@ -287,13 +381,19 @@
 	case 3:
 		rowCount = 3;
 		break;
+	case 4:
+		rowCount = 1;
+		break;
+	case 5:
+		rowCount = 2;
+		break;
 	}
 	return rowCount;
 }
 
 - (id)preferencesTable:(id)preferencesTable cellForRow:(int)row inGroup:(int)group
 {
-	NSLog(@"PreferencesController: cellForRow:");
+  //NSLog(@"PreferencesController: cellForRow:");
 	id prefCell = nil;
 	switch (group)
 	{
@@ -341,6 +441,25 @@
 			break;
 		}
 		break;
+	case 4:
+	        switch (row)
+		  {
+		  case 0:
+		    prefCell = defaultEncodingPreferenceCell;
+		    break;
+		  }
+		break;
+	case 5:
+	        switch (row)
+		  {
+		  case 0:
+		    prefCell = markCurrentBookAsNewCell;
+		    break;
+		  case 1:
+		    prefCell = markAllBooksAsNewCell;
+		    break;
+		  }
+		break;
 	}
 	return prefCell;
 }
@@ -361,6 +480,12 @@
 		break;
 	case 3:
 		title = @"Toolbar Options";
+		break;
+	case 4:
+	        title = @"Default Text Encoding";
+		break;
+	case 5:
+                title = @"New Books";
 		break;
 	}
 	return title;

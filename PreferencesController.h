@@ -14,6 +14,7 @@
 #import <UIKit/UIPreferencesTableCell.h>
 #import <UIKit/UISegmentedControl.h>
 #import <UIKit/UISwitchControl.h>
+#import <UIKit/UIPopup.h>
 #import <UIKit/UITextLabel.h>
 #import <UIKit/UIAlertSheet.h>
 #import <UIKit/CDStructures.h>
@@ -23,7 +24,8 @@
 #import <UIKit/UITransformAnimation.h>
 #import <UIKit/UIViewHeartbeat.h>
 #import <CoreGraphics/CoreGraphics.h>
-
+#import <UIKit/UIPickerView.h>
+#import <UIKit/UIPickerTableCell.h>
 #import <UIKit/UITextView.h> // For testing: remove
 
 #import "BooksApp.h"
@@ -51,6 +53,9 @@
 	UIPreferencesControlTableCell *chapterButtonsPreferenceCell;
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
+	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
+	UIPreferencesControlTableCell *markCurrentBookAsNewCell;
+	UIPreferencesControlTableCell *markAllBooksAsNewCell;
 	
 	struct CGRect contentRect;
 
@@ -63,7 +68,8 @@
 - (void)showPreferences;
 - (void)hidePreferences;
 - (void)createPreferenceCells;
-- (void)testAlert;
+- (void)tableRowSelected:(NSNotification *)notification;
+- (void)makeEncodingPrefsPane;
 
 #define PREFS_NEEDS_ANIMATE @"prefsNeedsAnimateNotification"
 

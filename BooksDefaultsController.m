@@ -155,6 +155,13 @@
  //phew!
 }
 
+- (void)removeAllScrollPoints
+{
+  NSDictionary *tempDict = [NSDictionary dictionaryWithObject:@"0" forKey:@""];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
+  [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:LASTSCROLLPOINTKEY];
+}
+
 - (void)setLastBrowserPath:(NSString *)browserPath
 {
   [[NSUserDefaults standardUserDefaults] setObject:browserPath forKey:BROWSERFILESKEY];
