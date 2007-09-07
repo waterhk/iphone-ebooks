@@ -99,52 +99,66 @@
 
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath
 {
-  NSStringEncoding encoding;
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  NSStringEncoding encoding = [defaults defaultTextEncoding];
   NSMutableString *originalText;
   NSString *outputHTML;
   NSLog(@"Checking encoding...");
-  originalText = [[NSMutableString alloc]
-		   initWithContentsOfFile:thePath
-		   usedEncoding:&encoding
-		   error:NULL];
-  NSLog(@"Encoding: %d",encoding);
-  if (nil == originalText)
+  if (AUTOMATIC_ENCODING == encoding)
     {
-      NSLog(@"Trying UTF-8 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:thePath
-		       encoding: NSUTF8StringEncoding
+		       usedEncoding:&encoding
 		       error:NULL];
+      NSLog(@"Encoding: %d",encoding);
+      if (nil == originalText)
+	{
+	  NSLog(@"Trying UTF-8 encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:thePath
+			   encoding: NSUTF8StringEncoding
+			   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Trying ISO Latin-1 encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:thePath
+			   encoding: NSISOLatin1StringEncoding
+			   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Trying Mac OS Roman encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:thePath
+			   encoding: NSMacOSRomanStringEncoding
+			   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Trying ASCII encoding...");
+	  originalText = [[NSMutableString alloc] 
+			   initWithContentsOfFile:thePath
+			   encoding: NSASCIIStringEncoding
+			   error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Could not determine text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
+	}
     }
-  if (nil == originalText)
+  else // if encoding is specified
     {
-      NSLog(@"Trying ISO Latin-1 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:thePath
-		       encoding: NSISOLatin1StringEncoding
+		       encoding: encoding
 		       error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Trying Mac OS Roman encoding...");
-      originalText = [[NSMutableString alloc]
-		       initWithContentsOfFile:thePath
-		       encoding: NSMacOSRomanStringEncoding
-		       error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Trying ASCII encoding...");
-      originalText = [[NSMutableString alloc] 
-		       initWithContentsOfFile:thePath
-		       encoding: NSASCIIStringEncoding
-		       error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Encoding check failed!");
-      return nil;
-    }
+      if (nil == originalText)
+	{
+	  originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Incorrect text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
+	}
+    } //else
 
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
@@ -314,58 +328,71 @@
 
 - (NSString *)HTMLFromTextFile:(NSString *)file
 {
-  NSStringEncoding encoding;
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  NSStringEncoding encoding = [defaults defaultTextEncoding];
   NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
-  NSLog(@"Trying to determine encoding...");
-  NSMutableString *originalText = [[NSMutableString alloc] 
-				    initWithContentsOfFile:file
-				    usedEncoding:&encoding
-				    error:NULL];
-  NSLog(@"Found encoding: %d", encoding);
   NSString *outputHTML;
+  NSMutableString *originalText;
+  if (AUTOMATIC_ENCODING == encoding)
+    {
+      NSLog(@"Trying to determine encoding...");
+      originalText = [[NSMutableString alloc] 
+		       initWithContentsOfFile:file
+		       usedEncoding:&encoding
+		       error:NULL];
+      NSLog(@"Found encoding: %d", encoding);
 
-  if (nil == originalText)
+      if (nil == originalText)
+	{
+	  NSLog(@"Checking UTF-8 encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:file
+			   encoding:NSUTF8StringEncoding error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Checking ISO Latin-1 encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:file
+			   encoding:NSISOLatin1StringEncoding error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Checking Windows Latin-1 encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:file
+			   encoding:NSWindowsCP1252StringEncoding error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Checking Mac OS Roman encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:file
+			   encoding:NSMacOSRomanStringEncoding error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  NSLog(@"Checking ASCII encoding...");
+	  originalText = [[NSMutableString alloc]
+			   initWithContentsOfFile:file
+			   encoding:NSASCIIStringEncoding error:NULL];
+	}
+      if (nil == originalText)
+	{
+	  originalText = [[NSMutableString alloc] initWithString:@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
+    }
+  else //encoding is user-specified
     {
-      NSLog(@"Checking UTF-8 encoding...");
       originalText = [[NSMutableString alloc]
 		       initWithContentsOfFile:file
-		       encoding:NSUTF8StringEncoding error:NULL];
+		       encoding:encoding error:NULL];
+      if (nil == originalText)
+	{
+	  originalText = [[NSMutableString alloc] initWithString:@"Incorrect text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
     }
-  /*  if (nil == originalText)
-    {
-      NSLog(@"Checking ISO Latin-1 encoding...");
-      originalText = [[NSMutableString alloc]
-		       initWithContentsOfFile:file
-		       encoding:NSISOLatin1StringEncoding error:NULL];
-    }
-  */
-  if (nil == originalText)
-    {
-      NSLog(@"Checking Windows Latin-1 encoding...");
-      originalText = [[NSMutableString alloc]
-		       initWithContentsOfFile:file
-		       encoding:NSWindowsCP1252StringEncoding error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Checking Mac OS Roman encoding...");
-      originalText = [[NSMutableString alloc]
-		       initWithContentsOfFile:file
-		       encoding:NSMacOSRomanStringEncoding error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Checking ASCII encoding...");
-      originalText = [[NSMutableString alloc]
-		       initWithContentsOfFile:file
-		       encoding:NSASCIIStringEncoding error:NULL];
-    }
-  if (nil == originalText)
-    {
-      NSLog(@"Error!  Encoding not found.");
 
-      return nil;
-    }
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
   unsigned int i,j;
@@ -414,13 +441,13 @@
   //Change double-newlines to </p><p>.
   i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d newlines\n", i);
+  NSLog(@"replaced %d double-newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   // And just in case someone has a Classic MacOS textfile...
   i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d carriage returns\n", i);
+  NSLog(@"replaced %d double-carriage-returns\n", i);
   j += i;
 
   NSLog(@"Replaced %d characters in textfile %@.\n", j, file);

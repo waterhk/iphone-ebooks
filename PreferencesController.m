@@ -109,7 +109,11 @@
   [transitionView transition:2 toView:preferencesTable];
   [navigationBar popNavigationItem];
   NSString *newValue = [aNotification object];
-  [defaultEncodingPreferenceCell setValue:newValue];
+  if (![newValue isEqualToString:[defaultEncodingPreferenceCell value]])
+    {
+      [defaultEncodingPreferenceCell setValue:newValue];
+      [controller refreshTextViewFromDefaults];
+    }
   [defaultEncodingPreferenceCell setSelected:NO];
 }
 
@@ -264,11 +268,11 @@
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
 
-	markCurrentBookAsNewCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	markCurrentBookAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markCurrentBookAsNewCell setTitle:@"Mark Current Folder as New"];
 	[markCurrentBookAsNewCell setShowDisclosure:NO];
 
-	markAllBooksAsNewCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	markAllBooksAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markAllBooksAsNewCell setTitle:@"Mark All Books as New"];
 	[markAllBooksAsNewCell setShowDisclosure:NO];
 }
@@ -301,7 +305,8 @@
 - (void)makeEncodingPrefsPane
 {
   UINavigationItem *encodingItem = [[UINavigationItem alloc] initWithTitle:@"Text Encoding"];
-  EncodingPrefsController *encodingPrefs = [[EncodingPrefsController alloc] init];
+  if (nil == encodingPrefs)
+    encodingPrefs = [[EncodingPrefsController alloc] init];
   NSLog(@"pushing nav item...");
   [navigationBar pushNavigationItem:encodingItem];
   NSLog(@"attempting transition...");
@@ -309,6 +314,8 @@
 
   NSLog(@"attempted transition...");
   [encodingPrefs reloadData];
+  [encodingItem release];
+  //  [encodingPrefs autorelease];
 }
 
 - (void)aboutAlert { // I like it, good idea.
@@ -533,6 +540,8 @@
       [animator release];
       [transitionView release];
     }
+  if (encodingPrefs != nil)
+    [encodingPrefs release];
   [defaults release];
   [controller release];
   [super dealloc];

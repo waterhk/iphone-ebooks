@@ -10,6 +10,7 @@
 #define MAX_FONT_SIZE (36)
 
 #define AUTOMATIC_ENCODING (0)
+#define ENCODINGSELECTED @"encodingSelectedNotification"
 
 #endif
 

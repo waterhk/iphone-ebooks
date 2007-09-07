@@ -46,12 +46,12 @@
 {
   return 7;
 }
-/*
+
 - (id)preferencesTable:(id)preferencesTable titleForGroup:(int)group
 {
   return nil;
 }
-*/
+
 - (float)preferencesTable:(id)preferencesTable heightForRow:(int)row inGroup:(int)group withProposedHeight:(float)proposedHeight;
 {
   return 48.0f;
@@ -95,6 +95,7 @@
     {
       [defaults setDefaultTextEncoding:NSASCIIStringEncoding];
     }
+
   [cell setSelected:NO withFade:YES];
   [[NSNotificationCenter defaultCenter] postNotificationName:ENCODINGSELECTED object:title];
 }

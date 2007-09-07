@@ -1,4 +1,6 @@
 // PreferencesView, for Books by Chris Born
+#ifndef _PREFS_CONTROLLER_H
+#define _PREFS_CONTROLLER_H
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -14,7 +16,6 @@
 #import <UIKit/UIPreferencesTableCell.h>
 #import <UIKit/UISegmentedControl.h>
 #import <UIKit/UISwitchControl.h>
-#import <UIKit/UIPopup.h>
 #import <UIKit/UITextLabel.h>
 #import <UIKit/UIAlertSheet.h>
 #import <UIKit/CDStructures.h>
@@ -24,8 +25,6 @@
 #import <UIKit/UITransformAnimation.h>
 #import <UIKit/UIViewHeartbeat.h>
 #import <CoreGraphics/CoreGraphics.h>
-#import <UIKit/UIPickerView.h>
-#import <UIKit/UIPickerTableCell.h>
 #import <UIKit/UITextView.h> // For testing: remove
 
 #import "common.h"
@@ -56,14 +55,16 @@
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
-	UIPreferencesControlTableCell *markCurrentBookAsNewCell;
-	UIPreferencesControlTableCell *markAllBooksAsNewCell;
+	UIPreferencesTableCell *markCurrentBookAsNewCell;
+	UIPreferencesTableCell *markAllBooksAsNewCell;
 	
 	struct CGRect contentRect;
 
 	BOOL needsInAnimation, needsOutAnimation; // here's hoping.
 	UIAnimator *animator;
 	UITransformAnimation *translate;
+
+       	EncodingPrefsController *encodingPrefs;
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
@@ -74,7 +75,6 @@
 - (void)makeEncodingPrefsPane;
 
 #define PREFS_NEEDS_ANIMATE @"prefsNeedsAnimateNotification"
-#define ENCODINGSELECTED @"encodingSelectedNotification"
 
 - (void)checkForAnimation:(id)unused;
 - (void)shouldTransitionBackToPrefsView:(NSNotification *)aNotification;
@@ -90,3 +90,5 @@
 - (NSString *)fontNameForIndex:(int)index;
 
 @end
+
+#endif

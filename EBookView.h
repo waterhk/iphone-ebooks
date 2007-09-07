@@ -6,6 +6,8 @@
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UIViewTapInfo.h>
 
+#import "BooksDefaultsController.h" //sigh...
+
 @interface EBookView : UITextView
 {
   //  UIViewTapInfo *tapinfo;

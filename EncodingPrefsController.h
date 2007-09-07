@@ -1,4 +1,6 @@
 // EncodingPrefsController, for Books.app, by Zach Brewster-Geisz
+#ifndef ENC_PREF_CTL_H
+#define ENC_PREF_CTL_H
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -14,7 +16,8 @@
 #import <UIKit/UIPreferencesTableCell.h>
 
 #import "BooksDefaultsController.h"
-#import "PreferencesController.h"
+//#import "PreferencesController.h"
+
 
 @interface EncodingPrefsController : NSObject
 {
@@ -23,6 +26,8 @@
 }
 
 -(UITable *)table;
--(void)transitionToEncodingPrefs:(UITransitionView *)tView;
 -(void)reloadData;
+
 @end
+
+#endif
