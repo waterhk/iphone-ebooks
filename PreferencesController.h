@@ -28,6 +28,7 @@
 #import <UIKit/UIPickerTableCell.h>
 #import <UIKit/UITextView.h> // For testing: remove
 
+#import "common.h"
 #import "BooksApp.h"
 #import "BooksDefaultsController.h"
 

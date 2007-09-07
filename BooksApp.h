@@ -72,4 +72,7 @@
 - (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;
 - (void)refreshTextViewFromDefaults;
+- (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly;
+- (void)toggleStatusBarColor;
+
 @end

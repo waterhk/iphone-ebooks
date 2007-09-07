@@ -99,19 +99,38 @@
 
 - (void)hidePreferences {
 	// Save defaults here
-	[defaults setTextFont:[self fontNameForIndex:[fontChoiceControl selectedSegment]]];
-	NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
+        BOOL textNeedsRefresh = NO;
+	NSString *proposedFont = [self fontNameForIndex:[fontChoiceControl selectedSegment]];
+	if (![proposedFont isEqualToString:[defaults textFont]])
+	  {
+	    [defaults setTextFont:proposedFont];
+	    textNeedsRefresh = YES;
+	  }
+	//NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
 	int proposedSize = [[fontSizePreferenceCell value] intValue];
-	proposedSize = (proposedSize > 36) ? 36 : proposedSize;
-	proposedSize = (proposedSize < 10) ? 10 : proposedSize;
-	//FIXME: should probably set max and min font sizes via a constant
-	//in common.h
-	[defaults setTextSize: proposedSize];
-	[defaults setInverted:[[[invertPreferenceCell control] valueForKey:@"value"] boolValue]];
+	proposedSize = (proposedSize > MAX_FONT_SIZE) ? MAX_FONT_SIZE : proposedSize;
+	proposedSize = (proposedSize < MIN_FONT_SIZE) ? MIN_FONT_SIZE : proposedSize;
+	if ([defaults textSize] != proposedSize)
+	  {
+	    [defaults setTextSize: proposedSize];
+	    textNeedsRefresh = YES;
+	  }
+
+	BOOL proposedInverted = [[[invertPreferenceCell control] valueForKey:@"value"] boolValue];
+	if ([defaults inverted] != proposedInverted)
+	  {
+	    [defaults setInverted:proposedInverted];
+	    textNeedsRefresh = YES;
+	  }
+
 	[defaults setToolbar:[[[showToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+
 	[defaults setNavbar:[[[showNavbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+
 	[defaults setChapternav:[[[chapterButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
+
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
+
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 
@@ -119,8 +138,7 @@
 		NSLog(@"Synced defaults from prefs pane.");
 	}
 	
-
-	[controller refreshTextViewFromDefaults];
+	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
 	needsOutAnimation = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
 
@@ -238,7 +256,7 @@
 {
   UIPickerView *encodingPicker = [[UIPickerView alloc] initWithFrame:CGRectMake(0,240,320,240)];
   [encodingPicker setDelegate:self];
-  //  [encodingPicker createTableWithFrame:CGRectMake(0,0,320,240)];
+  [[encodingPicker createTableWithFrame:CGRectMake(0,0,320,240)] setDataSource:self];
   [preferencesView addSubview:encodingPicker];
   [encodingPicker setAllowsMultipleSelection:NO];
 }
@@ -248,15 +266,20 @@
   return 1;
 }
 
--(int)numberOfRowsInColumn
+-(int)dataSourceGetRowCount
 {
   return 6;
+}
+
+-(BOOL)dataSourceSupportsVariableRowHeights
+{
+  return NO;
 }
 -(float)tableRowHeight
 {
   return 48.0f;
 }
-- (id)table:(id)table cellForRow:(int)row column:(int)col
+- (id)dataSourceCreateCellForRow:(int)row column:(int)col reusing:(id)reusing
 {
   NSLog(@"tablecellforrow wid a picker!");
   UIPickerTableCell *theCell = [[UIPickerTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];

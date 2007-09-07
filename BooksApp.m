@@ -499,20 +499,29 @@
 
 - (void)refreshTextViewFromDefaults
 {
-    [textView setTextSize:[defaults textSize]];
+  [self refreshTextViewFromDefaultsToolbarsOnly:NO];
+}
 
-    textInverted = [defaults inverted];
-    [textView invertText:textInverted];
+- (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly
+{
+  if (!toolbarsOnly)
+    {
+      [textView setTextSize:[defaults textSize]];
+      
+      textInverted = [defaults inverted];
+      [textView invertText:textInverted];
 
-    [textView setTextFont:[defaults textFont]];
-	
-    [self toggleStatusBarColor];
-	
+      [textView setTextFont:[defaults textFont]];
+      
+      [self toggleStatusBarColor];
+    }
     if (readingText)
       {  // Let's avoid the weird toggle behavior.
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
       }
+    else // not reading text
+      [bottomNavBar hide:YES];
 
     if (![defaults navbar])
       [textView setMarginTop:48];
@@ -522,10 +531,12 @@
       [textView setBottomBufferHeight:48];
     else
       [textView setBottomBufferHeight:0];
-
-    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-    rect.origin.x = rect.origin.y = 0.0f;
-    [textView setFrame:rect];
+    if (!toolbarsOnly)
+      {
+	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	rect.origin.x = rect.origin.y = 0.0f;
+	[textView setFrame:rect];
+      }
 }
 
 - (void)toggleStatusBarColor 	// Thought this might be a nice touch
@@ -535,9 +546,9 @@
   //bar white when in the browser view, since the browser is white.
 {
 	if ([defaults inverted]) {
-		[self setStatusBarMode:3 duration:0.5];
+		[self setStatusBarMode:3 duration:0.25];
     } else {
-		[self setStatusBarMode:0 duration:0.5];
+		[self setStatusBarMode:0 duration:0.25];
 	}
 }
 
