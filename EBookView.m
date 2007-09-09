@@ -85,15 +85,31 @@
 
 - (void)loadBookWithPath:(NSString *)thePath
 {
+  [self loadBookWithPath:thePath numCharacters:-1];
+}
+
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
+{
+  NSString *theHTML = nil;
   path = [[thePath copy] retain];
   if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
     {
-      [self setHTML: [self HTMLFromTextFile:thePath]];
+      theHTML = [self HTMLFromTextFile:thePath];
     }
   else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"html"] ||
 	   [[[thePath pathExtension] lowercaseString] isEqualToString:@"htm"])
     { 
-      [self setHTML:[self HTMLFileWithoutImages:thePath]];
+      theHTML = [self HTMLFileWithoutImages:thePath];
+    }
+  if ((-1 == numChars) || (numChars >= [theHTML length]))
+    {
+      [self setHTML:theHTML];
+    }
+  else
+    {
+      NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
+					[theHTML substringToIndex:numChars]];
+      [self setHTML:tempyString];
     }
 }
 
@@ -176,6 +192,9 @@
   i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:@"<br /></BODY>" options:NSLiteralSearch range:fullRange];
   outputHTML = [NSString stringWithString:originalText];
   [originalText release];
+
+  //  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
+  //  NSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
   return outputHTML;
 }
 

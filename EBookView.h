@@ -5,6 +5,7 @@
 //#import "UIKeyboardInputProtocol.h"
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UIViewTapInfo.h>
+//#import <UIKit/NSString-UIStringDrawing.h>
 
 #import "BooksDefaultsController.h" //sigh...
 
@@ -19,6 +20,7 @@
 
 - (id)initWithFrame:(struct CGRect)rect;
 - (void)loadBookWithPath:(NSString *)thePath;
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars;
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
 - (NSString *)currentPath;
 - (void)embiggenText;

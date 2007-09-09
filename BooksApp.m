@@ -33,12 +33,14 @@
 
     navbarsAreOn = YES;
 
+    textViewNeedsFullText = NO;
+
     defaults = [[BooksDefaultsController alloc] init];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(updateToolbar:)
-												 name:@"toolbarDefaultsChanged"
-											   object:nil];
+		 selector:@selector(updateToolbar:)
+		 name:@"toolbarDefaultsChanged"
+					      object:nil];
 
     window = [[UIWindow alloc] initWithContentRect: rect];
 
@@ -137,7 +139,7 @@
 
     [navBar enableAnimation];
 
-    [self setStatusBarCustomText:@"?"];
+    //    [self setStatusBarCustomText:@"?"];
     doneLaunching = YES;
 
 }
@@ -153,6 +155,11 @@
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  transitionHasBeenCalled = YES;
 	}
+    }
+  if ((textViewNeedsFullText) && ![transitionView isTransitioning])
+    {
+      [textView loadBookWithPath:[textView currentPath]];
+      textViewNeedsFullText = NO;
     }
 }
 
@@ -195,9 +202,18 @@
       // Slight optimization.  If the file is already loaded,
       // don't bother reloading.
 	{
-	  [textView loadBookWithPath:file];
-	  [textView scrollPointVisibleAtTopLeft:
-	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  int lastPt = [defaults lastScrollPointForFile:file];
+	  if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
+	    {
+	      [textView loadBookWithPath:file numCharacters:500];
+	      textViewNeedsFullText = YES;
+	    }
+	  else
+	    {
+	      [textView loadBookWithPath:file];
+	      [textView scrollPointVisibleAtTopLeft:
+			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	    }
 	  //	  [self refreshTextViewFromDefaults];
 	}
       //NSLog(@"back in BooksApp...");
@@ -321,9 +337,18 @@
 		     stringByDeletingPathExtension]];
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [self refreshTextViewFromDefaults];
-	  [textView loadBookWithPath:nextFile];
-	  [textView scrollPointVisibleAtTopLeft:
-	       CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  int lastPt = [defaults lastScrollPointForFile:nextFile];
+	  if (0 == lastPt)
+	    {
+	      [textView loadBookWithPath:nextFile numCharacters:500];
+	      textViewNeedsFullText = YES;
+	    }
+	  else
+	    {
+	      [textView loadBookWithPath:nextFile];
+	      [textView scrollPointVisibleAtTopLeft:
+			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	    }
 	  [tempItem release];
 	  [tempView autorelease];
 	}
