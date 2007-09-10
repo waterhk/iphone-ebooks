@@ -213,25 +213,21 @@
 	    }
 	  else
 	    {
-	      [progressHUD show:YES];
-	      [textView loadBookWithPath:file];
+	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+	      [textView loadBookWithPath:file numCharacters:numChars];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      [progressHUD show:NO];
+	      textViewNeedsFullText = YES;
 	    }
-	  //	  [self refreshTextViewFromDefaults];
 	}
-      //NSLog(@"back in BooksApp...");
 
-      //  NSLog(@"did the buttons...");
       [tempItem release];
-      //NSLog(@"released tempItem...");
       [navBar hide:NO];
       if (![defaults toolbar])
 	[bottomNavBar show];
       else
 	[bottomNavBar hide:NO];
-      //NSLog(@"Marines, we are leaving...");
     }
 }
 
@@ -351,11 +347,12 @@
 	    }
 	  else
 	    {
-	      [progressHUD show:YES];
+	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
 	      [textView loadBookWithPath:nextFile];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      [progressHUD show:NO];
+	      textViewNeedsFullText = YES;
 	    }
 	  [tempItem release];
 	  [tempView autorelease];
