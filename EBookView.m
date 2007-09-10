@@ -108,7 +108,7 @@
   else
     {
       NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
-					[theHTML substringToIndex:numChars]];
+			       [theHTML HTMLsubstringToIndex:numChars]];
       [self setHTML:tempyString];
     }
 }

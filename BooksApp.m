@@ -47,7 +47,7 @@
     [window orderFront: self];
     [window makeKey: self];
     [window _setHidden: NO];
-
+    progressHUD = [[UIProgressHUD alloc] initWithWindow:window];
     mainView = [[UIView alloc] initWithFrame: rect];
 
 	[self setupNavbar];
@@ -118,8 +118,9 @@
 	    [tempItem release];
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
-	    [textView loadBookWithPath:recentFile];
-	    
+	    [textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
+	    textViewNeedsFullText = YES;
+	    [progressHUD show:YES];
 	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
 	    
 	  }
@@ -146,6 +147,12 @@
 
 - (void)heartbeatCallback:(id)unused
 {
+  if ((textViewNeedsFullText) && ![transitionView isTransitioning])
+    {
+      [textView loadBookWithPath:[textView currentPath]];
+      textViewNeedsFullText = NO;
+      [progressHUD show:NO];
+    }
   if (!transitionHasBeenCalled)
     {
       if ((textView != nil) && (defaults != nil))
@@ -155,11 +162,6 @@
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  transitionHasBeenCalled = YES;
 	}
-    }
-  if ((textViewNeedsFullText) && ![transitionView isTransitioning])
-    {
-      [textView loadBookWithPath:[textView currentPath]];
-      textViewNeedsFullText = NO;
     }
 }
 
@@ -205,14 +207,17 @@
 	  int lastPt = [defaults lastScrollPointForFile:file];
 	  if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
 	    {
-	      [textView loadBookWithPath:file numCharacters:500];
+	      [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize]))];
 	      textViewNeedsFullText = YES;
+	      //[progressHUD show:YES];
 	    }
 	  else
 	    {
+	      [progressHUD show:YES];
 	      [textView loadBookWithPath:file];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	      [progressHUD show:NO];
 	    }
 	  //	  [self refreshTextViewFromDefaults];
 	}
@@ -340,14 +345,17 @@
 	  int lastPt = [defaults lastScrollPointForFile:nextFile];
 	  if (0 == lastPt)
 	    {
-	      [textView loadBookWithPath:nextFile numCharacters:500];
+	      [textView loadBookWithPath:nextFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
 	      textViewNeedsFullText = YES;
+	      //[progressHUD show:YES]; //nah, I don't like it there.
 	    }
 	  else
 	    {
+	      [progressHUD show:YES];
 	      [textView loadBookWithPath:nextFile];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	      [progressHUD show:NO];
 	    }
 	  [tempItem release];
 	  [tempView autorelease];
@@ -375,10 +383,11 @@
 
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [self refreshTextViewFromDefaults];
+	  [progressHUD show:YES];
 	  [textView loadBookWithPath:prevFile];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-
+	  [progressHUD show:NO];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -588,6 +597,7 @@
   [bottomNavBar release];
   [mainView release];
   // textView = nil;
+  [progressHUD release];
   [textView release];
   [defaults release];
   [buttonImg release];

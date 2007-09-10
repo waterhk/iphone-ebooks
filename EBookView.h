@@ -8,6 +8,7 @@
 //#import <UIKit/NSString-UIStringDrawing.h>
 
 #import "BooksDefaultsController.h" //sigh...
+#import "NSString-BooksAppAdditions.h"
 
 @interface EBookView : UITextView
 {

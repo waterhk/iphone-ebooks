@@ -14,6 +14,7 @@
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
+#import <UIKit/UIProgressHUD.h>
 #import "EBookView.h"
 #import "FileBrowser.h"
 #import "BooksDefaultsController.h"
@@ -52,6 +53,8 @@
 	UINavBarButton *rightButton;
 	UINavBarButton *leftButton;
 	
+	UIProgressHUD *progressHUD;
+
 	UIImage *buttonImg;
 	NSString *imgPath;
 }
