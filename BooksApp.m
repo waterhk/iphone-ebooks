@@ -206,6 +206,7 @@
 	  UINavigationItem *tempItem = [[UINavigationItem alloc]
 	    		       initWithTitle:[[file lastPathComponent]
 					       stringByDeletingPathExtension]];
+	  [defaults setLastScrollPoint:0 forFile:file]; //Just to get rid of the "unread" circle
 	  [navBar pushNavigationItem:tempItem withView:imageView];
 	  [tempItem release];
 	}
@@ -351,7 +352,7 @@
   if (![button isPressed])
     {
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
-      if (nil != nextFile)
+      if ((nil != nextFile) && [nextFile isReadableTextFilePath])
 	{
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];
@@ -396,7 +397,7 @@
   if (![button isPressed])
     {
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
-      if (nil != prevFile)
+      if ((nil != prevFile) && [prevFile isReadableTextFilePath])
 	{
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];

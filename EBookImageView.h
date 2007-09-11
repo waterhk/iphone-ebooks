@@ -3,7 +3,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-//#import <UIKit/UIImage.h>
+#import <UIKit/UIView-Geometry.h>
+#import <UIKit/UIView-Rendering.h>
 #import <CoreGraphics/CoreGraphics.h>
 
 @interface EBookImageView : UIScroller

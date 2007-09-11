@@ -9,6 +9,9 @@
   struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
   self = [super initWithFrame:rect];
   [self setAllowsFourWayRubberBanding:YES];
+  float components[4] = { 0.5, 0.5, 0.5, 1.0 };
+  CGColorRef gray = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
+  [self setBackgroundColor:gray];
   UIImage *img = [UIImage imageAtPath:file];
   //  struct CGSize size = [img size];
   CGImageRef imgRef = [img imageRef];
