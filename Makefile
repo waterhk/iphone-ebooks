@@ -6,7 +6,7 @@ all:    Books
 
 Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	BooksDefaultsController.o HideableNavBar.o PreferencesController.o \
-	EncodingPrefsController.o NSString-BooksAppAdditions.o
+	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m 

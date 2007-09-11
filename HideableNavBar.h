@@ -37,6 +37,7 @@
   BOOL hidden;
   BOOL isTop;
   BOOL _textIsOnTop;
+  BOOL _pixOnTop;
   UITransformAnimation *translate;
   UIAnimator *animator;
   UITransitionView *_transView;

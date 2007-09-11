@@ -34,6 +34,7 @@
   animator = [[UIAnimator alloc] init];
   hidden = NO;
   _textIsOnTop = NO;
+  _pixOnTop = NO;
   _transView = nil;
   _extensions = nil;
   _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
@@ -63,9 +64,10 @@
 
 - (void)popNavigationItem
 {
-  if (_textIsOnTop)
+  if (_textIsOnTop || _pixOnTop)
     {
       _textIsOnTop = NO;
+      _pixOnTop = NO;//FIXME:Need to set up things so you can look at pix from the text view, not just the browser view.
       if ([self isAnimationEnabled])
 	[_transView transition:2 toView:[_browserArray lastObject]];
       NSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
@@ -116,16 +118,18 @@
 		  withView:(UIView *)view
 	 reverseTransition:(BOOL)reversed
 {
+  BOOL thisIsText = [view respondsToSelector:@selector(loadBookWithPath:)]; //ugh!
   // Here, cometh funky code, in anticipation of multiple text views.
-  if (_textIsOnTop)
+  if (_textIsOnTop && thisIsText)
     {
       [self disableAnimation];
       [super popNavigationItem];
       [self enableAnimation];
     }
 
-  _textIsOnTop = YES;
-  NSLog(@"Pushed text view\n");
+  _textIsOnTop = thisIsText;
+  _pixOnTop = !thisIsText;
+  NSLog(@"Pushed view\n");
   int transitionType = reversed ? 2 : 1;
   [_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
 	      toView:view];

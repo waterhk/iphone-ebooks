@@ -16,6 +16,7 @@
 #import <UIKit/UIFontChooser.h>
 #import <UIKit/UIProgressHUD.h>
 #import "EBookView.h"
+#import "EBookImageView.h"
 #import "FileBrowser.h"
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"

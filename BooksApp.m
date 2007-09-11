@@ -194,42 +194,64 @@
   else // not a directory
     {
       BOOL sameFile;
-      readingText = YES;
-      UINavigationItem *tempItem = [[UINavigationItem alloc]
+      NSString *ext = [file pathExtension];
+      BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"]);
+      if (isPicture)
+	{
+	  EBookImageView *imgView = [[EBookImageView alloc] initWithContentsOfFile:file];  //FIXME! this wont scale
+	  UINavigationItem *tempItem = [[UINavigationItem alloc]
+	    		       initWithTitle:[[file lastPathComponent]
+					       stringByDeletingPathExtension]];
+	  [navBar pushNavigationItem:tempItem withView:imgView];
+	  [tempItem release];
+	}
+      else //text or HTML file
+	{
+	  readingText = YES;
+	  UINavigationItem *tempItem = [[UINavigationItem alloc]
 		        initWithTitle:[[file lastPathComponent]
 					stringByDeletingPathExtension]];
-      sameFile = [[textView currentPath] isEqualToString:file];
-      [navBar pushNavigationItem:tempItem withView:textView];
-      if (!sameFile)
-      // Slight optimization.  If the file is already loaded,
-      // don't bother reloading.
-	{
-	  int lastPt = [defaults lastScrollPointForFile:file];
-	  if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
+	  sameFile = [[textView currentPath] isEqualToString:file];
+	  [navBar pushNavigationItem:tempItem withView:textView];
+	  if (!sameFile)
+	    // Slight optimization.  If the file is already loaded,
+	    // don't bother reloading.
 	    {
-	      BOOL didLoadAll = NO;
-	      [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
-	      textViewNeedsFullText = !didLoadAll;
-	      //[progressHUD show:YES];
+	      int lastPt = [defaults lastScrollPointForFile:file];
+	      if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
+		{
+		  BOOL didLoadAll = NO;
+		  [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
+		  textViewNeedsFullText = !didLoadAll;
+		  //[progressHUD show:YES];
+		}
+	      else
+		{
+		  BOOL didLoadAll = NO;
+		  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+		  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+		  [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
+		  [textView scrollPointVisibleAtTopLeft:
+			      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+		  textViewNeedsFullText = !didLoadAll;
+		}
 	    }
-	  else
-	    {
-	      BOOL didLoadAll = NO;
-	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
-	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
-	      [textView scrollPointVisibleAtTopLeft:
-			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      textViewNeedsFullText = !didLoadAll;
-	    }
-	}
 
-      [tempItem release];
-      [navBar hide:NO];
-      if (![defaults toolbar])
-	[bottomNavBar show];
+	  [tempItem release];
+	}
+      if (isPicture)
+	{
+	  [navBar show];
+	  [bottomNavBar hide:YES];
+	}
       else
-	[bottomNavBar hide:NO];
+	{
+	  [navBar hide:NO];
+	  if (![defaults toolbar])
+	    [bottomNavBar show];
+	  else
+	    [bottomNavBar hide:NO];
+	}
     }
 }
 
@@ -408,7 +430,7 @@
 
     [navBar setDelegate:self];
     [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", nil]];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", @"jpg", @"png", nil]];
     [navBar hideButtons];
 
     [navBar disableAnimation];
