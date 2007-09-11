@@ -85,10 +85,19 @@
 
 - (void)loadBookWithPath:(NSString *)thePath
 {
-  [self loadBookWithPath:thePath numCharacters:-1];
+  BOOL junk;
+  return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk];
 }
 
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
+{
+  BOOL junk;
+  return [self loadBookWithPath:thePath numCharacters:numChars
+	       didLoadAll:&junk];
+}
+
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
+	      didLoadAll:(BOOL *)didLoadAll
 {
   NSString *theHTML = nil;
   path = [[thePath copy] retain];
@@ -103,12 +112,13 @@
     }
   if ((-1 == numChars) || (numChars >= [theHTML length]))
     {
+      *didLoadAll = YES;
       [self setHTML:theHTML];
     }
   else
     {
       NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
-			       [theHTML HTMLsubstringToIndex:numChars]];
+			       [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
       [self setHTML:tempyString];
     }
 }

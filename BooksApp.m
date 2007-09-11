@@ -207,18 +207,20 @@
 	  int lastPt = [defaults lastScrollPointForFile:file];
 	  if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
 	    {
-	      [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize]))];
-	      textViewNeedsFullText = YES;
+	      BOOL didLoadAll = NO;
+	      [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
+	      textViewNeedsFullText = !didLoadAll;
 	      //[progressHUD show:YES];
 	    }
 	  else
 	    {
+	      BOOL didLoadAll = NO;
 	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
 	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:file numCharacters:numChars];
+	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      textViewNeedsFullText = YES;
+	      textViewNeedsFullText = !didLoadAll;
 	    }
 	}
 
@@ -341,18 +343,21 @@
 	  int lastPt = [defaults lastScrollPointForFile:nextFile];
 	  if (0 == lastPt)
 	    {
-	      [textView loadBookWithPath:nextFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
-	      textViewNeedsFullText = YES;
+	      BOOL didLoadAll = NO;
+	      [textView loadBookWithPath:nextFile numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
+	      textViewNeedsFullText = !didLoadAll;
 	      //[progressHUD show:YES]; //nah, I don't like it there.
 	    }
 	  else
 	    {
+	      BOOL didLoadAll = NO;
 	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
 	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:nextFile];
+	      [textView loadBookWithPath:nextFile numCharacters:numChars
+			didLoadAll:&didLoadAll];
 	      [textView scrollPointVisibleAtTopLeft:
 			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      textViewNeedsFullText = YES;
+	      textViewNeedsFullText = !didLoadAll;
 	    }
 	  [tempItem release];
 	  [tempView autorelease];

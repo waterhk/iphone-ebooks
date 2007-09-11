@@ -1,8 +1,14 @@
 #import "NSString-BooksAppAdditions.h"
 
 @implementation NSString (BooksAppAdditions)
+- (NSString *)HTMLsubstringToIndex:(unsigned)index
+{
+  BOOL junk;
+  return [self HTMLsubstringToIndex:index didLoadAll:&junk];
+}
 
 - (NSString *)HTMLsubstringToIndex:(unsigned)index
+			didLoadAll:(BOOL *)didLoadAll
   // Returns an HTML string containing "index" number of PRINTING characters.
   // Does not add any closing tags to the HTML, just stops.
 {
@@ -11,7 +17,10 @@
   unsigned i;
   BOOL insideMarkup = NO;
   if (len < index)
-    return [self copy];
+    {
+      *didLoadAll = YES;
+      return [self copy];
+    }
   for (i = 0; i < len; i++)
     {
       unichar c = [self characterAtIndex:i];
@@ -25,11 +34,15 @@
 	      {
 		numPrintingChars++;
 		if (numPrintingChars >= index)
-		  return [self substringToIndex:i];
+		  {
+		    *didLoadAll = NO;
+		    return [self substringToIndex:i];
+		  }
 	      }
 	  }
     }
   // If we get here, then we've exhausted the string.
+  *didLoadAll = YES;
   return [self copy];
 }
 

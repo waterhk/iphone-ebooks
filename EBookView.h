@@ -21,6 +21,7 @@
 
 - (id)initWithFrame:(struct CGRect)rect;
 - (void)loadBookWithPath:(NSString *)thePath;
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars;
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
 - (NSString *)currentPath;
