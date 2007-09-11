@@ -29,13 +29,10 @@
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
 	UITransitionView *transitionView;
-	//EBookNavItem *booksItem, *chaptersItem, *bookItem;
-        EBookView   *textView;  /* *plainTextView, *HTMLTextView;*/
-	//FileBrowser *browserView;
-	//FileBrowser *chapterBrowserView;
+        EBookView   *textView;
+	EBookImageView *imageView;
 	NSString    *path;
 	NSError     *error;
-	//UIViewTapInfo  *tapinfo;
 	BOOL        bookHasChapters;
 	BOOL        readingText;
 	BOOL        doneLaunching;
@@ -60,7 +57,7 @@
 	NSString *imgPath;
 }
 
-//- (void)transitionToView:(id)view;
+
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;

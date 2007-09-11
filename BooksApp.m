@@ -67,6 +67,8 @@
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
 
+    imageView = nil;
+
     [window setContentView: mainView];
     [mainView addSubview:transitionView];
     [mainView addSubview:navBar];
@@ -198,11 +200,13 @@
       BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"]);
       if (isPicture)
 	{
-	  EBookImageView *imgView = [[EBookImageView alloc] initWithContentsOfFile:file];  //FIXME! this wont scale
+	  if (nil != imageView)
+	    [imageView release];
+	  imageView = [[EBookImageView alloc] initWithContentsOfFile:file];
 	  UINavigationItem *tempItem = [[UINavigationItem alloc]
 	    		       initWithTitle:[[file lastPathComponent]
 					       stringByDeletingPathExtension]];
-	  [navBar pushNavigationItem:tempItem withView:imgView];
+	  [navBar pushNavigationItem:tempItem withView:imageView];
 	  [tempItem release];
 	}
       else //text or HTML file
@@ -620,9 +624,10 @@
   [navBar release];
   [bottomNavBar release];
   [mainView release];
-  // textView = nil;
   [progressHUD release];
   [textView release];
+  if (nil != imageView)
+    [imageView release];
   [defaults release];
   [buttonImg release];
   [minusButton release];
