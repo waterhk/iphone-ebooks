@@ -71,6 +71,22 @@
   }
 }
 
+- (void)drawRect:(struct CGRect)rect
+{
+  /*
+  if (nil != path)
+    {
+      NSString *coverPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"cover.jpg"];
+      UIImage *img = [UIImage imageAtPath:coverPath];
+      if (nil != img)
+	{
+	  [img compositeToPoint:CGPointMake(0,0) operation:1];
+	}
+    }
+  */
+  [super drawRect:rect];
+}
+
 - (void)toggleNavbars
 {
   if (_heartbeatDelegate != nil) {
@@ -114,6 +130,18 @@
     {
       *didLoadAll = YES;
       [self setHTML:theHTML];
+      /*
+      if (nil != path)
+	{
+	  NSString *coverPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"cover.jpg"];
+	  UIImage *img = [UIImage imageAtPath:coverPath];
+	  if (nil != img)
+	    {
+	      UIImageView *imgView = [[UIImageView alloc] initWithImage:img];
+	      [self addSubview:imgView]; //FIXME memory leek!
+	    }
+	}
+      */
     }
   else
     {
