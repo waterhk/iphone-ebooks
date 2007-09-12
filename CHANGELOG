@@ -1,3 +1,13 @@
+v. 0.9.9 - Almost 1.0!
+	 - Added rudimentary image support; you can now view images
+	   by themselves, but not in-line with the text (yet).
+	 - Files load faster!  (At least they appear to from the user's
+	   perspective.)  What actually happens is that the program loads to
+	   your last scroll point, displays, and then load the rest while you
+	   read.
+	 - Misc. bug fixes.
+	 - New, prettier default screen.
+
 v. 0.9.5 - Added ability to mark books as new (from the Prefs pane).
          - Added user-override for text encodings, which should
 	   solve the problem where Windows Latin 1 encodings wouldn't
