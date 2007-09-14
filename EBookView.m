@@ -223,10 +223,15 @@
 		    options:NSLiteralSearch range:fullRange];
   NSLog(@"Commented out %d images.\n", i);
   fullRange = NSMakeRange(0, [originalText length]);
+  i = [originalText replaceOccurrencesOfString:@"@import" withString:@"!@import" options:NSLiteralSearch range:fullRange];
+  //FIXME!  This will screw things up if the _readable_ text contains @import!!
+  fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
   i = [originalText replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
   NSLog(@"Removed %d width style tags.\n", i);
+
   i = [originalText replaceOccurrencesOfString:@"</body>" withString:@"<br /></body>" options:NSLiteralSearch range:fullRange];
+  fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:@"<br /></BODY>" options:NSLiteralSearch range:fullRange];
   outputHTML = [NSString stringWithString:originalText];
   [originalText release];
