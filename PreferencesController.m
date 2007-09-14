@@ -31,7 +31,7 @@
 	preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
 	
 	navigationBar = [[[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)] autorelease];
-	[navigationBar showLeftButton:@"About..." withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
+	[navigationBar showLeftButton:@"About" withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
 	[navigationBar setBarStyle:0];
 	[navigationBar setDelegate:self]; 
 	[preferencesView addSubview:navigationBar];
@@ -265,6 +265,7 @@
 	    encString = @"Undefined encoding";
 	    break;
 	  }
+	[defaultEncodingPreferenceCell setTitle:@"Text Encoding"];
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
 
@@ -513,7 +514,7 @@
 		title = @"Toolbar Options";
 		break;
 	case 4:
-	        title = @"Default Text Encoding";
+	        title = @"File Import";
 		break;
 	case 5:
                 title = @"New Books";

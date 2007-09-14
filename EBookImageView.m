@@ -36,6 +36,7 @@
 	}
       [self setContentSize:CGSizeMake(width,height + 48)];
       _imgView = [[UIImageView alloc] initWithImage:img];
+      //_imgView = [[UIWebView alloc] init];
       //Let's be super-nice and center the image if applicable!
       int x = 0;
       if (width < rect.size.width)
@@ -44,6 +45,8 @@
       if (height < (rect.size.height - 48))
 	y = (int)(rect.size.height - 48 - height) / 2;
       [_imgView setFrame:CGRectMake(x, y + 48, width, height)];
+      //      [_imgView loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:file]]];
+      //      [_imgView setEnabledGestures:255];
       [self addSubview:_imgView];
     }
   return self;

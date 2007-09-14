@@ -1,3 +1,8 @@
+v. 1.0 - Fixed a bug involving @import directives (thanks ch).
+       - Fixed a bug where newly loaded files could appear scrolled down a
+         bit.
+       - Better scroll detection.
+
 v. 0.9.9 - Almost 1.0!
 	 - Added rudimentary image support; you can now view images
 	   by themselves, but not in-line with the text (yet).

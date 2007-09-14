@@ -223,23 +223,13 @@
 	    // don't bother reloading.
 	    {
 	      int lastPt = [defaults lastScrollPointForFile:file];
-	      if (0 == lastPt) // If we haven't been here before, let's try an optimized load.
-		{
-		  BOOL didLoadAll = NO;
-		  [textView loadBookWithPath:file numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
-		  textViewNeedsFullText = !didLoadAll;
-		  //[progressHUD show:YES];
-		}
-	      else
-		{
-		  BOOL didLoadAll = NO;
-		  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
-		  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-		  [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
-		  [textView scrollPointVisibleAtTopLeft:
-			      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-		  textViewNeedsFullText = !didLoadAll;
-		}
+	      BOOL didLoadAll = NO;
+	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
+	      [textView scrollPointVisibleAtTopLeft:
+	          CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	      textViewNeedsFullText = !didLoadAll;
 	    }
 
 	  [tempItem release];
@@ -276,16 +266,6 @@
 
 - (void) applicationWillSuspend
 {
-  /*
-  //struct CGImage *defaultPNG =  [self createApplicationDefaultPNG];
-  NSString *defaultPNGPath = [[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"];
-  struct CGRect snapshotRect = [self applicationSnapshotRectForOrientation:0];
-  struct CGImage *defaultPNG = [textView createSnapshotWithRect:snapshotRect];
-  //UIImage *defaultPNGImage = [[UIImage alloc] initWithImageRef:defaultPNG];
-
- NSData *imgData = [[NSData alloc] initWithBytes:*defaultPNG length:CGImageGetBytesPerRow(defaultPNG)*CGImageGetHeight(defaultPNG)];
-  [imgData writeToFile:defaultPNGPath atomically:YES];
-  */
   struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
@@ -294,7 +274,6 @@
   [defaults setReadingText:readingText];
   [defaults setLastBrowserPath:[navBar topBrowserPath]];
   [defaults synchronize];
-  //[imgData release];
 }
 
 - (void)embiggenText:(UINavBarButton *)button
@@ -368,24 +347,14 @@
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [self refreshTextViewFromDefaults];
 	  int lastPt = [defaults lastScrollPointForFile:nextFile];
-	  if (0 == lastPt)
-	    {
-	      BOOL didLoadAll = NO;
-	      [textView loadBookWithPath:nextFile numCharacters:(265000/([textView textSize]*[textView textSize])) didLoadAll:&didLoadAll];
-	      textViewNeedsFullText = !didLoadAll;
-	      //[progressHUD show:YES]; //nah, I don't like it there.
-	    }
-	  else
-	    {
-	      BOOL didLoadAll = NO;
-	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
-	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:nextFile numCharacters:numChars
-			didLoadAll:&didLoadAll];
-	      [textView scrollPointVisibleAtTopLeft:
-			  CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	      textViewNeedsFullText = !didLoadAll;
-	    }
+	  BOOL didLoadAll = NO;
+	  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+	  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+	  [textView loadBookWithPath:nextFile numCharacters:numChars
+		    didLoadAll:&didLoadAll];
+	  [textView scrollPointVisibleAtTopLeft:
+		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  textViewNeedsFullText = !didLoadAll;
 	  [tempItem release];
 	  [tempView autorelease];
 	}

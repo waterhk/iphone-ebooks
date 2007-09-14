@@ -1,5 +1,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <GraphicsServices/GraphicsServices.h>
+#import <UIKit/UIWebView.h>
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
 
@@ -123,7 +124,7 @@
     }
   else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"html"] ||
 	   [[[thePath pathExtension] lowercaseString] isEqualToString:@"htm"])
-    { 
+    {
       theHTML = [self HTMLFileWithoutImages:thePath];
     }
   if ((-1 == numChars) || (numChars >= [theHTML length]))
@@ -149,6 +150,11 @@
 			       [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
       [self setHTML:tempyString];
     }
+  /*  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
+  struct CGRect rect = [[self _webView] frame];
+  [[self _webView] setFrame:CGRectMake(0,0, 320, rect.size.height)];
+  [self setContentSize:CGSizeMake(320, rect.size.height)];
+  */
 }
 
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath
@@ -296,7 +302,12 @@
   [self ensmallenText];
   //[super handleDoubleTapEvent:event];
 }
-
+/*
+- (BOOL)bodyAlwaysFillsFrame
+{//experiment!
+  return NO;
+}
+*/
 - (void)mouseUp:(struct __GSEvent *)event
 {
   /*************
@@ -313,19 +324,22 @@
   if ([self isScrolling])
     {
       BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
-      if (CGRectContainsPoint(topTapRect, clicked.origin))
+      if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{
-	  //scroll back one screen...
-	  [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-	}
-      else if (CGRectContainsPoint(botTapRect,clicked.origin))
-	{
-	  //scroll forward one screen...
-	  [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-	}
-      else if (CGRectEqualToRect(lastVisibleRect, newRect))
-	{  // If the old rect equals the new, then we must not be scrolling
+	  if (CGRectContainsPoint(topTapRect, clicked.origin))
+	    {
+	      //scroll back one screen...
+	      [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
+	    }
+	  else if (CGRectContainsPoint(botTapRect,clicked.origin))
+	    {
+	      //scroll forward one screen...
+	      [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
+	    }
+	  else 
+	    {  // If the old rect equals the new, then we must not be scrolling
 	  [self toggleNavbars];
+	    }
 	}
       else
 	{ //we are, in fact, scrolling

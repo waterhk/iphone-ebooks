@@ -6,6 +6,7 @@
 //#import <UIKit/UIWebView.h>
 #import <UIKit/UIViewTapInfo.h>
 //#import <UIKit/NSString-UIStringDrawing.h>
+#import <UIKit/UIView-Geometry.h>
 
 #import "BooksDefaultsController.h" //sigh...
 #import "NSString-BooksAppAdditions.h"
