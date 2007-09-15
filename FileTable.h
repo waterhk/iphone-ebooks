@@ -1,3 +1,5 @@
+// FileTable, written by Nate True and the NES.app team
+// with Books.app modifications by Zachary Brewster-Geisz
 /*
 
  This program is free software; you can redistribute it and/or

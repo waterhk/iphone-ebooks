@@ -1,3 +1,5 @@
+// HideableNavBar, for Books.app by Zachary Brewster-Geisz
+
 /*
 
  This program is free software; you can redistribute it and/or

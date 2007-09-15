@@ -1,3 +1,6 @@
+// FileTable.m, by Nate True and the NES.app team, 
+// with additions by Zachary Brewster-Geisz
+
 /*
 
  This program is free software; you can redistribute it and/or
