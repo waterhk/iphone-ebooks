@@ -167,11 +167,11 @@
 			       [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
       [self setHTML:tempyString];
     }
-  /*  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
+  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
   struct CGRect rect = [[self _webView] frame];
   [[self _webView] setFrame:CGRectMake(0,0, 320, rect.size.height)];
   [self setContentSize:CGSizeMake(320, rect.size.height)];
-  */
+
 }
 
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath
