@@ -1,5 +1,5 @@
---- UIWebView.h~	2007-09-19 11:48:04.000000000 -0400
-+++ UIWebView.h	2007-09-19 13:41:43.000000000 -0400
+--- UIWebView.h~	2007-09-19 13:53:04.000000000 -0400
++++ UIWebView.h	2007-09-19 13:53:54.000000000 -0400
 @@ -6,11 +6,11 @@
  
  #import <UIKit/UITiledView.h>
@@ -15,3 +15,12 @@
  {
      struct WKWindow *_window;
      WebView *_webView;
+@@ -40,7 +40,7 @@
+         char isTransitioning;
+         char zoomsFocusedFormControl;
+         struct CGRect cachedBoundingBox;
+-        DOMNode<UIFormControl> *element;
++      DOMNode/*<UIFormControl>*/ *element;
+         UIInformalDelegate *delegate;
+     } _forms;
+     struct {
