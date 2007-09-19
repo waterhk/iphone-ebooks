@@ -1,22 +1,22 @@
 CC=arm-apple-darwin-cc
+CFLAGS=-O3
 LD=$(CC)
-LDFLAGS=-lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices
+LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices
 
 all:    Books
 
 Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	BooksDefaultsController.o HideableNavBar.o PreferencesController.o \
-	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o
+	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o \
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m 
-		$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 %.m:    %.h
 
-
 clean:
-		rm -rf *.o *~ Books Books.app
+	rm -rf *.o *~ Books Books.app 
 
 package: Books
 	rm -fr Books.app
