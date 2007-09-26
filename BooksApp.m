@@ -405,7 +405,7 @@
 
     [navBar setDelegate:self];
     [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", @"jpg", @"png", nil]];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", @"pdb", @"jpg", @"png", nil]];
     [navBar hideButtons];
 
     [navBar disableAnimation];

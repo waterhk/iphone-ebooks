@@ -17,9 +17,10 @@
 */
 #import <CoreGraphics/CoreGraphics.h>
 #import <GraphicsServices/GraphicsServices.h>
-#import <UIKit/UIWebView.h>
+//#import <UIKit/UIWebView.h>
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
+#import "palm/palmconvert.h"
 
 @interface NSObject (HeartbeatDelegate)
 
@@ -144,6 +145,19 @@
     {
       theHTML = [self HTMLFileWithoutImages:thePath];
     }
+  else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"pdb"]) 
+    { 
+      // This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
+      NSString *retType = nil;
+      NSMutableString *ret;
+      ret = ReadPDBFile(thePath, &retType);
+      if([@"txt" isEqualToString:retType]) {
+        theHTML = [self HTMLFromTextString:ret];
+      } else {
+        theHTML = [ret retain];
+      }
+    }
+
   if ((-1 == numChars) || (numChars >= [theHTML length]))
     {
       *didLoadAll = YES;
@@ -167,11 +181,11 @@
 			       [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
       [self setHTML:tempyString];
     }
-  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
+  /*  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
   struct CGRect rect = [[self _webView] frame];
   [[self _webView] setFrame:CGRectMake(0,0, 320, rect.size.height)];
   [self setContentSize:CGSizeMake(320, rect.size.height)];
-
+  */
 }
 
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath
@@ -333,7 +347,7 @@
    * A patch is included in the svn.
   *****************/
 
-  struct CGRect clicked = GSEventGetLocationInWindow(event);
+  CGPoint clicked = GSEventGetLocationInWindow(event);
   struct CGRect newRect = [self visibleRect];
   struct CGRect topTapRect = CGRectMake(0, 0, 320, 48);
   struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
@@ -343,12 +357,12 @@
       BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
       if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{
-	  if (CGRectContainsPoint(topTapRect, clicked.origin))
+	  if (CGRectContainsPoint(topTapRect, clicked))
 	    {
 	      //scroll back one screen...
 	      [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
 	    }
-	  else if (CGRectContainsPoint(botTapRect,clicked.origin))
+	  else if (CGRectContainsPoint(botTapRect,clicked))
 	    {
 	      //scroll forward one screen...
 	      [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
@@ -423,49 +437,48 @@
 {
   BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   NSStringEncoding encoding = [defaults defaultTextEncoding];
-  NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
   NSString *outputHTML;
   NSMutableString *originalText;
   if (AUTOMATIC_ENCODING == encoding)
     {
-      NSLog(@"Trying to determine encoding...");
+      //NSLog(@"Trying to determine encoding...");
       originalText = [[NSMutableString alloc] 
 		       initWithContentsOfFile:file
 		       usedEncoding:&encoding
 		       error:NULL];
-      NSLog(@"Found encoding: %d", encoding);
+      //NSLog(@"Found encoding: %d", encoding);
 
       if (nil == originalText)
 	{
-	  NSLog(@"Checking UTF-8 encoding...");
+	 //NSLog(@"Checking UTF-8 encoding...");
 	  originalText = [[NSMutableString alloc]
 			   initWithContentsOfFile:file
 			   encoding:NSUTF8StringEncoding error:NULL];
 	}
       if (nil == originalText)
 	{
-	  NSLog(@"Checking ISO Latin-1 encoding...");
+	  //NSLog(@"Checking ISO Latin-1 encoding...");
 	  originalText = [[NSMutableString alloc]
 			   initWithContentsOfFile:file
 			   encoding:NSISOLatin1StringEncoding error:NULL];
 	}
       if (nil == originalText)
 	{
-	  NSLog(@"Checking Windows Latin-1 encoding...");
+	  //NSLog(@"Checking Windows Latin-1 encoding...");
 	  originalText = [[NSMutableString alloc]
 			   initWithContentsOfFile:file
 			   encoding:NSWindowsCP1252StringEncoding error:NULL];
 	}
       if (nil == originalText)
 	{
-	  NSLog(@"Checking Mac OS Roman encoding...");
+	  //NSLog(@"Checking Mac OS Roman encoding...");
 	  originalText = [[NSMutableString alloc]
 			   initWithContentsOfFile:file
 			   encoding:NSMacOSRomanStringEncoding error:NULL];
 	}
       if (nil == originalText)
 	{
-	  NSLog(@"Checking ASCII encoding...");
+	  //NSLog(@"Checking ASCII encoding...");
 	  originalText = [[NSMutableString alloc]
 			   initWithContentsOfFile:file
 			   encoding:NSASCIIStringEncoding error:NULL];
@@ -485,69 +498,84 @@
 	  originalText = [[NSMutableString alloc] initWithString:@"Incorrect text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
 	}
     }
+  
+  outputHTML = [self HTMLFromTextString:originalText];
 
+  [originalText release];
+  return outputHTML;
+}
+
+- (NSString*)HTMLFromTextString:(NSMutableString *)originalText 
+{
+  NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
+  NSString *outputHTML;
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
   unsigned int i,j;
   j=0;
   i = [originalText replaceOccurrencesOfString:@"&" withString:@"&amp;"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d &s\n", i);
+  //NSLog(@"replaced %d &s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@"<" withString:@"&lt;"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d <s\n", i);
+  //NSLog(@"replaced %d <s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@">" withString:@"&gt;"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d >s\n", i);
-  j += i;
-  fullRange = NSMakeRange(0, [originalText length]);
-  i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
-		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d double-spaces\n", i);
-  j += i;
-  fullRange = NSMakeRange(0, [originalText length]);
-  // Argh, bloody MS line breaks!  Change them to UNIX, then...
-  i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
-		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d carriage return/newlines\n", i);
+  //NSLog(@"replaced %d >s\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
 
-  /************** DEPRECATED.
-  // Change UNIX newlines to <br> tags.
-  i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
+  // Argh, bloody MS line breaks!  Change them to UNIX, then...
+  i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d newlines\n", i);
+  //NSLog(@"replaced %d carriage return/newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
-  // And just in case someone has a Classic MacOS textfile...
-  i = [originalText replaceOccurrencesOfString:@"\r" withString:@"<br />\n"
-		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d carriage returns\n", i);
-  j += i;
-  */
+
 
   //Change double-newlines to </p><p>.
   i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d double-newlines\n", i);
+  //NSLog(@"replaced %d double-newlines\n", i);
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
+
   // And just in case someone has a Classic MacOS textfile...
   i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
 		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"replaced %d double-carriage-returns\n", i);
+  //NSLog(@"replaced %d double-carriage-returns\n", i);
   j += i;
+  
+  // Lots of text files start new paragraphs with newline-space-space or newline-tab
+  i = [originalText replaceOccurrencesOfString:@"\n  " withString:@"</p>\n<p>"
+		    options:NSLiteralSearch range:fullRange];
+  //NSLog(@"replaced %d double-spaces\n", i);
+  j += i;
+  fullRange = NSMakeRange(0, [originalText length]);
 
-  NSLog(@"Replaced %d characters in textfile %@.\n", j, file);
+  i = [originalText replaceOccurrencesOfString:@"\n\t" withString:@"</p>\n<p>"
+		    options:NSLiteralSearch range:fullRange];
+  //NSLog(@"replaced %d double-spaces\n", i);
+  j += i;
+  fullRange = NSMakeRange(0, [originalText length]);
+
+  
+  i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
+		    options:NSLiteralSearch range:fullRange];
+  //NSLog(@"replaced %d double-spaces\n", i);
+  j += i;
+  fullRange = NSMakeRange(0, [originalText length]);
+  
+
   outputHTML = [NSString stringWithFormat:@"%@%@\n</p><br /><br />\n</body>\n</html>\n", header, originalText];
-  [originalText release];
-  return outputHTML;
+  
+  return outputHTML;  
 }
+
 
 - (void)invertText:(BOOL)b
 {

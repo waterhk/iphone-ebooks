@@ -28,8 +28,8 @@
 {
   if ((_allowDelete == YES) && ((4 == type) || (8 == type)))
       {
-        struct CGRect rect = GSEventGetLocationInWindow(event);
-        CGPoint point = CGPointMake(rect.origin.x, rect.origin.y - 45);
+        CGPoint rect = GSEventGetLocationInWindow(event);
+        CGPoint point = CGPointMake(rect.x, rect.y - 45);
         CGPoint offset = _startOffset; 
         NSLog(@"FileTable.swipe: %d %f, %f", type, point.x, point.y);
 

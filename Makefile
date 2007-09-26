@@ -8,6 +8,8 @@ all:    Books
 Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	BooksDefaultsController.o HideableNavBar.o PreferencesController.o \
 	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o \
+	palm/unpluck.o palm/palmconvert.o palm/util.o palm/config.o palm/pluckhtml.o \
+       palm/txt2pdbdoc.o palm/libjpeg.a
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m 
@@ -16,7 +18,7 @@ Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 %.m:    %.h
 
 clean:
-	rm -rf *.o *~ Books Books.app 
+	rm -rf *.o *~ palm/*.o palm/*~ Books Books.app 
 
 package: Books
 	rm -fr Books.app
