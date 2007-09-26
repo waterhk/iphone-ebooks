@@ -198,7 +198,7 @@
     {
       BOOL sameFile;
       NSString *ext = [file pathExtension];
-      BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"]);
+      BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
       if (isPicture)
 	{
 	  if (nil != imageView)
@@ -418,7 +418,7 @@
 
     [navBar setDelegate:self];
     [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", @"pdb", @"jpg", @"png", nil]];
+    [navBar setExtensions:[NSArray arrayWithObjects:@"", @"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil]];
     [navBar hideButtons];
 
     [navBar disableAnimation];
