@@ -17,11 +17,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#import <Foundation/NSString.h>
+#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 @interface NSString (BooksAppAdditions)
 
 - (BOOL)isReadableTextFilePath;
 - (NSString *)HTMLsubstringToIndex:(unsigned)index;
 - (NSString *)HTMLsubstringToIndex:(unsigned)index didLoadAll:(BOOL *)didLoadAll;
+- (NSRange)quotedRangePastIndex:(unsigned int)index;
+
 @end

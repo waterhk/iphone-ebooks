@@ -70,4 +70,31 @@
   return [self copy];
 }
 
+- (NSRange)quotedRangePastIndex:(unsigned int)index
+  // Returns a range of text between double-quotes, past an index.
+  // Does not include the quotes in the range.
+{
+  unsigned int i, j;
+  NSRange theRange;
+  unsigned int len = [self length];
+
+  for (i = index; i < len; i++)
+    if ([self characterAtIndex:i] == (unichar)'"')
+      {
+	j = i+1;
+	break;
+      }
+  
+  for (i = j; i < len; i++)
+    if ([self characterAtIndex:i] == (unichar)'"')
+      {
+	theRange = NSMakeRange(j, i - j);
+	return theRange;
+      }
+
+  theRange = NSMakeRange(NSNotFound, 0);
+  return theRange;
+}
+
+
 @end

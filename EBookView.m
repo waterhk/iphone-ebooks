@@ -254,22 +254,35 @@
   NSRange fullRange = NSMakeRange(0, [originalText length]);
 
   unsigned int i;
-
-  //Comment out all images.
-  i = [originalText replaceOccurrencesOfString:@"<img" withString:@"<!img"
-		    options:NSLiteralSearch range:fullRange];
-  NSLog(@"Commented out %d images.\n", i);
+  int extraHeight = 0;
+  //Make all image src URLs into absolute file URLs.
+  NSString *temp = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath addedHeight:&extraHeight];
+  [originalText release];
+  originalText = [[NSMutableString alloc] initWithString:temp];
   fullRange = NSMakeRange(0, [originalText length]);
   i = [originalText replaceOccurrencesOfString:@"@import" withString:@"!@import" options:NSLiteralSearch range:fullRange];
   //FIXME!  This will screw things up if the _readable_ text contains @import!!
   fullRange = NSMakeRange(0, [originalText length]);
-  i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
+  //  i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
   i = [originalText replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
   NSLog(@"Removed %d width style tags.\n", i);
 
-  i = [originalText replaceOccurrencesOfString:@"</body>" withString:@"<br /></body>" options:NSLiteralSearch range:fullRange];
+  //HERE THERE BE KLUDGES.
+  //We must add enough <br />s to the bottom, to make up for the height of
+  //the images, because the UITextView doesn't take them into account.
+
+  NSMutableString *themsTheBreaks = [[NSMutableString alloc] initWithString:@"<br />\n"]; 
+  // one break always, to fix some silly rendering bug
+  for (i = 0 ; i < extraHeight; i += (int)size) //FIXME?
+    {
+      [themsTheBreaks appendString:@"<br />\n"];
+    }
+  [themsTheBreaks appendString:@"</body>"];
+
+
+  i = [originalText replaceOccurrencesOfString:@"</body>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
   fullRange = NSMakeRange(0, [originalText length]);
-  i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:@"<br /></BODY>" options:NSLiteralSearch range:fullRange];
+  i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
   outputHTML = [NSString stringWithString:originalText];
   [originalText release];
 

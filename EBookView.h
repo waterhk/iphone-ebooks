@@ -28,6 +28,7 @@
 
 #import "BooksDefaultsController.h" //sigh...
 #import "NSString-BooksAppAdditions.h"
+#import "HTMLFixer.h"
 
 @interface EBookView : UITextView
 {
