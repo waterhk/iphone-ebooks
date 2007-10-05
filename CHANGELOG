@@ -1,3 +1,10 @@
+v. 1.2 - First version post-iPhone-disporia.
+       - INLINE IMAGES WORK!!!!!!!!  That sound you heard earlier this morning
+	 was me screaming for joy.  I've been workin' on that so damn long...
+       - Text files come before image files in the FileBrowser views now,
+	 so you can forget about the images if you want.
+       - Added Windows Cyrillic to the encoding choices (thanks Michael).
+
 v. 1.1 - Added PalmDOC and Plucker support.  Somewhat rudimentary.  Huge
 	 thanks to Zachary Bedell for this (all the best hackers are
 	 named Zachary).
