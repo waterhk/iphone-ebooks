@@ -278,6 +278,9 @@
 	  case NSMacOSRomanStringEncoding:
 	    encString = @"Mac OS Roman";
 	    break;
+	  case NSWindowsCP1251StringEncoding:
+	    encString = @"Windows Cyrillic";
+	    break;
 	  default:
 	    encString = @"Undefined encoding";
 	    break;

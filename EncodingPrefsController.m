@@ -56,7 +56,7 @@
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
 {
-  return 7;
+  return 8;
 }
 
 - (id)preferencesTable:(id)preferencesTable titleForGroup:(int)group
@@ -107,6 +107,10 @@
     {
       [defaults setDefaultTextEncoding:NSASCIIStringEncoding];
     }
+  else if ([title isEqualToString:@"Windows Cyrillic"])
+    {
+      [defaults setDefaultTextEncoding:NSWindowsCP1251StringEncoding];
+    }
 
   [cell setSelected:NO withFade:YES];
   [[NSNotificationCenter defaultCenter] postNotificationName:ENCODINGSELECTED object:title];
@@ -145,6 +149,10 @@
     case 6:
       title = @"ASCII";
       checked = (NSASCIIStringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 7: 
+      title = @"Windows Cyrillic";
+      checked = (NSWindowsCP1251StringEncoding == [defaults defaultTextEncoding]);
       break;
     }
   UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
