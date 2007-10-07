@@ -1,5 +1,7 @@
 // HTMLFixer.m, for Books.app by Zachary Brewster-Geisz
-
+/* Most of this file is now obsolete.  Don't get excited if warnings
+from some of the methods appear on compile.  They're probably unused.
+*/
 
 #include "HTMLFixer.h"
 
@@ -185,11 +187,12 @@
     return [NSString stringWithString:str];
 }
 
-+(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath addedHeight:(int *)height
++(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size
   // Fixes all img tags within a given string
 {
   NSMutableString *theHTML = [NSMutableString stringWithString:theOldHTML];
   int thisImageHeight = 0;
+  int height = 0;
     unsigned int c = 0;
     unsigned int len = [theHTML length];
     while (c < len)
@@ -210,13 +213,46 @@
                                                         basePath:[thePath stringByDeletingLastPathComponent]
 						       returnImageHeight:&thisImageHeight]];
                             len = [theHTML length];
-			    *height += thisImageHeight;
+			    height += thisImageHeight;
 			    thisImageHeight = 0;
                         }
                 }
             ++c;
         }
+  NSRange fullRange = NSMakeRange(0, [theHTML length]);
+  int i = [theHTML replaceOccurrencesOfString:@"@import" withString:@"!@import" options:NSLiteralSearch range:fullRange];
+  //FIXME!  This will screw things up if the _readable_ text contains @import!!
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i = [theHTML replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
+  NSLog(@"Removed %d width style tags.\n", i);
+  i = [theHTML replaceOccurrencesOfString:@"<table" withString:@"<pre" options:NSLiteralSearch range:fullRange];
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i += [theHTML replaceOccurrencesOfString:@"<TABLE" withString:@"<pre" options:NSLiteralSearch range:fullRange];
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i = [theHTML replaceOccurrencesOfString:@"</table" withString:@"</pre" options:NSLiteralSearch range:fullRange];
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i += [theHTML replaceOccurrencesOfString:@"</TABLE" withString:@"</pre" options:NSLiteralSearch range:fullRange];
+  NSLog(@"Removed %d table tags.", i);
+
+  //HERE THERE BE KLUDGES.
+  //We must add enough <br />s to the bottom, to make up for the height of
+  //the images, because the UITextView doesn't take them into account.
+
+  NSMutableString *themsTheBreaks = [[NSMutableString alloc] initWithString:@"<br /><br />\n"]; 
+  // two breaks always, to fix some silly rendering bug
+  for (i = 0 ; i < height; i += size) //FIXME?
+    {
+      [themsTheBreaks appendString:@"<br />\n"];
+    }
+  [themsTheBreaks appendString:@"</body>"];
+  NSLog(@"themsTheBreaks: %@", themsTheBreaks);
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i = [theHTML replaceOccurrencesOfString:@"</body>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
+  fullRange = NSMakeRange(0, [theHTML length]);
+  i += [theHTML replaceOccurrencesOfString:@"</BODY>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
+  NSLog(@"Found %d body end tags.", i);
         
     return [NSString stringWithString:theHTML];
 }
+
 @end

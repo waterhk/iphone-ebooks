@@ -1,5 +1,6 @@
 CC=arm-apple-darwin-cc
 CFLAGS=-O3
+CPPFLAGS=-I/opt/local/include
 LD=$(CC)
 LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices
 

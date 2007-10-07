@@ -63,9 +63,11 @@
 	UIView						*appView;
 	UIView                      *preferencesView;
 	UISegmentedControl 			*fontChoiceControl;
+	UISegmentedControl 			*scrollSpeedControl;
 	UISegmentedControl 			*flippedToolbarControl;
 	UIPreferencesTextTableCell 	*fontChoicePreferenceCell;
     UIPreferencesTextTableCell 	*fontSizePreferenceCell;
+    UIPreferencesTextTableCell 	*scrollSpeedPreferenceCell;
 	UIPreferencesControlTableCell *invertPreferenceCell;
 	UIPreferencesControlTableCell *showToolbarPreferenceCell;
 	UIPreferencesControlTableCell *showNavbarPreferenceCell;

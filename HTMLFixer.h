@@ -13,6 +13,6 @@
 +(BOOL)fileHasBeenFixedAtPath:(NSString *)path;
 +(BOOL)writeFixedFileAtPath:(NSString *)thePath;
 +(NSString *)fixedImageTagForString:(NSString *)aStr basePath:(NSString *)path returnImageHeight:(int *)height;
-+(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath addedHeight:(int *)height;
++(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size;
 
 @end

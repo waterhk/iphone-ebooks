@@ -52,6 +52,8 @@
 
 #define TEXTENCODINGKEY @"textEncodingKey"
 
+#define SCROLLSPEEDINDEXKEY @"scrollSpeedIndexKey"
+
 - (unsigned int)lastScrollPoint;
 - (unsigned int)lastScrollPointForFile:(NSString *)file;
 - (NSString *)fileBeingRead;
@@ -67,7 +69,7 @@
 - (BOOL)chapternav;
 - (BOOL)pagenav;
 - (int)defaultTextEncoding;
-
+- (int)scrollSpeedIndex;
 - (void)setLastScrollPoint:(unsigned int)thePoint;
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
 - (void)removeScrollPointForFile:(NSString *)theFile;
@@ -86,6 +88,7 @@
 - (void)setChapternav:(BOOL)isChpaternav;
 - (void)setPagenav:(BOOL)isPagenav;
 - (void)setDefaultTextEncoding:(int)enc;
+- (void)setScrollSpeedIndex:(int)index;
 
 - (BOOL)synchronize;
 

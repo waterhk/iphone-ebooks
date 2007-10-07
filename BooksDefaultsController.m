@@ -46,17 +46,9 @@
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
   [temp setObject:@"0" forKey:TEXTENCODINGKEY];
   //  NSLog(@"temp dictionary: %@\n", temp);
-
+  [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
   [[NSUserDefaults standardUserDefaults] registerDefaults:temp];
 
-
-  /*
-    NSLog(@"defaults dump\n%d %d %@\n%@\n",
-  	[sharedDefaults integerForKey:LASTSCROLLPOINTKEY],
-  	[sharedDefaults integerForKey:TEXTSIZEKEY],
-  	[sharedDefaults objectForKey:FILEBEINGREADKEY],
-	  [sharedDefaults objectForKey:BROWSERFILESKEY]);
-  */
   [temp release];
   NSMutableDictionary *persistenceSanityCheck =
     [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
@@ -131,6 +123,11 @@
 - (int)defaultTextEncoding
 {
   return [[NSUserDefaults standardUserDefaults] integerForKey:TEXTENCODINGKEY];
+}
+
+- (int)scrollSpeedIndex
+{
+  return [[NSUserDefaults standardUserDefaults] integerForKey:SCROLLSPEEDINDEXKEY];
 }
 
 - (void)setLastScrollPoint:(unsigned int)thePoint
@@ -285,6 +282,12 @@
 - (void)setDefaultTextEncoding:(int)enc
 {
   [[NSUserDefaults standardUserDefaults] setInteger:enc forKey:TEXTENCODINGKEY];
+}
+
+- (void)setScrollSpeedIndex:(int)index
+{
+  [[NSUserDefaults standardUserDefaults] setInteger:index forKey:SCROLLSPEEDINDEXKEY];
+  [[NSNotificationCenter defaultCenter] postNotificationName:CHANGEDSCROLLSPEED object:self];
 }
 
 - (BOOL)synchronize

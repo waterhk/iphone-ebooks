@@ -50,11 +50,17 @@
 
   [self scrollToMakeCaretVisible:NO];
 
-  [self setScrollDecelerationFactor:0.995f];
+  [self setScrollDecelerationFactor:0.996f];
   //  NSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
   [self setTapDelegate:self];
   [self setScrollerIndicatorsPinToContent:NO];
   lastVisibleRect = [self visibleRect];
+  [self scrollSpeedDidChange:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self
+					selector:@selector(scrollSpeedDidChange:)
+					name:CHANGEDSCROLLSPEED
+					object:nil];
+
   return self;
 }
 
@@ -190,6 +196,9 @@
 
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath
 {
+  // The name of this method is in fact misleading--in Books.app < 1.2,
+  // it did in fact strip images.  Not anymore, though.
+
   BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   NSStringEncoding encoding = [defaults defaultTextEncoding];
   NSMutableString *originalText;
@@ -256,35 +265,7 @@
   unsigned int i;
   int extraHeight = 0;
   //Make all image src URLs into absolute file URLs.
-  NSString *temp = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath addedHeight:&extraHeight];
-  [originalText release];
-  originalText = [[NSMutableString alloc] initWithString:temp];
-  fullRange = NSMakeRange(0, [originalText length]);
-  i = [originalText replaceOccurrencesOfString:@"@import" withString:@"!@import" options:NSLiteralSearch range:fullRange];
-  //FIXME!  This will screw things up if the _readable_ text contains @import!!
-  fullRange = NSMakeRange(0, [originalText length]);
-  //  i = [originalText replaceOccurrencesOfString:@"width=\"" withString:@"wodth=\"" options:NSLiteralSearch range:fullRange];
-  i = [originalText replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
-  NSLog(@"Removed %d width style tags.\n", i);
-
-  //HERE THERE BE KLUDGES.
-  //We must add enough <br />s to the bottom, to make up for the height of
-  //the images, because the UITextView doesn't take them into account.
-
-  NSMutableString *themsTheBreaks = [[NSMutableString alloc] initWithString:@"<br />\n"]; 
-  // one break always, to fix some silly rendering bug
-  for (i = 0 ; i < extraHeight; i += (int)size) //FIXME?
-    {
-      [themsTheBreaks appendString:@"<br />\n"];
-    }
-  [themsTheBreaks appendString:@"</body>"];
-
-
-  i = [originalText replaceOccurrencesOfString:@"</body>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
-  fullRange = NSMakeRange(0, [originalText length]);
-  i = [originalText replaceOccurrencesOfString:@"</BODY>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
-  outputHTML = [NSString stringWithString:originalText];
-  [originalText release];
+  outputHTML = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
 
   //  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
   //  NSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
@@ -444,6 +425,24 @@
 {
   size = (float)newSize;
   [super setTextSize:size];
+}
+
+- (void)scrollSpeedDidChange:(NSNotification *)aNotification
+{
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  switch ([defaults scrollSpeedIndex])
+    {
+    case 0:
+      [self setScrollToPointAnimationDuration:0.75];
+      break;
+    case 1:
+      [self setScrollToPointAnimationDuration:0.25];
+      break;
+    case 2:
+      [self setScrollToPointAnimationDuration:0.0];
+      break;
+    }
+  [defaults release];
 }
 
 - (NSString *)HTMLFromTextFile:(NSString *)file
@@ -622,6 +621,7 @@
 - (void)dealloc
 {
   //[tapinfo release];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [path release];
   [super dealloc];
 }

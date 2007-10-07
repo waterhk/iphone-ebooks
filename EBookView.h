@@ -60,5 +60,6 @@
 - (NSString *)HTMLFromTextFile:(NSString *)file;
 - (NSString*)HTMLFromTextString:(NSMutableString *)originalText;
 - (void)invertText:(BOOL)b;
+- (void)scrollSpeedDidChange:(NSNotification *)aNotification;
 
 @end

@@ -174,7 +174,7 @@
 	if ([defaults synchronize]){
 		NSLog(@"Synced defaults from prefs pane.");
 	}
-	
+	[defaults setScrollSpeedIndex:[scrollSpeedControl selectedSegment]];
 	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
 	needsOutAnimation = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
@@ -289,6 +289,17 @@
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
 
+	scrollSpeedControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
+    [scrollSpeedControl insertSegment:0 withTitle:@"Slow" animated:NO];
+    [scrollSpeedControl insertSegment:1 withTitle:@"Fast" animated:NO];
+    [scrollSpeedControl insertSegment:2 withTitle:@"Instant" animated:NO];
+    [scrollSpeedControl selectSegment:[defaults scrollSpeedIndex]];
+	scrollSpeedPreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	[scrollSpeedPreferenceCell setDrawsBackground:NO];
+	[scrollSpeedPreferenceCell addSubview:scrollSpeedControl];
+
+
+
 	markCurrentBookAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markCurrentBookAsNewCell setTitle:@"Mark Current Folder as New"];
 	[markCurrentBookAsNewCell setShowDisclosure:NO];
@@ -307,12 +318,12 @@
     case 13: // text encoding
       [self makeEncodingPrefsPane];
       break;
-    case 15: // mark current book as new
+    case 17: // mark current book as new
       [defaults removeScrollPointsForDirectory:[controller currentBrowserPath]];
       [markCurrentBookAsNewCell setEnabled:NO];
       [markCurrentBookAsNewCell setSelected:NO withFade:YES];
       break;
-    case 16: // mark all books as new
+    case 18: // mark all books as new
       [defaults removeAllScrollPoints];
       [markAllBooksAsNewCell setEnabled:NO];
       [markAllBooksAsNewCell setSelected:NO withFade:YES];
@@ -344,11 +355,12 @@
 			      objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 	  version = @"??";
-	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz and Chris Born.\niphoneebooks.googlecode.com", version];
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
-	[alertSheet addButtonWithTitle:@"Yowza!"];
+	[alertSheet addButtonWithTitle:@"Donate"];
+	[alertSheet addButtonWithTitle:@"OK"];
 	[alertSheet setDelegate: self];
 	[alertSheet popupAlertAnimated:YES];
 }
@@ -396,6 +408,11 @@
 		NSLog(@"%s", _cmd);
 	}
 	[sheet dismissAnimated:YES];
+	if (1 == button) //They wanna donate!  Hooray!  Money for college!
+	  {
+	    NSURL *donateURL = [NSURL URLWithString:DONATE_URL_STRING];
+	    [controller openURL:donateURL];
+	  }
 }
 
 - (void)navigationBar:(UINavigationBar*)navbar buttonClicked:(int)button 
@@ -413,7 +430,7 @@
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
-	return 6;
+	return 7;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
@@ -437,6 +454,9 @@
 		rowCount = 1;
 		break;
 	case 5:
+		rowCount = 1;
+		break;
+	case 6:
 		rowCount = 2;
 		break;
 	}
@@ -505,6 +525,14 @@
 	        switch (row)
 		  {
 		  case 0:
+		    prefCell = scrollSpeedPreferenceCell;
+		    break;
+		  }
+		break;
+	case 6:
+	        switch (row)
+		  {
+		  case 0:
 		    prefCell = markCurrentBookAsNewCell;
 		    break;
 		  case 1:
@@ -537,6 +565,9 @@
 	        title = @"File Import";
 		break;
 	case 5:
+	        title = @"Tap-Scroll Speed";
+		break;
+	case 6:
                 title = @"New Books";
 		break;
 	}
