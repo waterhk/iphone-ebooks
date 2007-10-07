@@ -56,12 +56,12 @@
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
 {
-  return 8;
+  return 15;
 }
 
 - (id)preferencesTable:(id)preferencesTable titleForGroup:(int)group
 {
-  return nil;
+  return @"Available Encodings";
 }
 
 - (float)preferencesTable:(id)preferencesTable heightForRow:(int)row inGroup:(int)group withProposedHeight:(float)proposedHeight;
@@ -107,9 +107,37 @@
     {
       [defaults setDefaultTextEncoding:NSASCIIStringEncoding];
     }
-  else if ([title isEqualToString:@"Windows Cyrillic"])
+  else if ([title isEqualToString:@"Cyrillic (Windows-1251)"])
     {
       [defaults setDefaultTextEncoding:NSWindowsCP1251StringEncoding];
+    }
+  else if ([title isEqualToString:@"ISO Latin-2"])
+    {
+      [defaults setDefaultTextEncoding:NSISOLatin2StringEncoding];
+    }
+  else if ([title isEqualToString:@"Windows Latin-2"])
+    {
+      [defaults setDefaultTextEncoding:NSWindowsCP1250StringEncoding];
+    }
+  else if ([title isEqualToString:@"Japanese (Shift-JIS)"])
+    {
+      [defaults setDefaultTextEncoding:NSShiftJISStringEncoding];
+    }
+  else if ([title isEqualToString:@"Japanese (EUC)"])
+    {
+      [defaults setDefaultTextEncoding:NSJapaneseEUCStringEncoding];
+    }
+  else if ([title isEqualToString:@"Japanese (ISO-2022)"])
+    {
+      [defaults setDefaultTextEncoding:NSISO2022JPStringEncoding];
+    }
+  else if ([title isEqualToString:@"Greek (Windows-1253)"])
+    {
+      [defaults setDefaultTextEncoding:NSWindowsCP1253StringEncoding];
+    }
+  else if ([title isEqualToString:@"Turkish (Windows-1254)"])
+    {
+      [defaults setDefaultTextEncoding:NSWindowsCP1254StringEncoding];
     }
 
   [cell setSelected:NO withFade:YES];
@@ -151,8 +179,36 @@
       checked = (NSASCIIStringEncoding == [defaults defaultTextEncoding]);
       break;
     case 7: 
-      title = @"Windows Cyrillic";
+      title = @"Cyrillic (Windows-1251)";
       checked = (NSWindowsCP1251StringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 8:
+      title = @"ISO Latin-2";
+      checked = (NSISOLatin2StringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 9:
+      title = @"Windows Latin-2";
+      checked = (NSWindowsCP1250StringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 10:
+      title = @"Japanese (Shift-JIS)";
+      checked = (NSShiftJISStringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 11:
+      title = @"Japanese (EUC)";
+      checked = (NSJapaneseEUCStringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 12:
+      title = @"Japanese (ISO-2022)";
+      checked = (NSISO2022JPStringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 13:
+      title = @"Greek (Windows-1253)";
+      checked = (NSWindowsCP1253StringEncoding == [defaults defaultTextEncoding]);
+      break;
+    case 14:
+      title = @"Turkish (Windows-1254)";
+      checked = (NSWindowsCP1254StringEncoding == [defaults defaultTextEncoding]);
       break;
     }
   UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];

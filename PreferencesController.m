@@ -282,7 +282,7 @@
 	    encString = @"Windows Cyrillic";
 	    break;
 	  default:
-	    encString = @"Undefined encoding";
+	    encString = @"Other";
 	    break;
 	  }
 	[defaultEncodingPreferenceCell setTitle:@"Text Encoding"];
