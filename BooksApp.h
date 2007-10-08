@@ -34,6 +34,8 @@
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
 #import <UIKit/UIProgressHUD.h>
+#import <UIKit/UISliderControl.h>
+#import <UIKit/UIAlphaAnimation.h>
 #import "EBookView.h"
 #import "EBookImageView.h"
 #import "FileBrowser.h"
@@ -47,6 +49,7 @@
 	UIWindow 	*window;
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
+	UISliderControl *scrollerSlider;
 	UITransitionView *transitionView;
         EBookView   *textView;
 	EBookImageView *imageView;
@@ -74,12 +77,18 @@
 
 	UIImage *buttonImg;
 	NSString *imgPath;
+
+	UIAnimator *animator;
+	UIAlphaAnimation *alpha;
 }
 
 
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
+- (void)showSlider;
+- (void)hideSlider;
+- (void)handleSlider:(id)sender;
 - (void)embiggenText:(UINavBarButton *)button;
 - (void)ensmallenText:(UINavBarButton *)button;
 - (void)invertText:(UINavBarButton *)button;

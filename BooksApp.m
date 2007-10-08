@@ -175,12 +175,80 @@
   [textView setFrame:rect];
   [navBar hide:NO];
   [bottomNavBar hide:NO];
+  [self hideSlider];
 }
 
 - (void)toggleNavbars
 {
   [navBar toggle];
   [bottomNavBar toggle];
+  if (nil == scrollerSlider)
+    [self showSlider];
+  else
+    [self hideSlider];
+}
+
+- (void)showSlider
+{
+  if (nil == scrollerSlider)
+    {
+      CGRect rect = CGRectMake(0, 48, 320, 48);
+      scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
+      [mainView addSubview:scrollerSlider];
+    }
+  if (animator != nil)
+      [animator release];
+  animator = [[UIAnimator alloc] init];
+  if (alpha != nil)
+    [alpha release];
+  alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
+  [alpha setStartAlpha:0];
+  [alpha setEndAlpha:1];
+  CGRect theWholeShebang = [[textView _webView] frame];
+  CGRect visRect = [textView visibleRect];
+  int endPos = (int)theWholeShebang.size.height - 460;
+  [scrollerSlider setMinValue:0.0];
+  [scrollerSlider setMaxValue:(float)endPos];
+  [scrollerSlider setValue:visRect.origin.y];
+  float backParts[4] = {0, 0, 0, .5};
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  [scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+  [scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
+  [scrollerSlider setAlpha:0];
+  //  [scrollerSlider setShowValue:YES];
+  UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
+  [scrollerSlider setMinValueImage:img];
+  [scrollerSlider setMaxValueImage:img];
+  [animator addAnimation:alpha withDuration:0.25 start:YES];
+  //[animator autorelease];
+  //[alpha autorelease];
+}
+
+- (void)hideSlider
+{
+  if (scrollerSlider != nil)
+    {
+      if (animator != nil)
+	[animator release];
+      animator = [[UIAnimator alloc] init];
+      if (alpha != nil)
+	[alpha release];
+      alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
+      [alpha setStartAlpha:1];
+      [alpha setEndAlpha:0];
+      [animator addAnimation:alpha withDuration:0.1 start:YES];
+      [scrollerSlider release];
+      scrollerSlider = nil;
+    }
+}
+
+- (void)handleSlider:(id)sender
+{
+  if (scrollerSlider != nil)
+    {
+      CGPoint scrollness = CGPointMake(0, [scrollerSlider value]);
+      [textView scrollPointVisibleAtTopLeft:scrollness animated:NO];
+    }
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file 
@@ -261,7 +329,8 @@
   //  NSLog(@"set defaults ");
   readingText = NO;
   [bottomNavBar hide:YES];
-
+  if (scrollerSlider != nil)
+    [self hideSlider];
   NSLog(@"end.\n");
 }
 
@@ -347,6 +416,7 @@
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
       if ((nil != nextFile) && [nextFile isReadableTextFilePath])
 	{
+	  [self hideSlider];
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
@@ -382,6 +452,7 @@
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
       if ((nil != prevFile) && [prevFile isReadableTextFilePath])
 	{
+	  [self hideSlider];
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
@@ -565,6 +636,7 @@
       {  // Let's avoid the weird toggle behavior.
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
+	[self hideSlider];
       }
     else // not reading text
       [bottomNavBar hide:YES];
@@ -612,6 +684,12 @@
   [textView release];
   if (nil != imageView)
     [imageView release];
+  if (nil != scrollerSlider)
+    [scrollerSlider release];
+  if (nil != animator)
+    [animator release];
+  if (nil != alpha)
+    [alpha release];
   [defaults release];
   [buttonImg release];
   [minusButton release];
