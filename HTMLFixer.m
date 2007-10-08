@@ -116,7 +116,8 @@ from some of the methods appear on compile.  They're probably unused.
         }
     if (srcString == nil)
         return [aStr copy];
-    NSString *imgPath = [[path stringByAppendingPathComponent:srcString] stringByStandardizingPath];
+    NSString *noPercentString = [srcString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]; //FIXME?  Should I worry about encodings?
+    NSString *imgPath = [[path stringByAppendingPathComponent:noPercentString] stringByStandardizingPath];
     NSURL *pathURL = [NSURL fileURLWithPath:imgPath];
     NSString *absoluteURLString = [pathURL absoluteString];
     //NSLog(@"absoluteURLString: %@", absoluteURLString);
