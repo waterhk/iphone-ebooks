@@ -80,6 +80,12 @@
 	  selector:@selector(shouldTransitionBackToPrefsView:)
 	  name:ENCODINGSELECTED
 	  object:nil];
+
+	[[NSNotificationCenter defaultCenter]
+	  addObserver:self
+	  selector:@selector(shouldTransitionBackToPrefsView:)
+	  name:NEWFONTSELECTED
+	  object:nil];
     } // if nil == preferencesView
   
   [preferencesTable reloadData];
@@ -125,19 +131,32 @@
 {
   [transitionView transition:2 toView:preferencesTable];
   [navigationBar popNavigationItem];
+  NSString *notifyName = [aNotification name];
   NSString *newValue = [aNotification object];
-  if (![newValue isEqualToString:[defaultEncodingPreferenceCell value]])
+  if ([notifyName isEqualToString:ENCODINGSELECTED])
     {
-      [defaultEncodingPreferenceCell setValue:newValue];
-      [controller refreshTextViewFromDefaults];
+      if (![newValue isEqualToString:[defaultEncodingPreferenceCell value]])
+	{
+	  [defaultEncodingPreferenceCell setValue:newValue];
+	  [controller refreshTextViewFromDefaults];
+	}
+      [defaultEncodingPreferenceCell setSelected:NO];
     }
-  [defaultEncodingPreferenceCell setSelected:NO];
+  else
+    {
+      if (![newValue isEqualToString:[fontChoicePreferenceCell value]])
+	{
+	  [fontChoicePreferenceCell setValue:newValue];
+	  //[controller refreshTextViewFromDefaults];
+	}
+      [fontChoicePreferenceCell setSelected:NO];
+    }
 }
 
 - (void)hidePreferences {
 	// Save defaults here
         BOOL textNeedsRefresh = NO;
-	NSString *proposedFont = [self fontNameForIndex:[fontChoiceControl selectedSegment]];
+	NSString *proposedFont = [fontChoicePreferenceCell value];
 	if (![proposedFont isEqualToString:[defaults textFont]])
 	  {
 	    [defaults setTextFont:proposedFont];
@@ -184,7 +203,7 @@
 - (void)createPreferenceCells {
 	
 	// Font
-	fontChoiceControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
+  /*	fontChoiceControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
     [fontChoiceControl insertSegment:0 withTitle:@"Georgia" animated:NO];
     [fontChoiceControl insertSegment:1 withTitle:@"Helvetica" animated:NO];
     [fontChoiceControl insertSegment:2 withTitle:@"Times" animated:NO];
@@ -192,6 +211,13 @@
 	fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	[fontChoicePreferenceCell setDrawsBackground:NO];
 	[fontChoicePreferenceCell addSubview:fontChoiceControl];
+  */
+	fontChoicePreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+
+	NSString *fontString = [defaults textFont];
+	[fontChoicePreferenceCell setTitle:@"Font"];
+	[fontChoicePreferenceCell setValue:fontString];
+	[fontChoicePreferenceCell setShowDisclosure:YES];
 
 	// Text Display
 	fontSizePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
@@ -315,6 +341,9 @@
   NSLog(@"Selected!Prefs! Row %d!", i);
   switch (i)
     {
+    case 1: // font
+      [self makeFontPrefsPane];
+      break;
     case 13: // text encoding
       [self makeEncodingPrefsPane];
       break;
@@ -347,6 +376,22 @@
   NSLog(@"attempted transition...");
   [encodingPrefs reloadData];
   [encodingItem release];
+  //  [encodingPrefs autorelease];
+}
+
+- (void)makeFontPrefsPane
+{
+  UINavigationItem *fontItem = [[UINavigationItem alloc] initWithTitle:@"Font"];
+  if (nil == fontChoicePrefs)
+    fontChoicePrefs = [[FontChoiceController alloc] init];
+  NSLog(@"pushing nav item...");
+  [navigationBar pushNavigationItem:fontItem];
+  NSLog(@"attempting transition...");
+  [transitionView transition:1 toView:[fontChoicePrefs table]];
+
+  NSLog(@"attempted transition...");
+  [fontChoicePrefs reloadData];
+  [fontItem release];
   //  [encodingPrefs autorelease];
 }
 
@@ -592,8 +637,10 @@
       [animator release];
       [transitionView release];
     }
-  if (encodingPrefs != nil)
+  if (fontChoicePrefs != nil)
     [encodingPrefs release];
+  if (encodingPrefs != nil)
+    [fontChoicePrefs release];
   [defaults release];
   [controller release];
   [super dealloc];

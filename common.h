@@ -28,6 +28,7 @@
 
 #define AUTOMATIC_ENCODING (0)
 #define ENCODINGSELECTED @"encodingSelectedNotification"
+#define NEWFONTSELECTED @"newFontSelectedNotification"
 #define CHANGEDSCROLLSPEED @"scrollSpeedChangedNotification"
 
 #define DONATE_URL_STRING @"http://tinyurl.com/2quqes"

@@ -49,6 +49,7 @@
 #import "BooksApp.h"
 #import "BooksDefaultsController.h"
 #import "EncodingPrefsController.h"
+#import "FontChoiceController.h"
 
 @interface PreferencesController : NSObject {
 	
@@ -85,6 +86,7 @@
 	UITransformAnimation *translate;
 
        	EncodingPrefsController *encodingPrefs;
+	FontChoiceController *fontChoicePrefs;
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
@@ -93,6 +95,7 @@
 - (void)createPreferenceCells;
 - (void)tableRowSelected:(NSNotification *)notification;
 - (void)makeEncodingPrefsPane;
+- (void)makeFontPrefsPane;
 
 #define PREFS_NEEDS_ANIMATE @"prefsNeedsAnimateNotification"
 
