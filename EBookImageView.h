@@ -32,5 +32,6 @@
 }
 
 -(EBookImageView *)initWithContentsOfFile:(NSString *)file;
-
+-(EBookImageView *)initWithContentsOfFile:(NSString *)file withinSize:(struct CGSize)size;
++(NSString *)coverArtForBookPath:(NSString *)path;
 @end

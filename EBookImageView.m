@@ -31,14 +31,12 @@
   CGColorRef gray = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
   [self setBackgroundColor:gray];
   UIImage *img = [UIImage imageAtPath:file];
-  //  struct CGSize size = [img size];
   CGImageRef imgRef = [img imageRef];
   unsigned int width = CGImageGetWidth(imgRef);
   unsigned int height = CGImageGetHeight(imgRef);
   if ((height != 0) && (width != 0))
     {
       float aspectRatio = (float)width / (float)height;
-      
       if ((width < rect.size.width) && (height < (rect.size.height - 48)))
 	{  // Let's be nice, and make the small images big!
 	  if (height > width)
@@ -71,10 +69,67 @@
 
 }
 
+-(EBookImageView *)initWithContentsOfFile:(NSString *)file withinSize:(struct CGSize)size
+{
+  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  self = [super initWithFrame:rect];
+  [self setAllowsFourWayRubberBanding:YES];
+  float components[4] = { 0.5, 0.5, 0.5, 1.0 };
+  CGColorRef gray = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
+  [self setBackgroundColor:gray];
+  UIImage *img = [UIImage imageAtPath:file];
+  CGImageRef imgRef = [img imageRef];
+  unsigned int width = CGImageGetWidth(imgRef);
+  unsigned int height = CGImageGetHeight(imgRef);
+  if ((height != 0) && (width != 0))
+    {
+      float aspectRatio = (float)width / (float)height;
+      if (height > width)
+	{
+	  height = (unsigned int)size.height;
+	  width = (unsigned int)(height * aspectRatio);
+	}
+      else
+	{
+	  width = (unsigned int)size.width;
+	  height = (unsigned int)(width / aspectRatio);
+	}
+      [self setContentSize:CGSizeMake(width, height)];
+      _imgView = [[UIImageView alloc] initWithImage:img];
+      //_imgView = [[UIWebView alloc] init];
+      //Let's be super-nice and center the image if applicable!
+      int x = 0;
+      if (width < rect.size.width)
+	x = (int)(rect.size.width - width) / 2;
+      int y = 0;
+      if (height < (rect.size.height))
+	y = (int)(rect.size.height - height) / 2;
+      [_imgView setFrame:CGRectMake(x, y, width, height)];
+      //      [_imgView loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:file]]];
+      //      [_imgView setEnabledGestures:255];
+      [self addSubview:_imgView];
+    }
+  return self;
+
+}
+
 - (void)dealloc
 {
   [_imgView release];
   [super dealloc];
 }
 
++(NSString *)coverArtForBookPath:(NSString *)path
+{
+  NSString *basePath = [path stringByDeletingLastPathComponent];
+
+  NSFileManager *defaultM = [NSFileManager defaultManager];
+  if ([defaultM fileExistsAtPath:[basePath stringByAppendingPathComponent:@"cover.jpg"]])
+    return [basePath stringByAppendingPathComponent:@"cover.jpg"];
+  if ([defaultM fileExistsAtPath:[basePath stringByAppendingPathComponent:@"cover.png"]])
+    return [basePath stringByAppendingPathComponent:@"cover.png"];
+  if ([defaultM fileExistsAtPath:[basePath stringByAppendingPathComponent:@"cover.gif"]])
+    return [basePath stringByAppendingPathComponent:@"cover.gif"];
+  return nil;
+}
 @end

@@ -17,7 +17,7 @@
 */
 #import <CoreGraphics/CoreGraphics.h>
 #import <GraphicsServices/GraphicsServices.h>
-//#import <UIKit/UIWebView.h>
+
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
 #import "palm/palmconvert.h"
@@ -95,10 +95,10 @@
     }
   }
 }
-
+/*
 - (void)drawRect:(struct CGRect)rect
 {
-  /*
+
   if (nil != path)
     {
       NSString *coverPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"cover.jpg"];
@@ -108,10 +108,10 @@
 	  [img compositeToPoint:CGPointMake(0,0) operation:1];
 	}
     }
-  */
+
   [super drawRect:rect];
 }
-
+*/
 - (void)toggleNavbars
 {
   if (_heartbeatDelegate != nil) {
@@ -168,18 +168,6 @@
     {
       *didLoadAll = YES;
       [self setHTML:theHTML];
-      /*
-      if (nil != path)
-	{
-	  NSString *coverPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"cover.jpg"];
-	  UIImage *img = [UIImage imageAtPath:coverPath];
-	  if (nil != img)
-	    {
-	      UIImageView *imgView = [[UIImageView alloc] initWithImage:img];
-	      [self addSubview:imgView]; //FIXME memory leek!
-	    }
-	}
-      */
     }
   else
     {
@@ -187,10 +175,17 @@
 			       [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
       [self setHTML:tempyString];
     }
-  /*  [[self _webView] loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:thePath]]]; 
-  struct CGRect rect = [[self _webView] frame];
-  [[self _webView] setFrame:CGRectMake(0,0, 320, rect.size.height)];
-  [self setContentSize:CGSizeMake(320, rect.size.height)];
+  /* This code doesn't work.  Sorry, charlie.
+  if (1) //replace with a defaults check
+    { 
+      NSMutableString *ebookPath = [NSString  stringWithString:EBOOK_PATH];
+      NSString *styleSheetPath = [ebookPath stringByAppendingString:@"/style.css"];
+      if ([[NSFileManager defaultManager] fileExistsAtPath:styleSheetPath])
+	{
+	  [[self _webView] setUserStyleSheetLocation:[NSURL fileURLWithPath:ebookPath]];
+	}
+      //[ebookPath release];
+    }
   */
 }
 
@@ -283,16 +278,18 @@
   if (size < 36.0f)
     {
       struct CGRect oldRect = [self visibleRect];
+      struct CGRect totalRect = [[self _webView] frame];
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = (size + 3)/size;  
+      float scrollFactor = middleRect / totalRect.size.height;
       size += 2.0f;
-      middleRect *= scrollFactor;
-      oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-      NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       [self setTextSize:size];
       [self loadBookWithPath:path];
-      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:YES];
+      totalRect = [[self _webView] frame];
+      middleRect = scrollFactor * totalRect.size.height;
+      oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+      NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
       [self setNeedsDisplay];
     }
 }
@@ -303,14 +300,18 @@
   if (size > 10.0f)
     {
       struct CGRect oldRect = [self visibleRect];
+      struct CGRect totalRect = [[self _webView] frame];
+      NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-      float scrollFactor = (size - 3)/size;
+      float scrollFactor = middleRect / totalRect.size.height;
       size -= 2.0f;
-      middleRect *= scrollFactor;
-      oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       [self setTextSize:size];
-      [self loadBookWithPath:path]; // This is horribly slow!  Is there a better way?
-      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:YES];
+      [self loadBookWithPath:path];
+      totalRect = [[self _webView] frame];
+      middleRect = scrollFactor * totalRect.size.height;
+      oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+      NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+      [self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
       [self setNeedsDisplay];
     }
 }

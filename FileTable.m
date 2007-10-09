@@ -53,6 +53,54 @@
     _allowDelete = allow;
 }
 
+- (void)setBackgroundImageAtPath:(NSString *)path
+{
+  /*  if (nil != _backgroundImage)
+    [_backgroundImage release];
+  _backgroundImage = [[UIImage imageAtPath:path] retain];
+  if (nil == _backgroundImage)
+    return;
+  CGImageRef ref = [_backgroundImage imageRef];
+  int width = CGImageGetWidth(ref);
+  int height = CGImageGetHeight(ref);
+  _backgroundImageSourceRect = CGRectMake(0,0,width,height);
+  float aspectRatio;
+  if (width > height)
+    {
+      aspectRatio = (float)height / (float)width;
+      float w = 320.0;
+      float h = 320 * aspectRatio;
+      _backgroundImageDestRect = CGRectMake(0,0,w,h);
+    }
+  else
+    {
+      aspectRatio = (float)width / (float)height;
+      float w = 412 * aspectRatio;
+      float h = 412;
+      _backgroundImageDestRect = CGRectMake(0,0,w,h);
+    }
+  */
+}
+/*
+-(void)drawRect:(struct CGRect)rect
+{
+  [super drawRect:rect];
+  if (nil != _backgroundImage)
+    {
+      [_backgroundImage compositeToRect:_backgroundImageDestRect
+			fromRect:_backgroundImageSourceRect
+			operation:1
+			fraction:0.2];
+    }
+}
+*/
+- (void)dealloc
+{
+  if (nil != _backgroundImage)
+    [_backgroundImage release];
+  [super dealloc];
+}
+
 @end
 
 @implementation DeletableCell

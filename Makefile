@@ -29,7 +29,6 @@ package: Books
 	cp Info.plist Books.app/Info.plist
 	cp icon.png Books.app/icon.png
 	cp Default.png Books.app/Default.png
-	cp PkgInfo Books.app/PkgInfo
 	cp inv_up.png Books.app/inv_up.png
 	cp inv_down.png Books.app/inv_down.png
 	cp embig_up.png Books.app/embig_up.png

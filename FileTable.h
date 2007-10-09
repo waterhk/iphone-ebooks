@@ -27,6 +27,9 @@
 
 @interface FileTable : UITable
 {
+  UIImage *_backgroundImage;
+  struct CGRect _backgroundImageDestRect, _backgroundImageSourceRect;
+
     BOOL _allowDelete;
 }
 

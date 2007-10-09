@@ -72,7 +72,7 @@ Adapted for Books.app by Zachary Brewster-Geisz
 - (void)setPath: (NSString *)path {
 	[_path release];
 	_path = [path copy];
-
+	//[_table setBackgroundImageAtPath:[_path stringByAppendingPathComponent:@"cover.jpg"]];
 	[self reloadData];
 }
 

@@ -113,15 +113,28 @@
       {
 	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
 	  {
+	    NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
+
 	    UINavigationItem *tempItem = [[UINavigationItem alloc]
 		       initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
-	    [navBar pushNavigationItem:tempItem withView:textView];
+	    if (nil == coverart)
+	      {
+		imageView = nil;
+		[navBar pushNavigationItem:tempItem withView:textView];
+	    [textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
+	      }
+	    else
+	      {
+		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,364)];
+		[navBar pushNavigationItem:tempItem withView:imageView];
+		[textView loadBookWithPath:recentFile numCharacters:100];
+
+	      }
 
 	    [tempItem release];
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
-	    [textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
 	    textViewNeedsFullText = YES;
 	    [progressHUD show:YES];
 	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
@@ -153,6 +166,10 @@
   if ((textViewNeedsFullText) && ![transitionView isTransitioning])
     {
       [textView loadBookWithPath:[textView currentPath]];
+      if (imageView != nil)
+	{
+	  [transitionView transition:3 toView:textView];
+	}
       textViewNeedsFullText = NO;
       [progressHUD show:NO];
     }
@@ -160,7 +177,8 @@
     {
       if ((textView != nil) && (defaults != nil))
 	{
-	  //	  [self refreshTextViewFromDefaults];
+
+	  [self refreshTextViewFromDefaults];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  transitionHasBeenCalled = YES;
@@ -363,7 +381,17 @@
 {
   if (![button isPressed]) // mouse up events only, kids!
     {
+	  CGRect rect = [[textView _webView] frame];
       [textView embiggenText];
+      if (scrollerSlider != nil)
+	{
+	  float maxval = rect.size.height;
+	  float val = [scrollerSlider value];
+	  float percentage = val / maxval;
+	  rect = [[textView _webView] frame];
+	  [scrollerSlider setMaxValue:rect.size.height];
+	  [scrollerSlider setValue:(rect.size.height * percentage)];
+	}
       [defaults setTextSize:[textView textSize]];
     }
 }
@@ -372,7 +400,18 @@
 {
   if (![button isPressed]) // mouse up events only, kids!
     {
+      CGRect rect = [[textView _webView] frame];
       [textView ensmallenText];
+      if (scrollerSlider != nil)
+	{
+	  float maxval = rect.size.height;
+	  float val = [scrollerSlider value];
+	  float percentage = val / maxval;
+	  rect = [[textView _webView] frame];
+	  [scrollerSlider setMaxValue:rect.size.height];
+	  //[scrollerSlider setValue:oldRect.origin.y];
+	  [scrollerSlider setValue:(rect.size.height * percentage)];
+	}
       [defaults setTextSize:[textView textSize]];
     }
 }
@@ -621,6 +660,7 @@
 
 - (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly
 {
+  float scrollPercentage;
   if (!toolbarsOnly)
     {
       [textView setTextSize:[defaults textSize]];
@@ -628,6 +668,11 @@
       textInverted = [defaults inverted];
       [textView invertText:textInverted];
 
+      struct CGRect overallRect = [[textView _webView] frame];
+      NSLog(@"overall height: %f", overallRect.size.height);
+      struct CGRect visRect = [textView visibleRect];
+      scrollPercentage = visRect.origin.y / overallRect.size.height;
+      NSLog(@"scroll percent: %f",scrollPercentage);
       [textView setTextFont:[defaults textFont]];
       
       [self toggleStatusBarColor];
@@ -653,7 +698,12 @@
       {
 	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 	rect.origin.x = rect.origin.y = 0.0f;
+	//	[textView loadBookWithPath:[textView currentPath]];
 	[textView setFrame:rect];
+	struct CGRect overallRect = [[textView _webView] frame];
+      NSLog(@"overall height: %f", overallRect.size.height);
+	struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
+	[textView scrollPointVisibleAtTopLeft:thePoint];
       }
 }
 
