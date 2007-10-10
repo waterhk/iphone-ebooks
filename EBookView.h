@@ -43,6 +43,7 @@
 - (void)loadBookWithPath:(NSString *)thePath;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars;
+- (void)setCurrentPathWithoutLoading:(NSString *)thePath;
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
 - (NSString *)currentPath;
 - (void)embiggenText;

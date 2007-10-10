@@ -25,6 +25,7 @@
 -(EBookImageView *)initWithContentsOfFile:(NSString *)file
 {
   struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  rect.origin.x = rect.origin.y = 0;
   self = [super initWithFrame:rect];
   [self setAllowsFourWayRubberBanding:YES];
   float components[4] = { 0.5, 0.5, 0.5, 1.0 };
@@ -72,6 +73,7 @@
 -(EBookImageView *)initWithContentsOfFile:(NSString *)file withinSize:(struct CGSize)size
 {
   struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  rect.origin.y = rect.origin.x = 0;
   self = [super initWithFrame:rect];
   [self setAllowsFourWayRubberBanding:YES];
   float components[4] = { 0.5, 0.5, 0.5, 1.0 };

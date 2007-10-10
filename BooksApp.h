@@ -62,6 +62,7 @@
 	BOOL        textViewNeedsFullText;
 	BOOL        navbarsAreOn;
 	BOOL		textInverted;
+	BOOL        imageSplashed;
 	float       size;
 	BooksDefaultsController *defaults;
 	UINavBarButton *minusButton;

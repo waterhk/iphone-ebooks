@@ -137,6 +137,12 @@
 	       didLoadAll:&junk];
 }
 
+- (void)setCurrentPathWithoutLoading:(NSString *)thePath
+  //USE WITH CAUTION!!!!
+{
+  path = [[thePath copy] retain];
+}
+
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
 	      didLoadAll:(BOOL *)didLoadAll
 {

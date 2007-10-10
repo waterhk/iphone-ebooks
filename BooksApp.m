@@ -35,7 +35,7 @@
     navbarsAreOn = YES;
 
     textViewNeedsFullText = NO;
-
+    imageSplashed = NO;
     defaults = [[BooksDefaultsController alloc] init];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -82,8 +82,6 @@
     [mainView addSubview:bottomNavBar];
     if (!readingText) 
       [bottomNavBar hide:YES];
-    [mainView addSubview:progressIndicator];
-    [progressIndicator startAnimation];
 
     [textView setHeartbeatDelegate:self];
 
@@ -129,23 +127,30 @@
 	    if (nil == coverart)
 	      {
 		[progressIndicator setStyle:![defaults inverted]];
+		[mainView addSubview:progressIndicator];
+		[progressIndicator startAnimation];
 		imageView = nil;
 		[navBar pushNavigationItem:tempItem withView:textView];
-	    [textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
+		[textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
+		textViewNeedsFullText = YES;
 	      }
 	    else
 	      {
+		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
+		[mainView addSubview:imageView];
+		[mainView addSubview:progressIndicator];
+		[progressIndicator startAnimation];
 		[progressIndicator setStyle:0];
-		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,364)];
-		[navBar pushNavigationItem:tempItem withView:imageView];
-		[textView loadBookWithPath:recentFile numCharacters:100];
-
+		
+		[navBar pushNavigationItem:tempItem withView:textView];
+		[textView setCurrentPathWithoutLoading:recentFile];
+		textViewNeedsFullText = YES;
+		imageSplashed = YES;
 	      }
 
 	    [tempItem release];
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
-	    textViewNeedsFullText = YES;
 	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
 	    
 	  }
@@ -172,25 +177,29 @@
 
 - (void)heartbeatCallback:(id)unused
 {
+  if (imageSplashed)
+    {
+      [textView loadBookWithPath:[textView currentPath]];
+      textViewNeedsFullText = NO;
+    }
   if ((textViewNeedsFullText) && ![transitionView isTransitioning])
     {
       [textView loadBookWithPath:[textView currentPath]];
-      if (imageView != nil)
-	{
-	  [transitionView transition:3 toView:textView];
-	}
       textViewNeedsFullText = NO;
       [progressIndicator stopAnimation];
       [progressIndicator removeFromSuperview];
     }
-  if (!transitionHasBeenCalled)
+  if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
     {
       if ((textView != nil) && (defaults != nil))
 	{
-
-	  [self refreshTextViewFromDefaults];
+	  //[self refreshTextViewFromDefaults];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+	  [progressIndicator stopAnimation];
+	  [progressIndicator removeFromSuperview];
+	  [imageView removeFromSuperview];
+	  imageSplashed = NO;
 	  transitionHasBeenCalled = YES;
 	}
     }
