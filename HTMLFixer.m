@@ -123,7 +123,7 @@ from some of the methods appear on compile.  They're probably unused.
     //NSLog(@"absoluteURLString: %@", absoluteURLString);
     [str replaceCharactersInRange:pathRange withString:absoluteURLString];
     //here's hopin'!
-
+    len = [str length];
 
     UIImage *img = [UIImage imageAtPath:imgPath];
     if (nil != img)
@@ -144,12 +144,13 @@ from some of the methods appear on compile.  They're probably unused.
         }
     // Now, find if there's a "height" tag.
     c = 0;
-    while (c + 8 < len)
+    while (c + 7 < len)
         {
             range = NSMakeRange(c++, 7);
             tempString = [[str substringWithRange:range] lowercaseString];
             if ([tempString isEqualToString:@"height="])
                 {
+		  NSLog(@"found height tag");
 		  NSRange anotherRange = [str quotedRangePastIndex:c];
 		  NSString *heightNumString = [NSString stringWithFormat:@"%d", (int)height];
 		  if (anotherRange.location != NSNotFound)
@@ -163,7 +164,7 @@ from some of the methods appear on compile.  They're probably unused.
     // Now, to find the width tag.
     c = 0;
     BOOL foundWidth = NO;
-    while (c + 7 < len)
+    while (c + 6 < len)
         {
             range = NSMakeRange(c++, 6);
             tempString = [[str substringWithRange:range] lowercaseString];

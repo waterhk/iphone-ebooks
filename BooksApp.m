@@ -48,7 +48,13 @@
     [window orderFront: self];
     [window makeKey: self];
     [window _setHidden: NO];
-    progressHUD = [[UIProgressHUD alloc] initWithWindow:window];
+    struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+    progressIndicator = [[UIProgressIndicator alloc] 
+			  initWithFrame:CGRectMake((320-progsize.width)/2,
+						   (460-progsize.height)/2,
+						   progsize.width, 
+						   progsize.height)];
+    [progressIndicator setStyle:0];
     mainView = [[UIView alloc] initWithFrame: rect];
 
 	[self setupNavbar];
@@ -76,6 +82,8 @@
     [mainView addSubview:bottomNavBar];
     if (!readingText) 
       [bottomNavBar hide:YES];
+    [mainView addSubview:progressIndicator];
+    [progressIndicator startAnimation];
 
     [textView setHeartbeatDelegate:self];
 
@@ -120,12 +128,14 @@
 				stringByDeletingPathExtension]];
 	    if (nil == coverart)
 	      {
+		[progressIndicator setStyle:![defaults inverted]];
 		imageView = nil;
 		[navBar pushNavigationItem:tempItem withView:textView];
 	    [textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
 	      }
 	    else
 	      {
+		[progressIndicator setStyle:0];
 		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,364)];
 		[navBar pushNavigationItem:tempItem withView:imageView];
 		[textView loadBookWithPath:recentFile numCharacters:100];
@@ -136,7 +146,6 @@
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
 	    textViewNeedsFullText = YES;
-	    [progressHUD show:YES];
 	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
 	    
 	  }
@@ -171,7 +180,8 @@
 	  [transitionView transition:3 toView:textView];
 	}
       textViewNeedsFullText = NO;
-      [progressHUD show:NO];
+      [progressIndicator stopAnimation];
+      [progressIndicator removeFromSuperview];
     }
   if (!transitionHasBeenCalled)
     {
@@ -505,11 +515,11 @@
 
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [self refreshTextViewFromDefaults];
-	  [progressHUD show:YES];
+	  //[progressHUD show:YES];
 	  [textView loadBookWithPath:prevFile];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	  [progressHUD show:NO];
+	  //[progressHUD show:NO];
 	  [tempItem release];
 	  [tempView autorelease];
 	}
@@ -730,7 +740,7 @@
   [navBar release];
   [bottomNavBar release];
   [mainView release];
-  [progressHUD release];
+  [progressIndicator release];
   [textView release];
   if (nil != imageView)
     [imageView release];

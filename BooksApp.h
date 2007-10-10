@@ -33,7 +33,7 @@
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
-#import <UIKit/UIProgressHUD.h>
+#import <UIKit/UIProgressIndicator.h>
 #import <UIKit/UISliderControl.h>
 #import <UIKit/UIAlphaAnimation.h>
 #import "EBookView.h"
@@ -73,7 +73,7 @@
 	UINavBarButton *rightButton;
 	UINavBarButton *leftButton;
 	
-	UIProgressHUD *progressHUD;
+	UIProgressIndicator *progressIndicator;
 
 	UIImage *buttonImg;
 	NSString *imgPath;
