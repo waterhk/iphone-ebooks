@@ -191,6 +191,7 @@ from some of the methods appear on compile.  They're probably unused.
 +(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size
   // Fixes all img tags within a given string
 {
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   NSMutableString *theHTML = [NSMutableString stringWithString:theOldHTML];
   int thisImageHeight = 0;
   int height = 0;
@@ -225,15 +226,25 @@ from some of the methods appear on compile.  They're probably unused.
   //FIXME!  This will screw things up if the _readable_ text contains @import!!
   fullRange = NSMakeRange(0, [theHTML length]);
   i = [theHTML replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
-  NSLog(@"Removed %d width style tags.\n", i);
-  i = [theHTML replaceOccurrencesOfString:@"<table" withString:@"<pre" options:NSLiteralSearch range:fullRange];
+  //  NSLog(@"Removed %d width style tags.\n", i);
+
+  //Quirky dash behavior!
   fullRange = NSMakeRange(0, [theHTML length]);
-  i += [theHTML replaceOccurrencesOfString:@"<TABLE" withString:@"<pre" options:NSLiteralSearch range:fullRange];
-  fullRange = NSMakeRange(0, [theHTML length]);
-  i = [theHTML replaceOccurrencesOfString:@"</table" withString:@"</pre" options:NSLiteralSearch range:fullRange];
-  fullRange = NSMakeRange(0, [theHTML length]);
-  i += [theHTML replaceOccurrencesOfString:@"</TABLE" withString:@"</pre" options:NSLiteralSearch range:fullRange];
-  NSLog(@"Removed %d table tags.", i);
+  i = [theHTML replaceOccurrencesOfString:@"&mdash;" withString:@" &mdash; " options:NSLiteralSearch range:fullRange];
+
+
+  if (![defaults renderTables])
+    {
+      fullRange = NSMakeRange(0, [theHTML length]);
+      i = [theHTML replaceOccurrencesOfString:@"<table" withString:@"<pre" options:NSLiteralSearch range:fullRange];
+      fullRange = NSMakeRange(0, [theHTML length]);
+      i += [theHTML replaceOccurrencesOfString:@"<TABLE" withString:@"<pre" options:NSLiteralSearch range:fullRange];
+      fullRange = NSMakeRange(0, [theHTML length]);
+      i = [theHTML replaceOccurrencesOfString:@"</table" withString:@"</pre" options:NSLiteralSearch range:fullRange];
+      fullRange = NSMakeRange(0, [theHTML length]);
+      i += [theHTML replaceOccurrencesOfString:@"</TABLE" withString:@"</pre" options:NSLiteralSearch range:fullRange];
+      NSLog(@"Removed %d table tags.", i);
+    }
 
   //HERE THERE BE KLUDGES.
   //We must add enough <br />s to the bottom, to make up for the height of
@@ -252,7 +263,8 @@ from some of the methods appear on compile.  They're probably unused.
   fullRange = NSMakeRange(0, [theHTML length]);
   i += [theHTML replaceOccurrencesOfString:@"</BODY>" withString:themsTheBreaks options:NSLiteralSearch range:fullRange];
   NSLog(@"Found %d body end tags.", i);
-        
+
+  [defaults release];        
     return [NSString stringWithString:theHTML];
 }
 

@@ -76,8 +76,11 @@
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
+	UIPreferencesControlTableCell *smartConversionPreferenceCell;
+	UIPreferencesControlTableCell *renderTablesPreferenceCell;
 	UIPreferencesTableCell *markCurrentBookAsNewCell;
 	UIPreferencesTableCell *markAllBooksAsNewCell;
+	UIPreferencesTableCell *toBeAnnouncedCell;
 	
 	struct CGRect contentRect;
 

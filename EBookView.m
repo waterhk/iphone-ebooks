@@ -549,33 +549,49 @@
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
 
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  if ([defaults smartConversion])
+    {
+      //Change double-newlines to </p><p>.
+      i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
+			options:NSLiteralSearch range:fullRange];
+      //NSLog(@"replaced %d double-newlines\n", i);
+      j += i;
+      fullRange = NSMakeRange(0, [originalText length]);
+      
+      // And just in case someone has a Classic MacOS textfile...
+      i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
+			options:NSLiteralSearch range:fullRange];
+      //NSLog(@"replaced %d double-carriage-returns\n", i);
+      j += i;
+      
+      // Lots of text files start new paragraphs with newline-space-space or newline-tab
+      i = [originalText replaceOccurrencesOfString:@"\n  " withString:@"</p>\n<p>"
+			options:NSLiteralSearch range:fullRange];
+      //NSLog(@"replaced %d double-spaces\n", i);
+      j += i;
+      fullRange = NSMakeRange(0, [originalText length]);
+      
+      i = [originalText replaceOccurrencesOfString:@"\n\t" withString:@"</p>\n<p>"
+			options:NSLiteralSearch range:fullRange];
+      //NSLog(@"replaced %d double-spaces\n", i);
+      j += i;
+    }
+  else
+    {
+      fullRange = NSMakeRange(0, [originalText length]);
+      i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
+			options:NSLiteralSearch range:fullRange];
+      fullRange = NSMakeRange(0, [originalText length]);
+      
+      // And just in case someone has a Classic MacOS textfile...
+      i = [originalText replaceOccurrencesOfString:@"\r" withString:@"<br />\n"
+			options:NSLiteralSearch range:fullRange];
+      //NSLog(@"replaced %d double-carriage-returns\n", i);
+      j += i;
 
-  //Change double-newlines to </p><p>.
-  i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
-		    options:NSLiteralSearch range:fullRange];
-  //NSLog(@"replaced %d double-newlines\n", i);
-  j += i;
+    }
   fullRange = NSMakeRange(0, [originalText length]);
-
-  // And just in case someone has a Classic MacOS textfile...
-  i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
-		    options:NSLiteralSearch range:fullRange];
-  //NSLog(@"replaced %d double-carriage-returns\n", i);
-  j += i;
-  
-  // Lots of text files start new paragraphs with newline-space-space or newline-tab
-  i = [originalText replaceOccurrencesOfString:@"\n  " withString:@"</p>\n<p>"
-		    options:NSLiteralSearch range:fullRange];
-  //NSLog(@"replaced %d double-spaces\n", i);
-  j += i;
-  fullRange = NSMakeRange(0, [originalText length]);
-
-  i = [originalText replaceOccurrencesOfString:@"\n\t" withString:@"</p>\n<p>"
-		    options:NSLiteralSearch range:fullRange];
-  //NSLog(@"replaced %d double-spaces\n", i);
-  j += i;
-  fullRange = NSMakeRange(0, [originalText length]);
-
   
   i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
 		    options:NSLiteralSearch range:fullRange];

@@ -188,12 +188,17 @@
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+	//FIXME: these two  should make the text refresh
+	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
+
+	[defaults setRenderTables:[[[renderTablesPreferenceCell control] valueForKey:@"value"] boolValue]];
+
+	[defaults setScrollSpeedIndex:[scrollSpeedControl selectedSegment]];
 
 
 	if ([defaults synchronize]){
 		NSLog(@"Synced defaults from prefs pane.");
 	}
-	[defaults setScrollSpeedIndex:[scrollSpeedControl selectedSegment]];
 	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
 	needsOutAnimation = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
@@ -315,6 +320,19 @@
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
 
+	smartConversionPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
+	NSString *smartconvwithquotes = [NSString stringWithFormat:@"%CSmart%C conversion", 0x201C, 0x201D];  // because I love me some curly quotes
+	[smartConversionPreferenceCell setTitle:smartconvwithquotes];
+	UISwitchControl *smartConversionSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[smartConversionSitchControl setValue:[defaults smartConversion]];
+	[smartConversionPreferenceCell setControl:smartConversionSitchControl];
+
+	renderTablesPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
+	[renderTablesPreferenceCell setTitle:@"Render HTML tables"];
+	UISwitchControl *renderTablesSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[renderTablesSitchControl setValue:[defaults renderTables]];
+	[renderTablesPreferenceCell setControl:renderTablesSitchControl];
+
 	scrollSpeedControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
     [scrollSpeedControl insertSegment:0 withTitle:@"Slow" animated:NO];
     [scrollSpeedControl insertSegment:1 withTitle:@"Fast" animated:NO];
@@ -333,6 +351,10 @@
 	markAllBooksAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markAllBooksAsNewCell setTitle:@"Mark All Books as New"];
 	[markAllBooksAsNewCell setShowDisclosure:NO];
+
+	toBeAnnouncedCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,contentRect.size.width, 48)];
+	[toBeAnnouncedCell setTitle:@"Coming soon"];
+	[toBeAnnouncedCell setShowDisclosure:NO];
 }
 
 - (void)tableRowSelected:(NSNotification *)notification 
@@ -344,15 +366,15 @@
     case 1: // font
       [self makeFontPrefsPane];
       break;
-    case 13: // text encoding
+    case 12: // text encoding
       [self makeEncodingPrefsPane];
       break;
-    case 17: // mark current book as new
+    case 18: // mark current book as new
       [defaults removeScrollPointsForDirectory:[controller currentBrowserPath]];
       [markCurrentBookAsNewCell setEnabled:NO];
       [markCurrentBookAsNewCell setSelected:NO withFade:YES];
       break;
-    case 18: // mark all books as new
+    case 19: // mark all books as new
       [defaults removeAllScrollPoints];
       [markAllBooksAsNewCell setEnabled:NO];
       [markAllBooksAsNewCell setSelected:NO withFade:YES];
@@ -475,7 +497,7 @@
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
-	return 7;
+	return 6;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
@@ -483,25 +505,22 @@
 	int rowCount = 0;
 	switch (group)
 	{
-	case 0:
-		rowCount = 1;
-		break;
-	case 1:
-		rowCount = 2;
-		break;
-	case 2:
-		rowCount = 2;
-		break;
-	case 3:
+	case 0: //text display
 		rowCount = 3;
 		break;
-	case 4:
+	case 1: //auto-hide
+		rowCount = 2;
+		break;
+	case 2: //toolbar options
+		rowCount = 3;
+		break;
+	case 3: //file import
+		rowCount = 3;
+		break;
+	case 4: //tap-scroll speed
 		rowCount = 1;
 		break;
-	case 5:
-		rowCount = 1;
-		break;
-	case 6:
+	case 5: //new books
 		rowCount = 2;
 		break;
 	}
@@ -520,20 +539,15 @@
 		case 0:
 			prefCell = fontChoicePreferenceCell;
 			break;
-		}
-		break;
-	case 1:
-		switch (row)
-		{
-		case 0:
+		case 1: 
 			prefCell = fontSizePreferenceCell;
 			break;
-		case 1:
+		case 2:
 			prefCell = invertPreferenceCell;
 			break;
 		}
 		break;
-	case 2:
+	case 1:
 		switch (row)
 		{
 		case 0:
@@ -544,7 +558,7 @@
 			break;
 		}
 		break;
-	case 3:
+	case 2:
 		switch (row)
 		{
 		case 0:
@@ -558,15 +572,21 @@
 			break;
 		}
 		break;
-	case 4:
+	case 3:
 	        switch (row)
 		  {
 		  case 0:
 		    prefCell = defaultEncodingPreferenceCell;
 		    break;
+		  case 1:
+		    prefCell = smartConversionPreferenceCell;
+		    break;
+		  case 2:
+		    prefCell = renderTablesPreferenceCell;
+		    break;
 		  }
 		break;
-	case 5:
+	case 4:
 	        switch (row)
 		  {
 		  case 0:
@@ -574,7 +594,7 @@
 		    break;
 		  }
 		break;
-	case 6:
+	case 5:
 	        switch (row)
 		  {
 		  case 0:
@@ -595,24 +615,21 @@
 	switch (group)
 	{
 	case 0:
-		title = @"Font";
-		break;
-	case 1:
 		title = @"Text Display";
 		break;
-	case 2:
+	case 1:
 		title = @"Auto-Hide";
 		break;
-	case 3:
+	case 2:
 		title = @"Toolbar Options";
 		break;
-	case 4:
+	case 3:
 	        title = @"File Import";
 		break;
-	case 5:
+	case 4:
 	        title = @"Tap-Scroll Speed";
 		break;
-	case 6:
+	case 5:
                 title = @"New Books";
 		break;
 	}
@@ -637,9 +654,9 @@
       [animator release];
       [transitionView release];
     }
-  if (fontChoicePrefs != nil)
-    [encodingPrefs release];
   if (encodingPrefs != nil)
+    [encodingPrefs release];
+  if (fontChoicePrefs != nil)
     [fontChoicePrefs release];
   [defaults release];
   [controller release];

@@ -46,6 +46,9 @@
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
   [temp setObject:@"0" forKey:TEXTENCODINGKEY];
   //  NSLog(@"temp dictionary: %@\n", temp);
+  [temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
+  [temp setObject:@"0" forKey:RENDERTABLESKEY];
+
   [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
   [[NSUserDefaults standardUserDefaults] registerDefaults:temp];
 
@@ -123,6 +126,16 @@
 - (int)defaultTextEncoding
 {
   return [[NSUserDefaults standardUserDefaults] integerForKey:TEXTENCODINGKEY];
+}
+
+- (BOOL)smartConversion
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:SMARTCONVERSIONKEY];
+}
+
+- (BOOL)renderTables
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:RENDERTABLESKEY];
 }
 
 - (int)scrollSpeedIndex
@@ -282,6 +295,16 @@
 - (void)setDefaultTextEncoding:(int)enc
 {
   [[NSUserDefaults standardUserDefaults] setInteger:enc forKey:TEXTENCODINGKEY];
+}
+
+- (void)setSmartConversion:(BOOL)sc
+{
+  [[NSUserDefaults standardUserDefaults] setBool:sc forKey:SMARTCONVERSIONKEY];
+}
+
+- (void)setRenderTables:(BOOL)rt
+{
+  [[NSUserDefaults standardUserDefaults] setBool:rt forKey:RENDERTABLESKEY];
 }
 
 - (void)setScrollSpeedIndex:(int)index

@@ -51,6 +51,8 @@
 #define PAGENAV @"pageNavKey"
 
 #define TEXTENCODINGKEY @"textEncodingKey"
+#define SMARTCONVERSIONKEY @"smartConversionKey"
+#define RENDERTABLESKEY @"renderTablesKey"
 
 #define SCROLLSPEEDINDEXKEY @"scrollSpeedIndexKey"
 
@@ -69,6 +71,8 @@
 - (BOOL)chapternav;
 - (BOOL)pagenav;
 - (int)defaultTextEncoding;
+- (BOOL)smartConversion;
+- (BOOL)renderTables;
 - (int)scrollSpeedIndex;
 - (void)setLastScrollPoint:(unsigned int)thePoint;
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
@@ -88,6 +92,8 @@
 - (void)setChapternav:(BOOL)isChpaternav;
 - (void)setPagenav:(BOOL)isPagenav;
 - (void)setDefaultTextEncoding:(int)enc;
+- (void)setSmartConversion:(BOOL)sc;
+- (void)setRenderTables:(BOOL)rt;
 - (void)setScrollSpeedIndex:(int)index;
 
 - (BOOL)synchronize;

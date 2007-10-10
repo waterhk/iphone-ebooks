@@ -4,6 +4,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import "NSString-BooksAppAdditions.h"
+#import "BooksDefaultsController.h"
 
 @interface HTMLFixer : NSObject
 
