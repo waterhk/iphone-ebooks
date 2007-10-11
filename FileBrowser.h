@@ -24,6 +24,7 @@
 #import <CoreGraphics/CGColorSpace.h>
 #import "BooksDefaultsController.h"
 #import "FileTable.h"
+#import "EBookImageView.h"
 
 @interface FileBrowser : UIView 
 {
@@ -48,7 +49,8 @@ int numberCompare(id, id, void *);
 - (void)tableRowSelected:(NSNotification *)notification;
 - (NSString *)selectedFile;
 - (void)setExtensions:(NSArray *)extensions;
-- (void)selectCellForFilename:(NSString *)thePath;
+- (void)shouldReloadThisCell:(NSNotification *)aNotification;
+- (void)reloadCellForFilename:(NSString *)thePath;
 - (NSString *)fileBeforeFileNamed:(NSString *)thePath;
 - (NSString *)fileAfterFileNamed:(NSString *)thePath;
 - (void)shouldDeleteFileFromCell:(NSNotification *)aNotification;

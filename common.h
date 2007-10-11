@@ -31,6 +31,10 @@
 #define NEWFONTSELECTED @"newFontSelectedNotification"
 #define CHANGEDSCROLLSPEED @"scrollSpeedChangedNotification"
 
+#define OPENEDTHISFILE @"openedThisFileNotification"
+#define RELOADTOPBROWSER @"reloadTopBrowserNotification"
+#define RELOADALLBROWSERS @"reloadAllBrowsersNotification"
+
 #define DONATE_URL_STRING @"http://tinyurl.com/2quqes"
 
 #endif

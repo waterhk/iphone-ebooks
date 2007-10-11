@@ -24,6 +24,7 @@
 #import <UIKit/UIView-Rendering.h>
 //#import <UIKit/UIWebView.h>
 #import <CoreGraphics/CoreGraphics.h>
+#import "common.h"
 
 @interface EBookImageView : UIScroller
 

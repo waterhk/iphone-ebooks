@@ -65,6 +65,8 @@
       //      [_imgView loadRequest:[NSURLRequest requestWithURL:[NSURL fileURLWithPath:file]]];
       //      [_imgView setEnabledGestures:255];
       [self addSubview:_imgView];
+      [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+					    object:file];
     }
   return self;
 
@@ -86,7 +88,7 @@
   if ((height != 0) && (width != 0))
     {
       float aspectRatio = (float)width / (float)height;
-      if (height > width)
+      if (aspectRatio < (size.width/size.height))
 	{
 	  height = (unsigned int)size.height;
 	  width = (unsigned int)(height * aspectRatio);
@@ -123,9 +125,15 @@
 
 +(NSString *)coverArtForBookPath:(NSString *)path
 {
-  NSString *basePath = [path stringByDeletingLastPathComponent];
-
+  BOOL isDir;
   NSFileManager *defaultM = [NSFileManager defaultManager];
+  BOOL fileExists = [defaultM fileExistsAtPath:path isDirectory:&isDir];
+  NSString *basePath;
+  if (isDir)
+    basePath = path;
+  else
+    basePath = [path stringByDeletingLastPathComponent];
+
   if ([defaultM fileExistsAtPath:[basePath stringByAppendingPathComponent:@"cover.jpg"]])
     return [basePath stringByAppendingPathComponent:@"cover.jpg"];
   if ([defaultM fileExistsAtPath:[basePath stringByAppendingPathComponent:@"cover.png"]])
@@ -134,4 +142,5 @@
     return [basePath stringByAppendingPathComponent:@"cover.gif"];
   return nil;
 }
+
 @end

@@ -106,4 +106,5 @@
 - (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly;
 - (void)toggleStatusBarColor;
 - (NSString *)currentBrowserPath;
+- (void)cleanUpBeforeQuit;
 @end

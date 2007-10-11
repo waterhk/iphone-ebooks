@@ -74,8 +74,6 @@
     transitionView = [[UITransitionView alloc] initWithFrame:
        CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
 
-    imageView = nil;
-
     [window setContentView: mainView];
     [mainView addSubview:transitionView];
     [mainView addSubview:navBar];
@@ -87,6 +85,33 @@
 
     [navBar setTransitionView:transitionView];
     [transitionView setDelegate:self];
+
+    NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
+    imageSplashed = !(nil == coverart);
+    if (!imageSplashed)
+      {
+	coverart = [[NSBundle mainBundle] pathForResource:@"Default"
+					  ofType:@"png"];
+	[progressIndicator setStyle:![defaults inverted]];
+      }
+    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
+    [mainView addSubview:imageView];
+    [mainView addSubview:progressIndicator];
+    [progressIndicator startAnimation];
+}
+
+- (void)finishUpLaunch
+{
+  NSString *recentFile = [defaults fileBeingRead];
+  if (imageSplashed)
+    {
+      [self _dumpScreenContents:nil];
+      NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
+						     ofType:@"png"];
+      NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
+      [nsdat writeToFile:defaultPath atomically:YES];
+      imageSplashed = NO;
+    }
 
     UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
     [navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
@@ -119,40 +144,20 @@
       {
 	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
 	  {
-	    NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
 
 	    UINavigationItem *tempItem = [[UINavigationItem alloc]
 		       initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
-	    if (nil == coverart)
-	      {
-		[progressIndicator setStyle:![defaults inverted]];
-		[mainView addSubview:progressIndicator];
-		[progressIndicator startAnimation];
-		imageView = nil;
-		[navBar pushNavigationItem:tempItem withView:textView];
-		[textView loadBookWithPath:recentFile numCharacters:(265000/([textView textSize]*[textView textSize]))];
-		textViewNeedsFullText = YES;
-	      }
-	    else
-	      {
-		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
-		[mainView addSubview:imageView];
-		[mainView addSubview:progressIndicator];
-		[progressIndicator startAnimation];
-		[progressIndicator setStyle:0];
-		
-		[navBar pushNavigationItem:tempItem withView:textView];
-		[textView setCurrentPathWithoutLoading:recentFile];
-		textViewNeedsFullText = YES;
-		imageSplashed = YES;
-	      }
-
+	    [navBar pushNavigationItem:tempItem withView:textView];
+	    [textView loadBookWithPath:recentFile];
+	    textViewNeedsFullText = NO;
+	    [textView scrollPointVisibleAtTopLeft:
+	     CGPointMake(0.0f, 
+	      (float)[defaults lastScrollPointForFile:[textView currentPath]])
+		      animated:NO];
 	    [tempItem release];
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
-	    //NSLog(@"lastScrollPoint %f\n", (float)[defaults lastScrollPoint]);
-	    
 	  }
 	else
 	  {  // Recent file has been deleted!  RESET!
@@ -165,42 +170,37 @@
 	  }
       }
 
+    imageSplashed = NO;
+    transitionHasBeenCalled = YES;
+
 
     [tempArray release];
 
     [navBar enableAnimation];
-
-    //    [self setStatusBarCustomText:@"?"];
-    doneLaunching = YES;
-
+    [progressIndicator stopAnimation];
+    [progressIndicator removeFromSuperview];
+    [imageView removeFromSuperview];
+    [imageView release];
+    imageView = nil;
 }
 
 - (void)heartbeatCallback:(id)unused
 {
-  if (imageSplashed)
+  if (!doneLaunching)
     {
-      [textView loadBookWithPath:[textView currentPath]];
-      textViewNeedsFullText = NO;
+      [self finishUpLaunch];
+      doneLaunching = YES;
     }
   if ((textViewNeedsFullText) && ![transitionView isTransitioning])
     {
       [textView loadBookWithPath:[textView currentPath]];
       textViewNeedsFullText = NO;
-      [progressIndicator stopAnimation];
-      [progressIndicator removeFromSuperview];
     }
   if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
     {
       if ((textView != nil) && (defaults != nil))
 	{
 	  //[self refreshTextViewFromDefaults];
-	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
-	  [progressIndicator stopAnimation];
-	  [progressIndicator removeFromSuperview];
-	  [imageView removeFromSuperview];
-	  imageSplashed = NO;
-	  transitionHasBeenCalled = YES;
 	}
     }
 }
@@ -364,6 +364,9 @@
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
 	    forFile:[textView currentPath]];
   //  NSLog(@"set defaults ");
+  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+					object:[textView currentPath]];
+
   readingText = NO;
   [bottomNavBar hide:YES];
   if (scrollerSlider != nil)
@@ -371,9 +374,28 @@
   NSLog(@"end.\n");
 }
 
-- (void)applicationWillTerminate
+- (void)cleanUpBeforeQuit
 {
-  // Let's see if this defeats the Dock.app bug.
+  if (!readingText ||
+      (nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
+      {
+	NSData *defaultData;
+	if ([defaults inverted])
+	{
+	  defaultData = [NSData dataWithContentsOfFile:
+				  [[NSBundle mainBundle] pathForResource:@"Default_dark"
+							 ofType:@"png"]];
+	}
+	else
+	{
+	  defaultData = [NSData dataWithContentsOfFile:
+				  [[NSBundle mainBundle] pathForResource:@"Default_light"
+							 ofType:@"png"]];
+	}
+	[defaultData writeToFile:[[NSBundle mainBundle] pathForResource:@"Default"
+							ofType:@"png"]
+		     atomically:YES];
+      }
   struct CGRect selectionRect;
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
@@ -386,14 +408,12 @@
 
 - (void) applicationWillSuspend
 {
-  struct CGRect selectionRect;
-  [defaults setFileBeingRead:[textView currentPath]];
-  selectionRect = [textView visibleRect];
-  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
-	    forFile:[textView currentPath]];
-  [defaults setReadingText:readingText];
-  [defaults setLastBrowserPath:[navBar topBrowserPath]];
-  [defaults synchronize];
+  [self cleanUpBeforeQuit];
+}
+
+- (void)applicationWillTerminate
+{
+  [self cleanUpBeforeQuit];
 }
 
 - (void)embiggenText:(UINavBarButton *)button
@@ -479,6 +499,8 @@
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
+	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView setHeartbeatDelegate:self];
 
@@ -515,6 +537,8 @@
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
+	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 	  [textView setHeartbeatDelegate:self];
 	  UINavigationItem *tempItem = 

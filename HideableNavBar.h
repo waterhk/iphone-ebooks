@@ -31,6 +31,7 @@
 #import <UIKit/UINavigationItem.h>
 #import "FileBrowser.h"
 #import "BooksDefaultsController.h"
+#import "common.h"
 
 @interface HideableNavBar : UINavigationBar
 {
@@ -61,6 +62,8 @@
 - (void)setExtensions:(NSArray *)extensions;
 - (void)setBrowserDelegate:(id)bDelegate;
 - (FileBrowser *)topBrowser;
+- (void)shouldReloadTopBrowser:(NSNotification *)notification;
+- (void)shouldReloadAllBrowsers:(NSNotification *)notification;
 - (NSString *)topBrowserPath;
 
 @end

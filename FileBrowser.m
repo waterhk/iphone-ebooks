@@ -51,6 +51,13 @@ Adapted for Books.app by Zachary Brewster-Geisz
 		  selector:@selector(shouldDeleteFileFromCell:)
 		  name:SHOULDDELETEFILE
 		  object:nil];
+
+		[[NSNotificationCenter defaultCenter] 
+		  addObserver:self
+		  selector:@selector(shouldReloadThisCell:)
+		  name:OPENEDTHISFILE
+		  object:nil];
+
 	}
 	return self;
 }
@@ -72,7 +79,6 @@ Adapted for Books.app by Zachary Brewster-Geisz
 - (void)setPath: (NSString *)path {
 	[_path release];
 	_path = [path copy];
-	//[_table setBackgroundImageAtPath:[_path stringByAppendingPathComponent:@"cover.jpg"]];
 	[self reloadData];
 }
 
@@ -192,14 +198,10 @@ int numberCompare(id firstString, id secondString, void *context)
 	if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath isDirectory:&isDir] && isDir)
 	  {
 	     [cell setShowDisclosure:YES];
-	     UIImage *coverart = nil;
-	     coverart = [UIImage imageAtPath:[fullPath stringByAppendingPathComponent:@"cover.jpg"]];
-	     if (nil == coverart)
-	     {
-	       coverart = [UIImage imageAtPath:[fullPath stringByAppendingPathComponent:@"cover.png"]];
-	     }
-	     if (nil != coverart)
+	     NSString *coverartPath = [EBookImageView coverArtForBookPath:fullPath];
+	     if (nil != coverartPath)
 	       {
+		 UIImage *coverart = [UIImage imageAtPath:coverartPath];
 		 struct CGImage *coverRef = [coverart imageRef];
 		 int height = CGImageGetHeight(coverRef);
 		 int width = CGImageGetWidth(coverRef);
@@ -254,8 +256,19 @@ int numberCompare(id firstString, id secondString, void *context)
 	return [_path stringByAppendingPathComponent: [_files objectAtIndex: [_table selectedRow]]];
 }
 
-- (void)selectCellForFilename:(NSString *)thePath
-  // Please don't call this method!  It is here as an object lesson.
+- (void)shouldReloadThisCell:(NSNotification *)aNotification
+{
+  NSString *theFilepath = [aNotification object];
+  NSString *basePath = [theFilepath stringByDeletingLastPathComponent];
+  NSLog(@"shouldReloadThisCell\n   _path: %@\nbasePath: %@", _path, basePath);
+  if ([basePath isEqualToString:_path])
+    {
+      NSLog(@"Yes, it blends!");
+      [self reloadCellForFilename:theFilepath];
+    }
+}
+
+- (void)reloadCellForFilename:(NSString *)thePath
 
 {
   NSString *filename = [thePath lastPathComponent];
@@ -264,12 +277,11 @@ int numberCompare(id firstString, id secondString, void *context)
     {
       if ([filename isEqualToString:[_files objectAtIndex:i]])
       {
-	[_table selectRow:i byExtendingSelection:NO];
+	[_table reloadCellAtRow:i column:0 animated:NO];
 	return;
       }
     }
       NSLog(@"In theory we should never get here.");
-      //In actuality, we in fact got an infinite loop.
 }
 
 - (NSString *)fileBeforeFileNamed:(NSString *)thePath
@@ -334,7 +346,7 @@ int numberCompare(id firstString, id secondString, void *context)
 	{
 	  [_files removeObject:[path lastPathComponent]];
 	  _rowCount--;
-	  [_table reloadData]; //erg...
+	  //[_table reloadData]; //erg...
 	  NSLog(@"_files after: %@", _files);
 	}
     }

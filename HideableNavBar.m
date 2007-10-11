@@ -40,6 +40,10 @@
   _transView = nil;
   _extensions = nil;
   _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
+  [[NSNotificationCenter defaultCenter] addObserver:self
+					selector:@selector(shouldReloadTopBrowser:)
+					name:RELOADTOPBROWSER
+					object:nil];
   return self;
 }
 
@@ -56,6 +60,15 @@
   _transView = nil;
   _extensions = nil;
   _browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
+  [[NSNotificationCenter defaultCenter] addObserver:self
+					selector:@selector(shouldReloadTopBrowser:)
+					name:RELOADTOPBROWSER
+					object:nil];
+
+  [[NSNotificationCenter defaultCenter] addObserver:self
+					selector:@selector(shouldReloadAllBrowsers:)
+					name:RELOADALLBROWSERS
+					object:nil];
   return self;
 }
 
@@ -69,11 +82,11 @@
   if (_textIsOnTop || _pixOnTop)
     {
       _textIsOnTop = NO;
-      _pixOnTop = NO;//FIXME:Need to set up things so you can look at pix from the text view, not just the browser view.
+      _pixOnTop = NO;
       if ([self isAnimationEnabled])
 	[_transView transition:2 toView:[_browserArray lastObject]];
       NSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
-      [[_browserArray lastObject] reloadData]; // to remove the "unread" dot
+      //[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
       [super popNavigationItem];
       if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
 	[_browserDelegate textViewDidGoAway:self];
@@ -83,7 +96,7 @@
       [_browserArray removeLastObject];
 
       [_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
-      [[_browserArray lastObject] reloadData]; // to remove the "unread" dot
+      //[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
       NSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
       [super popNavigationItem];
     }
@@ -143,6 +156,24 @@
 - (FileBrowser *)topBrowser
 {
   return [_browserArray lastObject];
+}
+
+- (void)shouldReloadTopBrowser:(NSNotification *)notification
+{
+  if (isTop) // let's only do this once.
+    {
+      [[_browserArray lastObject] reloadData];
+    }
+}
+- (void)shouldReloadAllBrowsers:(NSNotification *)notification
+{
+  if (isTop)
+    {
+      NSEnumerator *enumerator = [_browserArray objectEnumerator];
+      id i;
+      while (nil != (i = [enumerator nextObject]))
+	[i reloadData];
+    }
 }
 
 - (void)hide:(BOOL)forced
@@ -254,6 +285,7 @@
 
 - (void)dealloc
 {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [animator release];
   [translate release];
   if (nil != _transView)
