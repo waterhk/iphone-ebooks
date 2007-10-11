@@ -1,3 +1,18 @@
+v. 1.3.5 - Added "smart HTML" option.  Actually, it's a dumb text-conversion
+	   option, to be precise.  Smart HTML was already a default.
+	 - Added option to render HTML tables rather than make them 
+	   <pre>formatted--you can now turn it on and off.
+	 - Improved load-up code now displays larger cover splash, and does
+	   so whenever cover art is available (not just when opening to
+	   a book).  In some cases, it even displays immediately upon
+	   touching the app to load it.
+	 - More subtle progress indicator on load-up.
+	 - Optimized table-reloading.  Only cells which actually need to be
+	   redrawn are reloaded now, not the whole table.
+	 - Book deletion now uses pretty animation.
+	 - Corrected a misspelling in the 1.2 section of this changelog.
+	 - No, this hasn't been tested with the 1.1.1 firmware.
+
 v. 1.3 - Added Zac Bedell to the credits box.
        - Added a donate button to the credits box.  GUILT GUILT GUILT!
        - Added a buttload more encoding choices.
@@ -19,7 +34,7 @@ v. 1.3 - Added Zac Bedell to the credits box.
        - Related to this, improved code which kept you in the proper place
 	 when changing font size from the tool bars.
 
-v. 1.2 - First version post-iPhone-disporia.
+v. 1.2 - First version post-iPhone-diaspora.
        - INLINE IMAGES WORK!!!!!!!!  That sound you heard earlier this morning
 	 was me screaming for joy.  I've been workin' on that so damn long...
        - Text files come before image files in the FileBrowser views now,
