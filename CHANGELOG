@@ -10,6 +10,7 @@ v. 1.3.5 - Added "smart HTML" option.  Actually, it's a dumb text-conversion
 	 - Optimized table-reloading.  Only cells which actually need to be
 	   redrawn are reloaded now, not the whole table.
 	 - Book deletion now uses pretty animation.
+	 - Worked around a bug involving display of em-dashes.
 	 - Corrected a misspelling in the 1.2 section of this changelog.
 	 - No, this hasn't been tested with the 1.1.1 firmware.
 
