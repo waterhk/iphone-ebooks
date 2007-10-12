@@ -18,7 +18,7 @@ Adapted for Books.app by Zachary Brewster-Geisz
 */
 
 #import "FileBrowser.h"
-#import "FileBrowser.m"
+//#import "FileBrowser.m" //whuh?!
 #import <UIKit/UIImageAndTextTableCell.h>
 
 @implementation FileBrowser 
@@ -108,7 +108,13 @@ Adapted for Books.app by Zachary Brewster-Geisz
 	while (file = [dirEnum nextObject]) {
 	  if ([file characterAtIndex:0] != (unichar)'.')
 	    {  // Skip invisibles, like .DS_Store
-	      if (_extensions != nil && [_extensions count] > 0) {
+	      BOOL isDir, unused;
+	      unused = [fileManager fileExistsAtPath:[_path stringByAppendingPathComponent:file] isDirectory:&isDir];
+	      if (isDir)
+		{
+		  [_files addObject:file];  //Always add visible directories!
+		}
+	      else if (_extensions != nil && [_extensions count] > 0) {
 		NSString *extension = [[file pathExtension] lowercaseString];
 		if ([_extensions containsObject: extension]) {
 		  [_files addObject: file];
@@ -192,11 +198,11 @@ int numberCompare(id firstString, id secondString, void *context)
 - (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col {
         BOOL isDir = NO;
 	DeletableCell *cell = [[DeletableCell alloc] init];
-	[cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
 	NSString *fullPath = [_path stringByAppendingPathComponent:[_files objectAtIndex:row]];
 	[cell setPath:fullPath];
 	if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath isDirectory:&isDir] && isDir)
 	  {
+	     [cell setTitle: [_files objectAtIndex: row]];
 	     [cell setShowDisclosure:YES];
 	     NSString *coverartPath = [EBookImageView coverArtForBookPath:fullPath];
 	     if (nil != coverartPath)
@@ -227,19 +233,18 @@ int numberCompare(id firstString, id secondString, void *context)
 	  //a la podcast dirs & episodes.  For now, unread indicators only
 	  //apply for text/HTML files.
 	  {
+	    [cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
 	    UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"];
 	    [cell setImage:img];
 	  }
 	else // just to make things look nicer.
 	  {
+	    [cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
+
 	    UIImage *img2 = [UIImage applicationImageNamed:@"ReadIndicator.png"];
 	    [cell setImage:img2];
 	    
 	  }
-	/*	//FIXME: This is an experiment
-	UITableCellRemoveControl *remover = [[UITableCellRemoveControl alloc] initWithTarget:cell];
-	[remover showRemoveButton:YES animated:YES];
-	*/
 	return cell;
 }
 

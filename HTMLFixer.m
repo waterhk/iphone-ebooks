@@ -229,9 +229,9 @@ from some of the methods appear on compile.  They're probably unused.
   i = [theHTML replaceOccurrencesOfString:@"style=\"width:" withString:@"style=\"wodth:" options:NSLiteralSearch range:fullRange];
   //  NSLog(@"Removed %d width style tags.\n", i);
 
-  //Quirky dash behavior!
+  //Quirky dash behavior!  Possibly fixed in firmware 1.1.1
   fullRange = NSMakeRange(0, [theHTML length]);
-  i = [theHTML replaceOccurrencesOfString:@"&mdash;" withString:@" &mdash; " options:NSLiteralSearch range:fullRange];
+  //  i = [theHTML replaceOccurrencesOfString:@"&mdash;" withString:@" &mdash; " options:NSLiteralSearch range:fullRange];
 
 
   if (![defaults renderTables])
