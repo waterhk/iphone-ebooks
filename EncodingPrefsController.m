@@ -33,10 +33,39 @@
       [encodingTable setDelegate:self];
       [encodingTable setDataSource:self];
       [encodingTable reloadData];
+
+      NSMutableArray *tempEncodingNumbers = [[NSMutableArray alloc] initWithCapacity:75];
+      NSMutableArray *tempEncodingNames = [[NSMutableArray alloc] initWithCapacity:75];
+      NSStringEncoding *encs = [NSString availableStringEncodings];
+      while (*encs != 0)
+	{
+	  [tempEncodingNumbers addObject:[NSNumber numberWithUnsignedLong:*(encs++)]];
+	}
+      [tempEncodingNumbers sortUsingFunction:&unsignedCompare context:NULL];
+      encodingNumbers = [[NSArray alloc] initWithArray:tempEncodingNumbers];
+      [tempEncodingNumbers release];
+      NSEnumerator *enumerator = [encodingNumbers objectEnumerator];
+      NSNumber *i;
+      while (nil != (i = [enumerator nextObject]))
+	{
+	  NSLog(@"\n   num: %u\nstring: %@", [i unsignedLongValue], [NSString localizedNameOfStringEncoding:[i unsignedIntValue]]);
+	  [tempEncodingNames addObject:[NSString localizedNameOfStringEncoding:[i unsignedIntValue]]];
+	}
+      encodingNames = [[NSArray alloc] initWithArray:tempEncodingNames];
+      [tempEncodingNames release];
       defaults = [[BooksDefaultsController alloc] init];
     }
   NSLog(@"Created encoding prefs!");
   return self;
+}
+
+int unsignedCompare(id x, id y, void *context)
+{
+  unsigned int a = [x unsignedIntValue];
+  unsigned int b = [y unsignedIntValue];
+  if (a > b) return NSOrderedDescending;
+  if (b > a) return NSOrderedAscending;
+  if (b == a) return NSOrderedSame;
 }
 
 -(void)reloadData
@@ -56,7 +85,7 @@
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
 {
-  return 15;
+  return [encodingNumbers count]+1;
 }
 
 - (id)preferencesTable:(id)preferencesTable titleForGroup:(int)group
@@ -71,73 +100,22 @@
 
 -(void)tableRowSelected:(NSNotification *)aNotification
 {
-  int i = [encodingTable selectedRow];
-  UIPreferencesTableCell *cell = [encodingTable cellAtRow:i column:0];
+  int i = [encodingTable selectedRow] - 1; // subtract 1 for the group title
+  UIPreferencesTableCell *cell = [encodingTable cellAtRow:i+1 column:0];
   NSString *title = [cell title];
   int rows = [encodingTable numberOfRows];
-
-  for (i = 0; i < rows; i++)
-    [[encodingTable cellAtRow:i column:0] setChecked:NO];
+  int j;
+  for (j = 0; j < rows; j++)
+    [[encodingTable cellAtRow:j column:0] setChecked:NO];
   [cell setChecked:YES];
-  if ([title isEqualToString:@"Automatic"])
+
+  if (i == 0)
     {
       [defaults setDefaultTextEncoding:AUTOMATIC_ENCODING];
     }
-  else if ([title isEqualToString:@"Unicode (UTF-16)"])
+  else
     {
-      [defaults setDefaultTextEncoding:NSUnicodeStringEncoding];
-    }
-  else if ([title isEqualToString:@"Unicode (UTF-8)"])
-    {
-      [defaults setDefaultTextEncoding:NSUTF8StringEncoding];
-    }
-  else if ([title isEqualToString:@"ISO Latin-1"])
-    {
-      [defaults setDefaultTextEncoding:NSISOLatin1StringEncoding];
-    }
-  else if ([title isEqualToString:@"Windows Latin-1"])
-    {
-      [defaults setDefaultTextEncoding:NSWindowsCP1252StringEncoding];
-    }
-  else if ([title isEqualToString:@"Mac OS Roman"])
-    {
-      [defaults setDefaultTextEncoding:NSMacOSRomanStringEncoding];
-    }
-  else if ([title isEqualToString:@"ASCII"])
-    {
-      [defaults setDefaultTextEncoding:NSASCIIStringEncoding];
-    }
-  else if ([title isEqualToString:@"Cyrillic (Windows-1251)"])
-    {
-      [defaults setDefaultTextEncoding:NSWindowsCP1251StringEncoding];
-    }
-  else if ([title isEqualToString:@"ISO Latin-2"])
-    {
-      [defaults setDefaultTextEncoding:NSISOLatin2StringEncoding];
-    }
-  else if ([title isEqualToString:@"Windows Latin-2"])
-    {
-      [defaults setDefaultTextEncoding:NSWindowsCP1250StringEncoding];
-    }
-  else if ([title isEqualToString:@"Japanese (Shift-JIS)"])
-    {
-      [defaults setDefaultTextEncoding:NSShiftJISStringEncoding];
-    }
-  else if ([title isEqualToString:@"Japanese (EUC)"])
-    {
-      [defaults setDefaultTextEncoding:NSJapaneseEUCStringEncoding];
-    }
-  else if ([title isEqualToString:@"Japanese (ISO-2022)"])
-    {
-      [defaults setDefaultTextEncoding:NSISO2022JPStringEncoding];
-    }
-  else if ([title isEqualToString:@"Greek (Windows-1253)"])
-    {
-      [defaults setDefaultTextEncoding:NSWindowsCP1253StringEncoding];
-    }
-  else if ([title isEqualToString:@"Turkish (Windows-1254)"])
-    {
-      [defaults setDefaultTextEncoding:NSWindowsCP1254StringEncoding];
+      [defaults setDefaultTextEncoding:[[encodingNumbers objectAtIndex:(i - 1)] unsignedIntValue]];
     }
 
   [cell setSelected:NO withFade:YES];
@@ -148,68 +126,16 @@
 {
   NSString *title;
   BOOL checked = NO;
-  switch (row)
+  if (row == 0)
     {
-    case 0:
       title = @"Automatic";
       checked = (AUTOMATIC_ENCODING == [defaults defaultTextEncoding]);
-      break;
-    case 1:
-      title = @"Unicode (UTF-16)";
-      checked = (NSUnicodeStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 2:
-      title = @"Unicode (UTF-8)";
-      checked = (NSUTF8StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 3:
-      title = @"ISO Latin-1";
-      checked = (NSISOLatin1StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 4:
-      title = @"Windows Latin-1";
-      checked = (NSWindowsCP1252StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 5:
-      title = @"Mac OS Roman";
-      checked = (NSMacOSRomanStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 6:
-      title = @"ASCII";
-      checked = (NSASCIIStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 7: 
-      title = @"Cyrillic (Windows-1251)";
-      checked = (NSWindowsCP1251StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 8:
-      title = @"ISO Latin-2";
-      checked = (NSISOLatin2StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 9:
-      title = @"Windows Latin-2";
-      checked = (NSWindowsCP1250StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 10:
-      title = @"Japanese (Shift-JIS)";
-      checked = (NSShiftJISStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 11:
-      title = @"Japanese (EUC)";
-      checked = (NSJapaneseEUCStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 12:
-      title = @"Japanese (ISO-2022)";
-      checked = (NSISO2022JPStringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 13:
-      title = @"Greek (Windows-1253)";
-      checked = (NSWindowsCP1253StringEncoding == [defaults defaultTextEncoding]);
-      break;
-    case 14:
-      title = @"Turkish (Windows-1254)";
-      checked = (NSWindowsCP1254StringEncoding == [defaults defaultTextEncoding]);
-      break;
+    }
+  else
+    {
+      title = [encodingNames objectAtIndex:(row - 1)];
+      checked = ([[encodingNumbers objectAtIndex:(row - 1)] unsignedIntValue]
+		 == [defaults defaultTextEncoding]);
     }
   UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
   [theCell setTitle:title];
@@ -220,6 +146,8 @@
 
 -(void)dealloc
 {
+  [encodingNumbers release];
+  [encodingNames release];
   [encodingTable release];
   [defaults release];
   [super dealloc];

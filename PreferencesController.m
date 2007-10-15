@@ -286,7 +286,7 @@
 	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 
 	NSString *encString;
-	switch ([defaults defaultTextEncoding])
+	/*	switch ([defaults defaultTextEncoding])
 	  {
 	  case AUTOMATIC_ENCODING:
 	    encString = @"Automatic";
@@ -316,6 +316,13 @@
 	    encString = @"Other";
 	    break;
 	  }
+	*/
+	NSStringEncoding enc = [defaults defaultTextEncoding];
+	if (AUTOMATIC_ENCODING == enc)
+	  encString = @"Automatic";
+	else
+	  encString = [NSString localizedNameOfStringEncoding:enc];
+
 	[defaultEncodingPreferenceCell setTitle:@"Text Encoding"];
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];

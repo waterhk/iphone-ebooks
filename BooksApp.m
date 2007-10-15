@@ -98,6 +98,17 @@
     [mainView addSubview:imageView];
     [mainView addSubview:progressIndicator];
     [progressIndicator startAnimation];
+
+    /// FIXME just a test.
+    /*
+    NSStringEncoding *enclist = malloc(500*sizeof(NSStringEncoding));
+    enclist = [NSString availableStringEncodings];
+    while (*enclist != 0)
+      {
+	NSLog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
+      }
+    free(enclist);
+    */
 }
 
 - (void)finishUpLaunch

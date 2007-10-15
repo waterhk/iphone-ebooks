@@ -40,10 +40,15 @@
 {
   UIPreferencesTable *encodingTable;
   BooksDefaultsController *defaults;
+
+  NSArray *encodingNumbers, *encodingNames;
+
 }
 
 -(UITable *)table;
 -(void)reloadData;
+
+int unsignedCompare(id x, id y, void *context);
 
 @end
 

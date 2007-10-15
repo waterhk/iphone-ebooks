@@ -70,7 +70,7 @@
 - (NSString *)textFont;
 - (BOOL)chapternav;
 - (BOOL)pagenav;
-- (int)defaultTextEncoding;
+- (unsigned int)defaultTextEncoding;
 - (BOOL)smartConversion;
 - (BOOL)renderTables;
 - (int)scrollSpeedIndex;
@@ -91,7 +91,7 @@
 - (void)setFlipped:(BOOL)isFlipped;
 - (void)setChapternav:(BOOL)isChpaternav;
 - (void)setPagenav:(BOOL)isPagenav;
-- (void)setDefaultTextEncoding:(int)enc;
+- (void)setDefaultTextEncoding:(unsigned int)enc;
 - (void)setSmartConversion:(BOOL)sc;
 - (void)setRenderTables:(BOOL)rt;
 - (void)setScrollSpeedIndex:(int)index;

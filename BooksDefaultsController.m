@@ -44,7 +44,7 @@
   [temp setObject:@"1" forKey:CHAPTERNAV];
   [temp setObject:@"1" forKey:PAGENAV];
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
-  [temp setObject:@"0" forKey:TEXTENCODINGKEY];
+  [temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
   //  NSLog(@"temp dictionary: %@\n", temp);
   [temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
   [temp setObject:@"0" forKey:RENDERTABLESKEY];
@@ -123,9 +123,13 @@
   return [[NSUserDefaults standardUserDefaults] objectForKey:BROWSERFILESKEY];
 }
 
-- (int)defaultTextEncoding
+- (unsigned int)defaultTextEncoding
 {
-  return [[NSUserDefaults standardUserDefaults] integerForKey:TEXTENCODINGKEY];
+  id num = [[NSUserDefaults standardUserDefaults] objectForKey:TEXTENCODINGKEY];
+  if ([num respondsToSelector:@selector(unsignedIntValue:)])  
+    return [num unsignedIntValue];
+  else
+    return (unsigned int)[num intValue];
 }
 
 - (BOOL)smartConversion
@@ -292,9 +296,10 @@
   _toolbarShouldUpdate = YES;
 }
 
-- (void)setDefaultTextEncoding:(int)enc
+- (void)setDefaultTextEncoding:(unsigned int)enc
 {
-  [[NSUserDefaults standardUserDefaults] setInteger:enc forKey:TEXTENCODINGKEY];
+  NSNumber *num = [NSNumber numberWithUnsignedInt:enc];
+  [[NSUserDefaults standardUserDefaults] setObject:num forKey:TEXTENCODINGKEY];
 }
 
 - (void)setSmartConversion:(BOOL)sc
