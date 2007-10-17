@@ -20,7 +20,7 @@
 */
 
 #import <Foundation/Foundation.h>
-
+#import "../BooksDefaultsController.h" //ugh
 /* standard */
 #include <sys/types.h>			/* for FreeBSD */
 #include <netinet/in.h>			/* for htonl, etc */
@@ -295,8 +295,59 @@ NSMutableString *decodePalmDoc( FILE *fin ) {
 
     [retData appendBytes:buf.data length:buf.len];
 	}
+	//  I wish this crap weren't here.  It should be handled in the
+	// Books code, like all the other encoding jazz.
+  
+  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  NSMutableString *ret;
+  if (AUTOMATIC_ENCODING == [defaults defaultTextEncoding])
+    {
+      NSLog(@"Trying UTF-8 encoding...");
+      ret = [[NSMutableString alloc]
+	      initWithCString:(char *)[retData bytes]
+	      encoding: NSUTF8StringEncoding];
+      if (0 == [ret length])
+	{
+	  [ret release];
+	  NSLog(@"Trying ISO Latin-1 encoding...");
+	  ret = [[NSMutableString alloc]
+		  initWithCString:(char *)[retData bytes]
+		  encoding: NSISOLatin1StringEncoding];
+	}
+      if (0 == [ret length])
+	{
+	  [ret release];
+	  NSLog(@"Trying Mac OS Roman encoding...");
+	  ret = [[NSMutableString alloc]
+		  initWithCString:(char *)[retData bytes]
+		  encoding: NSMacOSRomanStringEncoding];
+	}
+      if (0 == [ret length])
+	{
+	  [ret release];
+	  NSLog(@"Trying ASCII encoding...");
+	  ret = [[NSMutableString alloc] 
+		  initWithCString:(char *)[retData bytes]
+		  encoding: NSASCIIStringEncoding];
+	}
+      if (0 == [ret length])
+	{
+	  [ret release];
+	  NSLog(@"No encoding guessed!");
+	  ret = [[NSMutableString alloc] initWithString:@"Could not determine text encoding.  Try changing the default encoding in Preferences.\n\n"];
+	}
+    }
+  else
+    {
+      ret = [[NSMutableString alloc] initWithCString:(char *)[retData bytes]
+			     encoding:[defaults defaultTextEncoding]];
+      if (0 == [ret length])
+	{
+	  [ret release];
+	  ret = [[NSMutableString alloc] initWithString:@"Incorrect text encoding.  Try changing the default encoding in Preferences.\n\n"];
+	}
 
-  NSMutableString *ret = [NSMutableString stringWithCString:(char*)[retData bytes]];
+    }  
   [retData release];
-  return ret;
+  return [ret autorelease];
 }
