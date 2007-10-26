@@ -385,13 +385,13 @@
       [self makeEncodingPrefsPane];
       break;
     case 18: // mark current book as new
-      [defaults removeScrollPointsForDirectory:[controller currentBrowserPath]];
+      [defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
       [[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
       [markCurrentBookAsNewCell setEnabled:NO];
       [markCurrentBookAsNewCell setSelected:NO withFade:YES];
       break;
     case 19: // mark all books as new
-      [defaults removeAllScrollPoints];
+      [defaults removePerFileData];
       [[NSNotificationCenter defaultCenter] postNotificationName:RELOADALLBROWSERS object:self];
       [markAllBooksAsNewCell setEnabled:NO];
       [markAllBooksAsNewCell setSelected:NO withFade:YES];

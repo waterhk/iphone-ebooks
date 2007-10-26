@@ -84,6 +84,9 @@
 }
 
 
+- (void)textViewDidGoAway:(id)sender;
+- (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
+
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;

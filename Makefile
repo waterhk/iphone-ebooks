@@ -4,6 +4,16 @@ CPPFLAGS=-I/opt/local/include
 LD=$(CC)
 LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices -lcrypto
 
+ifeq ($(QUIET),true)
+	QC	= @echo "Compiling [$@]";
+	QL	= @echo "Linking   [$@]";
+	QN	= > /dev/null 2>&1
+else
+	QC	=
+	QL	= 
+	QN	=
+endif
+
 all:    Books
 
 Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
@@ -12,10 +22,13 @@ Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	HTMLFixer.o FontChoiceController.o \
 	palm/unpluck.o palm/palmconvert.o palm/util.o palm/pluckhtml.o \
        	palm/txt2pdbdoc.o palm/libjpeg.a Regex.o ChapteredHTML.o
-	$(LD) $(LDFLAGS) -v -o $@ $^
+	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
 %.o:    %.m 
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+%.o:    %.c 
+	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 %.m:    %.h
 

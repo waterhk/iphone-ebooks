@@ -36,7 +36,7 @@
 
       NSMutableArray *tempEncodingNumbers = [[NSMutableArray alloc] initWithCapacity:75];
       NSMutableArray *tempEncodingNames = [[NSMutableArray alloc] initWithCapacity:75];
-      NSStringEncoding *encs = [NSString availableStringEncodings];
+      const NSStringEncoding *encs = [NSString availableStringEncodings];
       while (*encs != 0)
 	{
 	  [tempEncodingNumbers addObject:[NSNumber numberWithUnsignedLong:*(encs++)]];

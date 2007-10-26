@@ -33,6 +33,7 @@ from some of the methods appear on compile.  They're probably unused.
 // You should always call +fileHasBeenFixed first to see if this method is needed.
 //FIXME: use the user-defined text encoding, if applicable.
 {
+    BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
     NSMutableString *theHTML = [[NSMutableString alloc] initWithContentsOfFile:thePath
                                             encoding:NSUTF8StringEncoding
                                             error:NULL];
@@ -71,12 +72,13 @@ from some of the methods appear on compile.  They're probably unused.
     }
     if (nil == theHTML)  // Give up.  The webView will still display it.
         return NO;
-    NSMutableString *newHTML = [NSMutableString stringWithString:[HTMLFixer fixedHTMLStringForString:theHTML filePath:thePath]];
+    NSMutableString *newHTML = [NSMutableString stringWithString:[HTMLFixer fixedHTMLStringForString:theHTML filePath:thePath textSize:[defaults textSize]]];
     NSString *temp = [NSString stringWithFormat:@"<!--BooksApp modified %@ -->\n",
                         [NSCalendarDate calendarDate]];
     [newHTML insertString:temp atIndex:0];
     ret = [newHTML writeToFile:thePath atomically:YES encoding:NSUTF8StringEncoding error:NULL];
     [theHTML release];
+    [defaults release];
     return ret;
 }
 

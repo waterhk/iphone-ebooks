@@ -159,13 +159,15 @@
 	    UINavigationItem *tempItem = [[UINavigationItem alloc]
 		       initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
+	    int subchapter = [defaults lastSubchapterForFile:recentFile];
+	    float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
+	                                                    inSubchapter:subchapter];
+
 	    [navBar pushNavigationItem:tempItem withView:textView];
-	    [textView loadBookWithPath:recentFile subchapter:[defaults lastSubchapterForFile:recentFile]];
+	    [textView loadBookWithPath:recentFile subchapter:subchapter];
 	    textViewNeedsFullText = NO;
-	    [textView scrollPointVisibleAtTopLeft:
-	     CGPointMake(0.0f, 
-	      (float)[defaults lastScrollPointForFile:[textView currentPath]])
-		      animated:NO];
+	    [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
+	                                 animated:NO];
 	    [tempItem release];
 	    [navBar hide:NO];
 	    [bottomNavBar hide:NO];
@@ -173,12 +175,10 @@
 	else
 	  {  // Recent file has been deleted!  RESET!
 	    readingText = NO;
-	    [defaults setLastScrollPoint:0];
-	    [defaults setLastSubchapter:0];
 	    [defaults setReadingText:NO];
 	    [defaults setFileBeingRead:@""];
 	    [defaults setLastBrowserPath:EBOOK_PATH];
-	    [defaults removeScrollPointForFile:recentFile];
+	    [defaults removePerFileDataForFile:recentFile];
 	  }
       }
 
@@ -324,8 +324,7 @@
 	  UINavigationItem *tempItem = [[UINavigationItem alloc]
 	    		       initWithTitle:[[file lastPathComponent]
 					       stringByDeletingPathExtension]];
-	  [defaults setLastScrollPoint:0 forFile:file]; //Just to get rid of the "unread" circle
-	  [defaults setLastSubchapter:0 forFile:file]; //Just to get rid of the "unread" circle
+	  [defaults removePerFileDataForFile:file];
 	  [navBar pushNavigationItem:tempItem withView:imageView];
 	  [tempItem release];
 	}
@@ -341,13 +340,19 @@
 	    // Slight optimization.  If the file is already loaded,
 	    // don't bother reloading.
 	    {
-	      int lastPt = [defaults lastScrollPointForFile:file];
+	      int subchapter = [defaults lastSubchapterForFile:file];
+	      float scrollPoint = (float) [defaults lastScrollPointForFile:file
+	                                                      inSubchapter:subchapter];
 	      BOOL didLoadAll = NO;
-	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+	      int numScreens = ((int) scrollPoint / 460) + 1;  // how many screens down are we?
 	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll subchapter:[defaults lastSubchapterForFile:file]];
-	      [textView scrollPointVisibleAtTopLeft:
-	          CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+
+	      [textView loadBookWithPath:file
+	                   numCharacters:numChars
+	                      didLoadAll:&didLoadAll
+	                      subchapter:subchapter];
+	      [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
+	                                   animated:NO];
 	      textViewNeedsFullText = !didLoadAll;
 	    }
 
@@ -372,12 +377,15 @@
 - (void)textViewDidGoAway:(id)sender
 {
   //  NSLog(@"textViewDidGoAway start...");
-  struct CGRect selectionRect = [textView visibleRect];
+  struct CGRect  selectionRect = [textView visibleRect];
+  int            subchapter    = [textView getSubchapter];
+  NSString      *filename      = [textView currentPath];
   //  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
-  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
-	    forFile:[textView currentPath]];
-  [defaults setLastSubchapter:[textView getSubchapter]
-	    forFile:[textView currentPath]];
+
+  [defaults setLastScrollPoint: (unsigned int) selectionRect.origin.y
+	             forSubchapter:subchapter
+	                   forFile:filename];
+  [defaults setLastSubchapter:subchapter forFile:filename];
   //  NSLog(@"set defaults ");
   [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 					object:[textView currentPath]];
@@ -411,13 +419,16 @@
 							ofType:@"png"]
 		     atomically:YES];
       }
-  struct CGRect selectionRect;
-  [defaults setFileBeingRead:[textView currentPath]];
+  struct CGRect  selectionRect;
+  int            subchapter = [textView getSubchapter];
+  NSString      *filename   = [textView currentPath];
+
+  [defaults setFileBeingRead:filename];
   selectionRect = [textView visibleRect];
-  [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
-	    forFile:[textView currentPath]];
-  [defaults setLastSubchapter:[textView getSubchapter]
-	    forFile:[textView currentPath]];
+  [defaults setLastScrollPoint: (unsigned int)selectionRect.origin.y
+	             forSubchapter: subchapter
+	                   forFile: filename];
+  [defaults setLastSubchapter:subchapter forFile:filename];
   [defaults setReadingText:readingText];
   [defaults setLastBrowserPath:[navBar topBrowserPath]];
   [defaults synchronize];
@@ -509,7 +520,19 @@
   if (![button isPressed])
     {
       if ([textView gotoNextSubchapter] == YES)
-	      [scrollerSlider setValue:0];
+	{
+	  /*
+	  CGRect frame    = [[textView _webView] frame];
+	  CGRect viewable = [textView visibleRect];
+	  float endPos    = frame.size.height - viewable.size.height;
+	  [scrollerSlider setMinValue:0.0];
+	  [scrollerSlider setMaxValue:endPos];
+	  [scrollerSlider setValue:viewable.origin.y];
+	  */ // that dance isn't needed if we just hide the slider :)
+	  [self hideSlider];
+	  [navBar hide:NO];
+	  [bottomNavBar hide:NO];
+	}
       else
       {
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
@@ -518,10 +541,14 @@
 	  [self hideSlider];
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];
+	  int            subchapter = [tempView getSubchapter];
+	  NSString      *filename   = [tempView currentPath];
+
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
-		    forFile:[tempView currentPath]];
-      [defaults setLastSubchapter:[textView getSubchapter]
-	        forFile:[textView currentPath]];
+		    forSubchapter:subchapter
+		    forFile:filename];
+	  [defaults setLastSubchapter:subchapter forFile:filename];
+
 	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -533,14 +560,17 @@
 		     stringByDeletingPathExtension]];
 	  [navBar pushNavigationItem:tempItem withView:textView];
 	  [self refreshTextViewFromDefaults];
-	  int lastPt = [defaults lastScrollPointForFile:nextFile];
+
+	  subchapter = [defaults lastSubchapterForFile:nextFile];
+	  int lastPt = [defaults lastScrollPointForFile:nextFile
+	                                   inSubchapter:subchapter];
 	  BOOL didLoadAll = NO;
 	  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
 	  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
 	  [textView loadBookWithPath:nextFile numCharacters:numChars
-		    didLoadAll:&didLoadAll subchapter:0];
-	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+		    didLoadAll:&didLoadAll subchapter:subchapter];
+	  [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
+	                               animated:NO];
 	  textViewNeedsFullText = !didLoadAll;
 	  [tempItem release];
 	  [tempView autorelease];
@@ -554,8 +584,21 @@
   if (![button isPressed])
     {
       if ([textView gotoPreviousSubchapter] == YES)
-	      [scrollerSlider setValue:0];
-	  else
+	{
+	  /*
+	  CGRect frame    = [[textView _webView] frame];
+	  CGRect viewable = [textView visibleRect];
+	  float endPos    = frame.size.height - viewable.size.height;
+	  [scrollerSlider setMinValue:0.0];
+	  [scrollerSlider setMaxValue:endPos];
+	  [scrollerSlider setValue:viewable.origin.y];
+	  */ // that dance isn't needed if we just hide the slider :)
+	  [self hideSlider];
+	  [navBar hide:NO];
+	  [bottomNavBar hide:NO];
+	}
+
+      else
       {
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
       if ((nil != prevFile) && [prevFile isReadableTextFilePath])
@@ -563,10 +606,14 @@
 	  [self hideSlider];
 	  EBookView *tempView = textView;
 	  struct CGRect visRect = [tempView visibleRect];
-	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
-		    forFile:[tempView currentPath]];
-      [defaults setLastSubchapter:[textView getSubchapter]
-	        forFile:[textView currentPath]];
+	  int            subchapter = [tempView getSubchapter];
+	  NSString      *filename   = [tempView currentPath];
+
+	  [defaults setLastScrollPoint: (unsigned int) visRect.origin.y
+		    forSubchapter: subchapter
+		    forFile: filename];
+	  [defaults setLastSubchapter:subchapter forFile:filename];
+
 	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -579,9 +626,13 @@
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [self refreshTextViewFromDefaults];
 	  //[progressHUD show:YES];
-	  [textView loadBookWithPath:prevFile subchapter:0];
-	  [textView scrollPointVisibleAtTopLeft:
-		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
+
+	  subchapter = [defaults lastSubchapterForFile:prevFile];
+	  int lastPt = [defaults lastScrollPointForFile:prevFile
+	                                   inSubchapter:subchapter];
+	  [textView loadBookWithPath:prevFile subchapter:subchapter];
+	  [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
+	                               animated:NO];
 	  //[progressHUD show:NO];
 	  [tempItem release];
 	  [tempView autorelease];

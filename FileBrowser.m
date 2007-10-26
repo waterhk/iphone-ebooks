@@ -228,7 +228,7 @@ int numberCompare(id firstString, id secondString, void *context)
 		 [[cell iconImageView] setFrame:CGRectMake(-10,0,width,height)];
 	       }
 	  }
-	else if (![defaults scrollPointExistsForFile:fullPath])
+	else if (![defaults dataExistsForFile:fullPath])
 	  //FIXME: It'd be great to have unread indicators for directories,
 	  //a la podcast dirs & episodes.  For now, unread indicators only
 	  //apply for text/HTML files.
@@ -341,10 +341,10 @@ int numberCompare(id firstString, id secondString, void *context)
       NSLog(@"_files contains %@", [path lastPathComponent]);
       if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir)
 	{
-	  [defaults removeScrollPointsForDirectory:path];
+	  [defaults removePerFileDataForDirectory:path];
 	}
       else
-	[defaults removeScrollPointForFile:path];
+	[defaults removePerFileDataForFile:path];
       NSLog(@"_files before: %@", _files);
       BOOL success = [[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
       if (success)

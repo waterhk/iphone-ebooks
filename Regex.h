@@ -38,8 +38,6 @@
 - (id) initWithString: (NSString *) string;
 - (void) dealloc;
 
-- (unichar) handleCase: (unichar) chr;
-
 - (void) clear;
 - (void) restart;
 - (void) addCharacter: (unichar) chr;

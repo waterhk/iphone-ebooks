@@ -698,6 +698,16 @@
 	return subchapter;
 }
 
+- (int) getMaxSubchapter
+{
+	int maxSubchapter = 1;
+
+	if ([defaults subchapteringEnabled] == YES)
+		maxSubchapter = [chapteredHTML chapterCount];
+
+	return maxSubchapter;
+}
+
 - (void) setSubchapter: (int) chapter
 {
 	CGPoint origin = { 0, 0 };
@@ -724,7 +734,13 @@
 	if ((subchapter + 1) >= [chapteredHTML chapterCount])
 		return NO;
 
+	[defaults setLastScrollPoint: [self visibleRect].origin.y
+	               forSubchapter: subchapter
+	                     forFile: path];
+
 	[self setHTML:[chapteredHTML getChapterHTML:++subchapter]];
+
+	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
 	[self scrollPointVisibleAtTopLeft:origin];
 	[self setNeedsDisplay];
 	return YES;
@@ -740,7 +756,13 @@
 	if (subchapter == 0)
 		return NO;
 
+	[defaults setLastScrollPoint: [self visibleRect].origin.y
+	               forSubchapter: subchapter
+	                     forFile: path];
+
 	[self setHTML:[chapteredHTML getChapterHTML:--subchapter]];
+
+	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
 	[self scrollPointVisibleAtTopLeft:origin];
 	[self setNeedsDisplay];
 	return YES;

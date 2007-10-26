@@ -47,6 +47,11 @@
   id _browserDelegate;
 }
 
+- (void)hideTopNavBar;
+- (void)showTopNavBar;
+- (void)hideBotNavBar;
+- (void)showBotNavBar;
+
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top;
 - (void)setTransitionView:(UITransitionView *)transView;
 

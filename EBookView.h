@@ -71,6 +71,7 @@
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification;
 
 - (int) getSubchapter;
+- (int) getMaxSubchapter;
 - (void) setSubchapter: (int) chapter;
 - (BOOL) gotoNextSubchapter;
 - (BOOL) gotoPreviousSubchapter;

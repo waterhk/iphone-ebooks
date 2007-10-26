@@ -24,92 +24,109 @@
 
 @interface BooksDefaultsController : NSObject
 {
-  BOOL _readingText;
-  NSString *_fileBeingRead;
-  BOOL _inverted;
-  NSString *_browserPath;
-  NSUserDefaults *sharedDefaults;
-  BOOL _toolbarShouldUpdate;
+  BOOL            _readingText;
+  NSString       *_fileBeingRead;
+  BOOL            _inverted;
+  NSString       *_browserPath;
+  NSUserDefaults *_defaults;
+  BOOL            _toolbarShouldUpdate;
 }
 
-#define LASTSUBCHAPTERKEY @"lastSubchapterKey"
-#define LASTSCROLLPOINTKEY @"lastScrollPointKey"
-#define READINGTEXTKEY @"readingTextKey"
-#define FILEBEINGREADKEY @"fileBeingReadKey"
-#define TEXTSIZEKEY @"textSizeKey"
-#define ISINVERTEDKEY @"isInvertedKey"
-#define BROWSERFILESKEY @"browserPathsKey"
+/*
+ * Obsolete keys, used for conversion to newer preferences formats.
+ */
+#define LASTSUBCHAPTERKEY      @"lastSubchapterKey"
+#define LASTSCROLLPOINTKEY     @"lastScrollPointKey"
+#define PERSISTENCEKEY         @"persistenceDictionaryKey"
+#define SUBCHAPTERKEY          @"subchapterDictionaryKey"
+#define	AUTOHIDE               @"autohideKey"
+
+/*
+ * Application stored data
+ */
+#define READINGTEXTKEY         @"readingTextKey"
+#define FILEBEINGREADKEY       @"fileBeingReadKey"
+#define BROWSERFILESKEY        @"browserPathsKey"
+
+/*
+ * New per-book data storage
+ */
+#define FILESPECIFICDATAKEY    @"fileSpecificData"
+#define FILESUBCHAPTERENABLE   @"enableSubchaptering"
+#define FILECURRENTSUBCHAPTER  @"currentSubchapter"
+#define FILELOCPERSUBCHAPTER   @"locationPerSubchapter"
+
+/*
+ * User-specified preferences
+ */
+#define TEXTSIZEKEY            @"textSizeKey"
+#define ISINVERTEDKEY          @"isInvertedKey"
+#define TEXTFONTKEY            @"textFontKey"
+#define NAVBAR                 @"navbarKey"
+#define TOOLBAR                @"toolbarKey"
+#define FLIPTOOLBAR            @"flipToolbarKey"
+#define CHAPTERNAV             @"chapterNavKey"
+#define PAGENAV                @"pageNavKey"
+
+#define TEXTENCODINGKEY        @"textEncodingKey"
+#define SMARTCONVERSIONKEY     @"smartConversionKey"
+#define RENDERTABLESKEY        @"renderTablesKey"
 #define ENABLESUBCHAPTERINGKEY @"enableSubchapteringKey"
+#define SCROLLSPEEDINDEXKEY    @"scrollSpeedIndexKey"
 
-#define PERSISTENCEKEY @"persistenceDictionaryKey"
-#define SUBCHAPTERKEY  @"subchapterDictionaryKey"
+- (id) init;
+- (void) updateOldPreferences;
 
-#define TEXTFONTKEY @"textFontKey"
-#define	AUTOHIDE @"autohideKey"
-#define NAVBAR @"navbarKey"
-#define TOOLBAR @"toolbarKey"
-#define FLIPTOOLBAR @"flipToolbarKey"
-#define CHAPTERNAV @"chapterNavKey"
-#define PAGENAV @"pageNavKey"
-
-#define TEXTENCODINGKEY @"textEncodingKey"
-#define SMARTCONVERSIONKEY @"smartConversionKey"
-#define RENDERTABLESKEY @"renderTablesKey"
-
-#define SCROLLSPEEDINDEXKEY @"scrollSpeedIndexKey"
-
-- (unsigned int)lastSubchapter;
-- (unsigned int)lastScrollPoint;
-- (BOOL)subchapterExistsForFile:(NSString *)filename;
-- (BOOL)scrollPointExistsForFile:(NSString *)filename;
-- (unsigned int)lastSubchapterForFile:(NSString *)file;
-- (unsigned int)lastScrollPointForFile:(NSString *)file;
 - (NSString *)fileBeingRead;
-- (int)textSize;
-- (BOOL)inverted;
-- (BOOL)subchapteringEnabled;
-- (BOOL)readingText;
-- (NSString *)lastBrowserPath;
-- (BOOL)autohide;
-- (BOOL)navbar;
-- (BOOL)toolbar;
-- (BOOL)flipped;
-- (NSString *)textFont;
-- (BOOL)chapternav;
-- (BOOL)pagenav;
-- (unsigned int)defaultTextEncoding;
-- (BOOL)smartConversion;
-- (BOOL)renderTables;
-- (int)scrollSpeedIndex;
-- (void)setLastSubchapter:(unsigned int)thePoint;
-- (void)setLastScrollPoint:(unsigned int)thePoint;
-- (void)setLastSubchapter:(unsigned int)thePoint forFile:(NSString *)file;
-- (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
-- (void)removeSubchapterForFile:(NSString *)theFile;
-- (void)removeScrollPointForFile:(NSString *)theFile;
-- (void)removeSubchaptersForDirectory:(NSString *)dir;
-- (void)removeScrollPointsForDirectory:(NSString *)dir;
-- (void)removeAllSubchapters;
-- (void)removeAllScrollPoints;
 - (void)setFileBeingRead:(NSString *)file;
+- (int)textSize;
 - (void)setTextSize:(int)size;
-- (void)setSubchapteringEnabled:(BOOL)isEnabled;
+- (BOOL)inverted;
 - (void)setInverted:(BOOL)isInverted;
+- (BOOL)subchapteringEnabled;
+- (void)setSubchapteringEnabled:(BOOL)isEnabled;
+- (BOOL)readingText;
 - (void)setReadingText:(BOOL)readingText;
+- (NSString *)lastBrowserPath;
 - (void)setLastBrowserPath:(NSString *)browserPath;
-- (void)setTextFont:(NSString *)font;
-- (void)setAutohide:(BOOL)isAutohide;
+- (BOOL)navbar;
 - (void)setNavbar:(BOOL)isNavbar;
+- (BOOL)toolbar;
 - (void)setToolbar:(BOOL)isToolbar;
+- (BOOL)flipped;
 - (void)setFlipped:(BOOL)isFlipped;
+- (NSString *)textFont;
+- (void)setTextFont:(NSString *)font;
+- (BOOL)chapternav;
 - (void)setChapternav:(BOOL)isChpaternav;
+- (BOOL)pagenav;
 - (void)setPagenav:(BOOL)isPagenav;
+- (unsigned int)defaultTextEncoding;
 - (void)setDefaultTextEncoding:(unsigned int)enc;
+- (BOOL)smartConversion;
 - (void)setSmartConversion:(BOOL)sc;
+- (BOOL)renderTables;
 - (void)setRenderTables:(BOOL)rt;
+- (int)scrollSpeedIndex;
 - (void)setScrollSpeedIndex:(int)index;
 
 - (BOOL)synchronize;
+
+- (BOOL) dataExistsForFile: (NSString *) filename;
+- (BOOL) subchapteringEnabledForFile: (NSString *) filename;
+- (void) setSubchapteringEnabled: (BOOL) enabled
+                         forFile: (NSString *) filename;
+- (unsigned int) lastSubchapterForFile: (NSString *) filename;
+- (void) setLastSubchapter: (unsigned int) subchapter
+                   forFile: (NSString *) filename;
+- (unsigned int) lastScrollPointForFile: (NSString *) filename
+                           inSubchapter: (unsigned int) subchapter;
+- (void) setLastScrollPoint: (unsigned int) scrollPoint
+              forSubchapter: (unsigned int) subchapter
+                    forFile: (NSString *) filename;
+- (void) removePerFileDataForFile: (NSString *) file;
+- (void) removePerFileDataForDirectory: (NSString *) directory;
+- (void) removePerFileData;
 
 @end
 
