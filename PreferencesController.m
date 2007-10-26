@@ -188,10 +188,12 @@
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
-	//FIXME: these two  should make the text refresh
+	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setRenderTables:[[[renderTablesPreferenceCell control] valueForKey:@"value"] boolValue]];
+
+	[defaults setSubchapteringEnabled:[[[subchapteringPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setScrollSpeedIndex:[scrollSpeedControl selectedSegment]];
 
@@ -339,6 +341,12 @@
 	UISwitchControl *renderTablesSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[renderTablesSitchControl setValue:[defaults renderTables]];
 	[renderTablesPreferenceCell setControl:renderTablesSitchControl];
+
+	subchapteringPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
+	[subchapteringPreferenceCell setTitle:@"Subchapter HTML"];
+	UISwitchControl *subchapteringSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[subchapteringSitchControl setValue:[defaults subchapteringEnabled]];
+	[subchapteringPreferenceCell setControl:subchapteringSitchControl];
 
 	scrollSpeedControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
     [scrollSpeedControl insertSegment:0 withTitle:@"Slow" animated:NO];
@@ -524,7 +532,7 @@
 		rowCount = 3;
 		break;
 	case 3: //file import
-		rowCount = 3;
+		rowCount = 4;
 		break;
 	case 4: //tap-scroll speed
 		rowCount = 1;
@@ -592,6 +600,9 @@
 		    break;
 		  case 2:
 		    prefCell = renderTablesPreferenceCell;
+		    break;
+		  case 3:
+		    prefCell = subchapteringPreferenceCell;
 		    break;
 		  }
 		break;

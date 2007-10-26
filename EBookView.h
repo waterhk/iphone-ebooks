@@ -29,20 +29,27 @@
 #import "BooksDefaultsController.h" //sigh...
 #import "NSString-BooksAppAdditions.h"
 #import "HTMLFixer.h"
+#import "BooksDefaultsController.h"
+#import "ChapteredHTML.h"
 
 @interface EBookView : UITextView
 {
   //  UIViewTapInfo *tapinfo;
-  NSString      *path;
-  float         size;
-  id            _heartbeatDelegate;
-  struct CGRect lastVisibleRect;
+  NSString                *path;
+  float                   size;
+  id                      _heartbeatDelegate;
+  struct CGRect           lastVisibleRect;
+  ChapteredHTML	          *chapteredHTML;
+  int                      subchapter;
+  BooksDefaultsController *defaults;
+
+  NSString                *fullHTML;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
-- (void)loadBookWithPath:(NSString *)thePath;
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll;
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars;
+- (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int) theSubchapter;
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int) theSubchapter;
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath;
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
 - (NSString *)currentPath;
@@ -62,5 +69,10 @@
 - (NSString*)HTMLFromTextString:(NSMutableString *)originalText;
 - (void)invertText:(BOOL)b;
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification;
+
+- (int) getSubchapter;
+- (void) setSubchapter: (int) chapter;
+- (BOOL) gotoNextSubchapter;
+- (BOOL) gotoPreviousSubchapter;
 
 @end

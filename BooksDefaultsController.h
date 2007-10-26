@@ -24,7 +24,6 @@
 
 @interface BooksDefaultsController : NSObject
 {
-  unsigned int _lastScrollPoint;
   BOOL _readingText;
   NSString *_fileBeingRead;
   BOOL _inverted;
@@ -33,14 +32,17 @@
   BOOL _toolbarShouldUpdate;
 }
 
+#define LASTSUBCHAPTERKEY @"lastSubchapterKey"
 #define LASTSCROLLPOINTKEY @"lastScrollPointKey"
 #define READINGTEXTKEY @"readingTextKey"
 #define FILEBEINGREADKEY @"fileBeingReadKey"
 #define TEXTSIZEKEY @"textSizeKey"
 #define ISINVERTEDKEY @"isInvertedKey"
 #define BROWSERFILESKEY @"browserPathsKey"
+#define ENABLESUBCHAPTERINGKEY @"enableSubchapteringKey"
 
 #define PERSISTENCEKEY @"persistenceDictionaryKey"
+#define SUBCHAPTERKEY  @"subchapterDictionaryKey"
 
 #define TEXTFONTKEY @"textFontKey"
 #define	AUTOHIDE @"autohideKey"
@@ -56,11 +58,16 @@
 
 #define SCROLLSPEEDINDEXKEY @"scrollSpeedIndexKey"
 
+- (unsigned int)lastSubchapter;
 - (unsigned int)lastScrollPoint;
+- (BOOL)subchapterExistsForFile:(NSString *)filename;
+- (BOOL)scrollPointExistsForFile:(NSString *)filename;
+- (unsigned int)lastSubchapterForFile:(NSString *)file;
 - (unsigned int)lastScrollPointForFile:(NSString *)file;
 - (NSString *)fileBeingRead;
 - (int)textSize;
 - (BOOL)inverted;
+- (BOOL)subchapteringEnabled;
 - (BOOL)readingText;
 - (NSString *)lastBrowserPath;
 - (BOOL)autohide;
@@ -74,13 +81,19 @@
 - (BOOL)smartConversion;
 - (BOOL)renderTables;
 - (int)scrollSpeedIndex;
+- (void)setLastSubchapter:(unsigned int)thePoint;
 - (void)setLastScrollPoint:(unsigned int)thePoint;
+- (void)setLastSubchapter:(unsigned int)thePoint forFile:(NSString *)file;
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file;
+- (void)removeSubchapterForFile:(NSString *)theFile;
 - (void)removeScrollPointForFile:(NSString *)theFile;
+- (void)removeSubchaptersForDirectory:(NSString *)dir;
 - (void)removeScrollPointsForDirectory:(NSString *)dir;
+- (void)removeAllSubchapters;
 - (void)removeAllScrollPoints;
 - (void)setFileBeingRead:(NSString *)file;
 - (void)setTextSize:(int)size;
+- (void)setSubchapteringEnabled:(BOOL)isEnabled;
 - (void)setInverted:(BOOL)isInverted;
 - (void)setReadingText:(BOOL)readingText;
 - (void)setLastBrowserPath:(NSString *)browserPath;

@@ -160,7 +160,7 @@
 		       initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
 	    [navBar pushNavigationItem:tempItem withView:textView];
-	    [textView loadBookWithPath:recentFile];
+	    [textView loadBookWithPath:recentFile subchapter:[defaults lastSubchapterForFile:recentFile]];
 	    textViewNeedsFullText = NO;
 	    [textView scrollPointVisibleAtTopLeft:
 	     CGPointMake(0.0f, 
@@ -174,6 +174,7 @@
 	  {  // Recent file has been deleted!  RESET!
 	    readingText = NO;
 	    [defaults setLastScrollPoint:0];
+	    [defaults setLastSubchapter:0];
 	    [defaults setReadingText:NO];
 	    [defaults setFileBeingRead:@""];
 	    [defaults setLastBrowserPath:EBOOK_PATH];
@@ -204,7 +205,7 @@
     }
   if ((textViewNeedsFullText) && ![transitionView isTransitioning])
     {
-      [textView loadBookWithPath:[textView currentPath]];
+      [textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
       textViewNeedsFullText = NO;
     }
   if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
@@ -324,6 +325,7 @@
 	    		       initWithTitle:[[file lastPathComponent]
 					       stringByDeletingPathExtension]];
 	  [defaults setLastScrollPoint:0 forFile:file]; //Just to get rid of the "unread" circle
+	  [defaults setLastSubchapter:0 forFile:file]; //Just to get rid of the "unread" circle
 	  [navBar pushNavigationItem:tempItem withView:imageView];
 	  [tempItem release];
 	}
@@ -343,7 +345,7 @@
 	      BOOL didLoadAll = NO;
 	      int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
 	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll];
+	      [textView loadBookWithPath:file numCharacters:numChars didLoadAll:&didLoadAll subchapter:[defaults lastSubchapterForFile:file]];
 	      [textView scrollPointVisibleAtTopLeft:
 	          CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	      textViewNeedsFullText = !didLoadAll;
@@ -374,6 +376,8 @@
   //  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
 	    forFile:[textView currentPath]];
+  [defaults setLastSubchapter:[textView getSubchapter]
+	    forFile:[textView currentPath]];
   //  NSLog(@"set defaults ");
   [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 					object:[textView currentPath]];
@@ -382,7 +386,7 @@
   [bottomNavBar hide:YES];
   if (scrollerSlider != nil)
     [self hideSlider];
-  NSLog(@"end.\n");
+//  NSLog(@"end.\n");
 }
 
 - (void)cleanUpBeforeQuit
@@ -411,6 +415,8 @@
   [defaults setFileBeingRead:[textView currentPath]];
   selectionRect = [textView visibleRect];
   [defaults setLastScrollPoint:(unsigned int)selectionRect.origin.y
+	    forFile:[textView currentPath]];
+  [defaults setLastSubchapter:[textView getSubchapter]
 	    forFile:[textView currentPath]];
   [defaults setReadingText:readingText];
   [defaults setLastBrowserPath:[navBar topBrowserPath]];
@@ -502,6 +508,10 @@
 {
   if (![button isPressed])
     {
+      if ([textView gotoNextSubchapter] == YES)
+	      [scrollerSlider setValue:0];
+      else
+      {
       NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
       if ((nil != nextFile) && [nextFile isReadableTextFilePath])
 	{
@@ -510,6 +520,8 @@
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
+      [defaults setLastSubchapter:[textView getSubchapter]
+	        forFile:[textView currentPath]];
 	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -526,12 +538,13 @@
 	  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
 	  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
 	  [textView loadBookWithPath:nextFile numCharacters:numChars
-		    didLoadAll:&didLoadAll];
+		    didLoadAll:&didLoadAll subchapter:0];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  textViewNeedsFullText = !didLoadAll;
 	  [tempItem release];
 	  [tempView autorelease];
+	}
 	}
     }	
 }
@@ -540,6 +553,10 @@
 {
   if (![button isPressed])
     {
+      if ([textView gotoPreviousSubchapter] == YES)
+	      [scrollerSlider setValue:0];
+	  else
+      {
       NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
       if ((nil != prevFile) && [prevFile isReadableTextFilePath])
 	{
@@ -548,6 +565,8 @@
 	  struct CGRect visRect = [tempView visibleRect];
 	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
 		    forFile:[tempView currentPath]];
+      [defaults setLastSubchapter:[textView getSubchapter]
+	        forFile:[textView currentPath]];
 	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 						object:[tempView currentPath]];
 	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
@@ -560,12 +579,13 @@
 	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
 	  [self refreshTextViewFromDefaults];
 	  //[progressHUD show:YES];
-	  [textView loadBookWithPath:prevFile];
+	  [textView loadBookWithPath:prevFile subchapter:0];
 	  [textView scrollPointVisibleAtTopLeft:
 		      CGPointMake(0.0f, (float)[defaults lastScrollPointForFile:[textView currentPath]]) animated:NO];
 	  //[progressHUD show:NO];
 	  [tempItem release];
 	  [tempView autorelease];
+	}
 	}
     }	
 }

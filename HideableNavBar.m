@@ -133,7 +133,7 @@
 		  withView:(UIView *)view
 	 reverseTransition:(BOOL)reversed
 {
-  BOOL thisIsText = [view respondsToSelector:@selector(loadBookWithPath:)]; //ugh!
+  BOOL thisIsText = [view respondsToSelector:@selector(loadBookWithPath:subchapter:)]; //ugh!
   // Here, cometh funky code, in anticipation of multiple text views.
   if (_textIsOnTop && thisIsText)
     {

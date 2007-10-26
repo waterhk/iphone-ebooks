@@ -1,8 +1,8 @@
-CC=arm-apple-darwin-cc
+CC=arm-apple-darwin-gcc
 CFLAGS=-O3
 CPPFLAGS=-I/opt/local/include
 LD=$(CC)
-LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices
+LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices -lcrypto
 
 all:    Books
 
@@ -11,7 +11,7 @@ Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o \
 	HTMLFixer.o FontChoiceController.o \
 	palm/unpluck.o palm/palmconvert.o palm/util.o palm/pluckhtml.o \
-       	palm/txt2pdbdoc.o palm/libjpeg.a
+       	palm/txt2pdbdoc.o palm/libjpeg.a Regex.o ChapteredHTML.o
 	$(LD) $(LDFLAGS) -v -o $@ $^
 
 %.o:    %.m 

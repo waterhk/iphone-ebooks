@@ -21,6 +21,7 @@
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
 #import "palm/palmconvert.h"
+#import "ChapteredHTML.h"
 
 @interface NSObject (HeartbeatDelegate)
 
@@ -39,6 +40,10 @@
   size = 16.0f;
 
   path = @"";
+  fullHTML      = nil;
+  chapteredHTML = [[ChapteredHTML alloc] init];
+  subchapter    = 0;
+  defaults      = [[BooksDefaultsController alloc] init];
 
   [self setEditable:NO];
   
@@ -124,17 +129,17 @@
   }
 }
 
-- (void)loadBookWithPath:(NSString *)thePath
+- (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter
 {
   BOOL junk;
-  return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk];
+  return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk subchapter:theSubchapter];
 }
 
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int)theSubchapter
 {
   BOOL junk;
   return [self loadBookWithPath:thePath numCharacters:numChars
-	       didLoadAll:&junk];
+	       didLoadAll:&junk subchapter:theSubchapter];
 }
 
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath
@@ -144,7 +149,7 @@
 }
 
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
-	      didLoadAll:(BOOL *)didLoadAll
+	      didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
 {
   NSString *theHTML = nil;
   path = [[thePath copy] retain];
@@ -173,7 +178,26 @@
   if ((-1 == numChars) || (numChars >= [theHTML length]))
     {
       *didLoadAll = YES;
-      [self setHTML:theHTML];
+
+      [fullHTML release];
+      fullHTML = [theHTML retain];
+
+	  if ([defaults subchapteringEnabled] == NO)
+	    {
+		  [self setHTML:fullHTML];
+		  subchapter = 0;
+	    }
+	  else
+	    {
+          [chapteredHTML setHTML:theHTML];
+
+          if (theSubchapter < [chapteredHTML chapterCount])
+              subchapter = theSubchapter;
+          else
+              subchapter = 0;
+
+	      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+	    }
     }
   else
     {
@@ -200,7 +224,6 @@
   // The name of this method is in fact misleading--in Books.app < 1.2,
   // it did in fact strip images.  Not anymore, though.
 
-  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   NSStringEncoding encoding = [defaults defaultTextEncoding];
   NSMutableString *originalText;
   NSString *outputHTML;
@@ -290,7 +313,15 @@
       float scrollFactor = middleRect / totalRect.size.height;
       size += 2.0f;
       [self setTextSize:size];
-      [self loadBookWithPath:path];
+
+      if ([defaults subchapteringEnabled] &&
+          (subchapter < [chapteredHTML chapterCount]))
+	    {
+	      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+	    }
+	  else
+          [self setHTML:fullHTML];
+
       totalRect = [[self _webView] frame];
       middleRect = scrollFactor * totalRect.size.height;
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
@@ -312,7 +343,15 @@
       float scrollFactor = middleRect / totalRect.size.height;
       size -= 2.0f;
       [self setTextSize:size];
-      [self loadBookWithPath:path];
+
+      if ([defaults subchapteringEnabled] &&
+          (subchapter < [chapteredHTML chapterCount]))
+        {
+	      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+	    }
+	  else
+          [self setHTML:fullHTML];
+
       totalRect = [[self _webView] frame];
       middleRect = scrollFactor * totalRect.size.height;
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
@@ -355,7 +394,6 @@
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
-      BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
       if (CGRectEqualToRect(lastVisibleRect, newRect))
 	{
 	  if (CGRectContainsPoint(topTapRect, clicked))
@@ -377,7 +415,6 @@
 	{ //we are, in fact, scrolling
 	  [self hideNavbars];
 	}
-      [defaults release];
     }
   BOOL unused = [self releaseRubberBandIfNecessary];
   lastVisibleRect = [self visibleRect];
@@ -436,7 +473,6 @@
 
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification
 {
-  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   switch ([defaults scrollSpeedIndex])
     {
     case 0:
@@ -449,12 +485,10 @@
       [self setScrollToPointAnimationDuration:0.0];
       break;
     }
-  [defaults release];
 }
 
 - (NSString *)HTMLFromTextFile:(NSString *)file
 {
-  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   NSStringEncoding encoding = [defaults defaultTextEncoding];
   NSString *outputHTML;
   NSMutableString *originalText;
@@ -555,7 +589,6 @@
   j += i;
   fullRange = NSMakeRange(0, [originalText length]);
 
-  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
   if ([defaults smartConversion])
     {
       //Change double-newlines to </p><p>.
@@ -631,11 +664,19 @@
       [self setTextColor: CGColorCreate( colorSpace, textParts)];
       [self setScrollerIndicatorStyle:0];
     }
-  // This "loadBookWithPath" invocation is a kludge;
+  // This "setHTML" invocation is a kludge;
   // for some reason the display doesn't update correctly
   // without it, and we can't yet figure out how to fix it.
   struct CGRect oldRect = [self visibleRect];
-  [self loadBookWithPath:path];
+
+  if ([defaults subchapteringEnabled] &&
+      (subchapter < [chapteredHTML chapterCount]))
+    {
+      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+    }
+  else
+      [self setHTML:fullHTML];
+
   [self scrollPointVisibleAtTopLeft:oldRect.origin];
   [self setNeedsDisplay];
 }
@@ -646,7 +687,62 @@
   //[tapinfo release];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [path release];
+  [chapteredHTML release];
+  [fullHTML release];
+  [defaults release];
   [super dealloc];
 }
 
+- (int) getSubchapter
+{
+	return subchapter;
+}
+
+- (void) setSubchapter: (int) chapter
+{
+	CGPoint origin = { 0, 0 };
+
+	if ([defaults subchapteringEnabled] &&
+	    (subchapter < [chapteredHTML chapterCount]))
+	  {
+		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+	  }
+	else
+		[self setHTML:fullHTML];
+
+	[self scrollPointVisibleAtTopLeft:origin];
+	[self setNeedsDisplay];
+}
+
+- (BOOL) gotoNextSubchapter
+{
+	CGPoint origin = { 0, 0 };
+
+	if ([defaults subchapteringEnabled] == NO)
+		return NO;
+
+	if ((subchapter + 1) >= [chapteredHTML chapterCount])
+		return NO;
+
+	[self setHTML:[chapteredHTML getChapterHTML:++subchapter]];
+	[self scrollPointVisibleAtTopLeft:origin];
+	[self setNeedsDisplay];
+	return YES;
+}
+
+- (BOOL) gotoPreviousSubchapter
+{
+	CGPoint origin = { 0, 0 };
+
+	if ([defaults subchapteringEnabled] == NO)
+		return NO;
+
+	if (subchapter == 0)
+		return NO;
+
+	[self setHTML:[chapteredHTML getChapterHTML:--subchapter]];
+	[self scrollPointVisibleAtTopLeft:origin];
+	[self setNeedsDisplay];
+	return YES;
+}
 @end

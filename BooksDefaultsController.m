@@ -29,11 +29,13 @@
 
   NSMutableDictionary *temp = [[NSMutableDictionary alloc] initWithCapacity:15];
 
+  [temp setObject:@"-1" forKey:LASTSUBCHAPTERKEY];
   [temp setObject:@"0" forKey:LASTSCROLLPOINTKEY];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
+  [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
   [temp setObject:EBOOK_PATH forKey:BROWSERFILESKEY];
 
   [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
@@ -44,6 +46,7 @@
   [temp setObject:@"1" forKey:CHAPTERNAV];
   [temp setObject:@"1" forKey:PAGENAV];
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:PERSISTENCEKEY];
+  [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:SUBCHAPTERKEY];
   [temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
   //  NSLog(@"temp dictionary: %@\n", temp);
   [temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
@@ -68,13 +71,51 @@
       [[NSUserDefaults standardUserDefaults] setObject:persistenceSanityCheck forKey:PERSISTENCEKEY];
     }
 
+  NSMutableDictionary *subchapterSanityCheck =
+    [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY]];
+  if (0 == [subchapterSanityCheck count])
+    {
+      NSLog(@"subchapter sanity check!");
+      NSString *file = [[NSUserDefaults standardUserDefaults] objectForKey:FILEBEINGREADKEY];
+      int subchapter = [[NSUserDefaults standardUserDefaults] integerForKey:LASTSUBCHAPTERKEY];
+      NSString *subchapterString = [NSString stringWithFormat:@"%d", (int)subchapter];
+      [subchapterSanityCheck setObject:subchapterString forKey:file];
+
+      [[NSUserDefaults standardUserDefaults] setObject:subchapterSanityCheck forKey:SUBCHAPTERKEY];
+    }
+
   //  NSLog(@"Persistence dictionary:\n%@", [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]);
   return self;
 }
 
+- (unsigned int)lastSubchapter
+{
+  int subchapter = [[NSUserDefaults standardUserDefaults] integerForKey:LASTSUBCHAPTERKEY];
+
+  // sanity check for older prefs without subchaptering support...
+  if (subchapter == -1) // wasn't previously set
+     subchapter = 0;
+
+  return (unsigned int) subchapter;
+}
+
 - (unsigned int)lastScrollPoint
 {
-  return [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
+  BOOL subchapteringEnabled = [self subchapteringEnabled];
+  int subchapter = [self lastSubchapter];
+  int scrollPoint = [[NSUserDefaults standardUserDefaults] integerForKey:LASTSCROLLPOINTKEY];
+
+  // sanity check for older prefs without subchaptering support...
+  if (subchapteringEnabled && (subchapter == -1)) // wasn't previously set
+     scrollPoint = 0;
+
+  return (unsigned int) scrollPoint;
+}
+
+- (BOOL)subchapterExistsForFile:(NSString *)filename
+{
+  NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY];
+  return (nil != [blah objectForKey:filename]);
 }
 
 - (BOOL)scrollPointExistsForFile:(NSString *)filename
@@ -83,13 +124,30 @@
   return (nil != [blah objectForKey:filename]);
 }
 
+- (unsigned int)lastSubchapterForFile:(NSString *)filename
+  // Returns subchapter
+{
+  NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY];
+  NSString *subchapterString = [blah objectForKey:filename];
+
+  if (nil == subchapterString)
+    return 0;
+  else
+    return [subchapterString intValue];
+}
+
 - (unsigned int)lastScrollPointForFile:(NSString *)filename
   // Returns scroll point adjusted by the font size.
 {
   NSDictionary *blah = [[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY];
   NSString *scrollpointString = [blah objectForKey:filename];
+  BOOL subchapteringEnabled = [self subchapteringEnabled];
+  BOOL subchapterExistsForFile = [self subchapterExistsForFile:filename];
+
   if (nil == scrollpointString)
     return 0;
+  else if (subchapteringEnabled && !subchapterExistsForFile)
+  	return 0;
   else
     {
       int fontsize = [[NSUserDefaults standardUserDefaults] integerForKey:TEXTSIZEKEY];
@@ -111,6 +169,11 @@
 - (BOOL)inverted
 {
   return [[NSUserDefaults standardUserDefaults] boolForKey:ISINVERTEDKEY];
+}
+
+- (BOOL)subchapteringEnabled
+{
+  return [[NSUserDefaults standardUserDefaults] boolForKey:ENABLESUBCHAPTERINGKEY];
 }
 
 - (BOOL)readingText
@@ -147,9 +210,23 @@
   return [[NSUserDefaults standardUserDefaults] integerForKey:SCROLLSPEEDINDEXKEY];
 }
 
+- (void)setLastSubchapter:(unsigned int)thePoint
+{
+  [[NSUserDefaults standardUserDefaults] setInteger:thePoint forKey:LASTSUBCHAPTERKEY];
+}
+
 - (void)setLastScrollPoint:(unsigned int)thePoint
 {
   [[NSUserDefaults standardUserDefaults] setInteger:thePoint forKey:LASTSCROLLPOINTKEY];
+}
+
+- (void)setLastSubchapter:(unsigned int)subchapter forFile:(NSString *)file
+  // Adjusts the scroll point based on the font size.
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY]];
+  NSString *subchapterString = [NSString stringWithFormat:@"%d", subchapter];
+  [tempDict setObject:subchapterString forKey:file];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:SUBCHAPTERKEY];
 }
 
 - (void)setLastScrollPoint:(unsigned int)thePoint forFile:(NSString *)file
@@ -162,6 +239,15 @@
   [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
 }
 
+- (void)removeSubchapterForFile:(NSString *)file
+  // Call this method when deleting a single text/HTML file from
+  // the FileBrowser.
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY]];
+  [tempDict removeObjectForKey:file];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:SUBCHAPTERKEY];
+}
+
 - (void)removeScrollPointForFile:(NSString *)file
   // Call this method when deleting a single text/HTML file from
   // the FileBrowser.
@@ -169,6 +255,26 @@
   NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:PERSISTENCEKEY]];
   [tempDict removeObjectForKey:file];
   [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
+}
+
+- (void)removeSubchaptersForDirectory:(NSString *)dir
+  // This method should be called when deleting a folder from the
+  // FileBrowser, so the prefs file doesn't get crusty with deleted
+  // books.
+{
+  NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:SUBCHAPTERKEY]];
+  NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager]
+					enumeratorAtPath:dir];
+ if (nil != enumerator)
+   {
+     NSString *subpath;
+     while (nil != (subpath = [enumerator nextObject]))
+       {
+	 [tempDict removeObjectForKey:[dir stringByAppendingPathComponent:subpath]];
+       }
+   }
+ [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:SUBCHAPTERKEY];
+ //phew!
 }
 
 - (void)removeScrollPointsForDirectory:(NSString *)dir
@@ -189,6 +295,13 @@
    }
  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:PERSISTENCEKEY];
  //phew!
+}
+
+- (void)removeAllSubchapters
+{
+  NSDictionary *tempDict = [NSDictionary dictionaryWithObject:@"0" forKey:@""];
+  [[NSUserDefaults standardUserDefaults] setObject:tempDict forKey:SUBCHAPTERKEY];
+  [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:LASTSUBCHAPTERKEY];
 }
 
 - (void)removeAllScrollPoints
@@ -216,6 +329,11 @@
 - (void)setInverted:(BOOL)isInverted
 {
   [[NSUserDefaults standardUserDefaults] setBool:isInverted forKey:ISINVERTEDKEY];
+}
+
+- (void)setSubchapteringEnabled:(BOOL)isEnabled
+{
+  [[NSUserDefaults standardUserDefaults] setBool:isEnabled forKey:ENABLESUBCHAPTERINGKEY];
 }
 
 - (void)setReadingText:(BOOL)readingText

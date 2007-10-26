@@ -77,6 +77,7 @@
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
 	UIPreferencesControlTableCell *smartConversionPreferenceCell;
+	UIPreferencesControlTableCell *subchapteringPreferenceCell;
 	UIPreferencesControlTableCell *renderTablesPreferenceCell;
 	UIPreferencesTableCell *markCurrentBookAsNewCell;
 	UIPreferencesTableCell *markAllBooksAsNewCell;
