@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <string.h>             /* for strndup() */
-#include <assert.h>             /* for assert() */
 
 #include <zlib.h>
 

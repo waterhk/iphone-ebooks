@@ -32,7 +32,7 @@
 #include <string.h>             /* for strndup() */
 #include <errno.h>              /* for errno */
 #include <fcntl.h>              /* for O_RDONLY */
-#include <assert.h>             /* for assert() */
+//#include <assert.h>             /* for assert() */
 
 #include <zlib.h>
 
@@ -65,7 +65,7 @@ static unsigned int UncompressDOC
     unsigned int  src_index;
     unsigned int  dest_index;
 
-    assert (src != NULL && src_len != 0 && dest != NULL && dest_len != 0);
+//    assert (src != NULL && src_len != 0 && dest != NULL && dest_len != 0);
 
     offset = 0;
     src_index = 0;
@@ -106,7 +106,7 @@ static unsigned int UncompressDOC
             }
         }
     }
-    assert (src_index == src_len && dest_index == dest_len);
+//    assert (src_index == src_len && dest_index == dest_len);
 
     return 1;
 }
@@ -129,7 +129,7 @@ static unsigned int UncompressZLib
     unsigned int   i;
     unsigned char  keybuf[OWNER_ID_HASH_LEN];
 
-    assert (src != NULL && src_len != 0 && dest != NULL && dest_len != 0);
+//    assert (src != NULL && src_len != 0 && dest != NULL && dest_len != 0);
 
     keylen = (owner_id == NULL) ? 0 : MIN (src_len, OWNER_ID_HASH_LEN);
 
@@ -171,7 +171,7 @@ static unsigned int UncompressZLib
     if (err != Z_STREAM_END)
         return err;
 
-    assert (z.total_out == dest_len);
+//    assert (z.total_out == dest_len);
 
     return inflateEnd (&z);
 }
@@ -561,7 +561,7 @@ static int ParseURLs
         for (ptr = record->cache + 8;
              (ptr - record->cache) < record->cached_size;
              ptr += (strlen ((char*)ptr) + 1)) {
-            assert (count < nurls);
+//            assert (count < nurls);
             urls[count++] = (char*)ptr;
         }
     }
