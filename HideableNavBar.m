@@ -22,7 +22,7 @@
 #import "HideableNavBar.h"
 #import "FileBrowser.h"
 
-#include "dolog.h"
+//#include "dolog.h"
 @implementation HideableNavBar
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect
@@ -88,7 +88,7 @@
 		_pixOnTop = NO;
 		if ([self isAnimationEnabled])
 			[_transView transition:2 toView:[_browserArray lastObject]];
-		dolog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
+		GSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
 		[super popNavigationItem];
 		if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
@@ -100,7 +100,7 @@
 
 		[_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
-		dolog(@"Popped to %@\n", [[_browserArray lastObject] path]);
+		GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
 		[super popNavigationItem];
 	}
 }
@@ -121,7 +121,7 @@
 	[_browserArray addObject:newBrowser];
 	[_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
 	[newBrowser release];  // we still have it in the array, don't worry!
-	dolog(@"Pushed %@\n", browserPath);
+	GSLog(@"Pushed %@\n", browserPath);
 	[super pushNavigationItem:item];
 }
 
@@ -146,13 +146,13 @@
 
 	_textIsOnTop = thisIsText;
 	_pixOnTop = !thisIsText;
-	dolog(@"Pushed view\n");
+	GSLog(@"Pushed view\n");
 	int transitionType = reversed ? 2 : 1;
 	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
 					toView:view];
-	dolog(@"transitioned");
+	GSLog(@"transitioned");
 	[super pushNavigationItem:item];
-	dolog(@"called super");
+	GSLog(@"called super");
 }
 
 - (FileBrowser *)topBrowser
@@ -224,7 +224,7 @@
 
 - (void)showTopNavBar:(BOOL)withAnimation
 {
-	dolog(@"showTopNavBar");
+	GSLog(@"showTopNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
 	// the top nav bar shows under the status bar.
@@ -244,7 +244,7 @@
 
 - (void)hideTopNavBar
 {
-	dolog(@"hideTopNavBar");
+	GSLog(@"hideTopNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
@@ -257,7 +257,7 @@
 
 - (void)showBotNavBar
 {
-	dolog(@"hideBotNavBar");
+	GSLog(@"showBotNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
@@ -269,7 +269,7 @@
 
 - (void)hideBotNavBar
 {
-	dolog(@"hideBotNavBar");
+	GSLog(@"hideBotNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);

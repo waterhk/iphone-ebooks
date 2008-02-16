@@ -41,6 +41,8 @@
   NSMutableDictionary *temp;
 
   self = [super init];
+	_toolbarShouldUpdate = NO;
+	_NeedRotate = NO;
   
   _defaults = [[NSUserDefaults standardUserDefaults] retain];
 
@@ -319,6 +321,7 @@
 
 - (void)setFlipped:(BOOL)isFlipped
 {
+	GSLog(@"setFlipped");
 	[_defaults setBool:isFlipped forKey:FLIPTOOLBAR];
 	_toolbarShouldUpdate = YES;
 }
@@ -326,13 +329,12 @@
 - (BOOL)isRotate90
 {
 	BOOL value = [_defaults boolForKey:ISROTATE90KEY];
-
-	_toolbarShouldUpdate = YES;
 	return value;
 }
 
 - (void)setRotate90:(BOOL)isRotate90
 {
+	GSLog(@"setRotate90");
 	[_defaults setBool:isRotate90 forKey:ISROTATE90KEY];
 	_toolbarShouldUpdate = YES;
 	_NeedRotate = YES;
@@ -373,6 +375,7 @@
 
 - (void)setChapternav:(BOOL)isChpaternav
 {
+	GSLog(@"setChapternav");
 	[_defaults setBool:isChpaternav forKey:CHAPTERNAV];
 	_toolbarShouldUpdate = YES;
 }
@@ -387,16 +390,20 @@
 
 - (void)setPagenav:(BOOL)isPagenav
 {
+	GSLog(@"setPageNav");
 	[_defaults setBool:isPagenav forKey:PAGENAV];
 	_toolbarShouldUpdate = YES;
 }
 
 - (BOOL)synchronize
 {
+	GSLog(@"default:synchronize");
 	if (_toolbarShouldUpdate)
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
 	if (_NeedRotate)
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"rotationDefaultChanged" object:self];
+	_toolbarShouldUpdate = NO;
+	_NeedRotate = NO;
 	return [_defaults synchronize];
 }
 
