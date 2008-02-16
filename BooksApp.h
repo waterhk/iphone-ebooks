@@ -90,7 +90,7 @@ enum PreferenceAnimationType;
 - (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
-- (void)showSlider;
+- (void)showSlider:(BOOL)withAnimation;
 - (void)hideSlider;
 - (void)handleSlider:(id)sender;
 - (void)embiggenText:(UINavBarButton *)button;

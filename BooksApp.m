@@ -247,30 +247,29 @@
 	[navBar toggle];
 	[bottomNavBar toggle];
 	if (nil == scrollerSlider)
-		[self showSlider];
+		[self showSlider:true];
 	else
 		[self hideSlider];
 }
 
-- (void)showSlider
+- (void)showSlider:(BOOL)withAnimation
 {
-	if (nil == scrollerSlider)
+	CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
+	if (nil != scrollerSlider)
 	{
-
-		CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
-		scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
-		[mainView addSubview:scrollerSlider];
+		[scrollerSlider removeFromSuperview];
+		[scrollerSlider autorelease];
+		scrollerSlider = nil;
 	}
-	if (animator != nil)
-		[animator release];
-	animator = [[UIAnimator alloc] init];
-	if (alpha != nil)
-		[alpha release];
-	alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
-	[alpha setStartAlpha:0];
-	[alpha setEndAlpha:1];
+	else
+	{
+	}
+	scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
+	[mainView addSubview:scrollerSlider];
 	CGRect theWholeShebang = [[textView _webView] frame];
 	CGRect visRect = [textView visibleRect];
+	NSLog(@"visRect: x=%f, y=%f, w=%f, h=%f", visRect.origin.x, visRect.origin.y, visRect.size.width, visRect.size.height);
+	NSLog(@"theWholeShebang: x=%f, y=%f, w=%f, h=%f", theWholeShebang.origin.x, theWholeShebang.origin.y, theWholeShebang.size.width, theWholeShebang.size.height);
 	int endPos = (int)theWholeShebang.size.height - 460;
 	[scrollerSlider setMinValue:0.0];
 	[scrollerSlider setMaxValue:(float)endPos];
@@ -284,7 +283,23 @@
 	UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
 	[scrollerSlider setMinValueImage:img];
 	[scrollerSlider setMaxValueImage:img];
-	[animator addAnimation:alpha withDuration:0.25 start:YES];
+	if (withAnimation)
+	{
+		if (animator != nil)
+			[animator release];
+		animator = [[UIAnimator alloc] init];
+		if (alpha != nil)
+			[alpha release];
+		alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
+		[alpha setStartAlpha:0];
+		[alpha setEndAlpha:1];
+		[animator addAnimation:alpha withDuration:0.25 start:YES];
+	}
+	else
+	{
+		[scrollerSlider setAlpha:1];
+	}
+
 	//[animator autorelease];
 	//[alpha autorelease];
 }
@@ -955,7 +970,7 @@
 		}
 		NSLog(@"rotating");
 		[window setTransform: lTransform];
-		
+
 	}
 	if (![defaults isRotate90])
 	{
@@ -968,6 +983,11 @@
 	NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 	[self updateToolbar: 0];
 	[self updateNavbar];
+	if (scrollerSlider)
+	{
+		NSLog(@"showing the slider");
+		[self showSlider:false];
+	}
 	//BCC: animate this
 	/*	
 		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
