@@ -1,685 +1,737 @@
 /* ------ BooksApp, written by Zachary Brewster-Geisz
-			(and others)
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; version 2
- of the License.
+   (and others)
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; version 2
+   of the License.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 */
 #import "BooksApp.h"
 #import "PreferencesController.h"
+#import <UIKit/UIView-Geometry.h>
 
 @implementation BooksApp
-
+/*
+   enum {
+   kFACEUP = 0,
+   kNORMAL = 1,
+   kUPSIDEDOWN = 2,
+   kLANDL = 3,
+   kLANDR = 4,
+   kFACEDOWN = 6
+   };
+   */
 - (void) applicationDidFinishLaunching: (id) unused
 {
-    NSString *recentFile;
+	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
+	NSString *recentFile;
+	defaults = [BooksDefaultsController sharedBooksDefaultsController];
+	//bcc rect to change for rotate90
 
-    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-    rect.origin.x = rect.origin.y = 0.0f;
+	struct CGRect rect = 	[defaults fullScreenApplicationContentRect];
 
-    doneLaunching = NO;
+	doneLaunching = NO;
 
-    transitionHasBeenCalled = NO;
+	transitionHasBeenCalled = NO;
 
-    navbarsAreOn = YES;
+	navbarsAreOn = YES;
 
-    textViewNeedsFullText = NO;
-    imageSplashed = NO;
-    defaults = [[BooksDefaultsController alloc] init];
+	textViewNeedsFullText = NO;
+	imageSplashed = NO;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
-		 selector:@selector(updateToolbar:)
-		 name:@"toolbarDefaultsChanged"
-					      object:nil];
+											 selector:@selector(updateToolbar:)
+												 name:@"toolbarDefaultsChanged"
+											   object:nil];
 
-    window = [[UIWindow alloc] initWithContentRect: rect];
+	window = [[UIWindow alloc] initWithContentRect: rect];
 
-    [window orderFront: self];
-    [window makeKey: self];
-    [window _setHidden: NO];
-    struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
-    progressIndicator = [[UIProgressIndicator alloc] 
-			  initWithFrame:CGRectMake((320-progsize.width)/2,
-						   (460-progsize.height)/2,
-						   progsize.width, 
-						   progsize.height)];
-    [progressIndicator setStyle:0];
-    mainView = [[UIView alloc] initWithFrame: rect];
+	[window orderFront: self];
+	[window makeKey: self];
+	[window _setHidden: NO];
+	struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+	//Bcc: this positioning should be relative to the screen rect not to some arbitrary value
+	//based on the size of the current gen iphone
+	progressIndicator = [[UIProgressIndicator alloc] 
+		initWithFrame:CGRectMake((320-progsize.width)/2,
+				(460-progsize.height)/2,
+				progsize.width, 
+				progsize.height)];
+	[progressIndicator setStyle:0];
+	mainView = [[UIView alloc] initWithFrame: rect];
 
 	[self setupNavbar];
 	[self setupToolbar];
 
-    textView = [[EBookView alloc] 
-        initWithFrame:
-          CGRectMake(0, 0, rect.size.width, rect.size.height)];
+	textView = [[EBookView alloc] 
+		initWithFrame:
+		CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
-    [self refreshTextViewFromDefaults];
-	
-
-    recentFile = [defaults fileBeingRead];
-    readingText = [defaults readingText];
+	[self refreshTextViewFromDefaults];
 
 
-    transitionView = [[UITransitionView alloc] initWithFrame:
-       CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
+	recentFile = [defaults fileBeingRead];
+	readingText = [defaults readingText];
 
-    [window setContentView: mainView];
-    [mainView addSubview:transitionView];
-    [mainView addSubview:navBar];
-    [mainView addSubview:bottomNavBar];
-    if (!readingText) 
-      [bottomNavBar hide:YES];
 
-    [textView setHeartbeatDelegate:self];
+	transitionView = [[UITransitionView alloc] initWithFrame:
+		CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
 
-    [navBar setTransitionView:transitionView];
-    [transitionView setDelegate:self];
+	[window setContentView: mainView];
+	//bcc rotation
+	if ([defaults isRotate90])
+	{
+		[self toggleStatusBarColor];
+		   int degree = 90;
+		CGRect lBounds1 = [mainView bounds];
+		CGRect lFrame1 = [mainView frame];
+		UIAnimator *anim = [[UIAnimator alloc] init];
 
-    NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
-    imageSplashed = !(nil == coverart);
-    if (!imageSplashed)
-      {
-	coverart = [[NSBundle mainBundle] pathForResource:@"Default"
-					  ofType:@"png"];
-	[progressIndicator setStyle:![defaults inverted]];
-      }
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
-    [mainView addSubview:imageView];
-    [mainView addSubview:progressIndicator];
-    [progressIndicator startAnimation];
+		[window setFrame: rect];
+		NSLog(@"rect x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
+		CGAffineTransform	lTransform = CGAffineTransformMakeTranslation(-1*rect.size.width/2, -1*rect.size.height/2);
+		//BCC: perform the actual rotation
+		lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
+		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
+		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
+		//BCC: translate back so the top left corner of the view is at the top right of the phone
+		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
+		[window setTransform: lTransform];
+		//BCC: animate this
+		/*UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: mainView];
+		struct CGAffineTransform lMatrixprev = [mainView transform];
+		[scaleAnim setStartTransform: lMatrixprev];
+		[scaleAnim setEndTransform: lTransform];
+		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; */
+		struct CGRect lBounds = [mainView bounds];
+		struct CGRect lFrame = [mainView frame];
+	}
 
-    /// FIXME just a test.
-    /*
-    NSStringEncoding *enclist = malloc(500*sizeof(NSStringEncoding));
-    enclist = [NSString availableStringEncodings];
-    while (*enclist != 0)
-      {
-	NSLog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
-      }
-    free(enclist);
-    */
+	[mainView addSubview:transitionView];
+	[mainView addSubview:navBar];
+	[mainView addSubview:bottomNavBar];
+	if (!readingText) 
+		[bottomNavBar hide:YES];
+
+	[textView setHeartbeatDelegate:self];
+
+	[navBar setTransitionView:transitionView];
+	[transitionView setDelegate:self];
+
+	NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
+	imageSplashed = !(nil == coverart);
+	if (!imageSplashed)
+	{
+		coverart = [[NSBundle mainBundle] pathForResource:@"Default"
+												   ofType:@"png"];
+		[progressIndicator setStyle:![defaults inverted]];
+	}
+	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
+	[mainView addSubview:imageView];
+	[mainView addSubview:progressIndicator];
+	[progressIndicator startAnimation];
+
+	/// FIXME just a test.
+	/*
+	   NSStringEncoding *enclist = malloc(500*sizeof(NSStringEncoding));
+	   enclist = [NSString availableStringEncodings];
+	   while (*enclist != 0)
+	   {
+	   NSLog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
+	   }
+	   free(enclist);
+	   */
 }
+
 
 - (void)finishUpLaunch
 {
-  NSString *recentFile = [defaults fileBeingRead];
-  if (imageSplashed)
-    {
-      [self _dumpScreenContents:nil];
-      NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
-						     ofType:@"png"];
-      NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
-      [nsdat writeToFile:defaultPath atomically:YES];
-      imageSplashed = NO;
-    }
+	NSString *recentFile = [defaults fileBeingRead];
+	if (imageSplashed)
+	{
+		[self _dumpScreenContents:nil];
+		NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
+																ofType:@"png"];
+		NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
+		[nsdat writeToFile:defaultPath atomically:YES];
+		imageSplashed = NO;
+	}
 
-    UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
-    [navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
+	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
+	[navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
 
-    NSString *tempString = [defaults lastBrowserPath];
-    NSMutableArray *tempArray = [[NSMutableArray alloc] init]; 
+	NSString *tempString = [defaults lastBrowserPath];
+	NSMutableArray *tempArray = [[NSMutableArray alloc] init]; 
 
-    if (![tempString isEqualToString:EBOOK_PATH])
-      {
-	[tempArray addObject:[NSString stringWithString:tempString]];
-	while ((![(tempString = [tempString stringByDeletingLastPathComponent])
-		   isEqualToString:EBOOK_PATH]) && 
-	       (![tempString isEqualToString:@"/"])) //sanity check
-	  {
-	    [tempArray addObject:[NSString stringWithString:tempString]];
-	  } // while
-      } // if
+	if (![tempString isEqualToString:EBOOK_PATH])
+	{
+		[tempArray addObject:[NSString stringWithString:tempString]];
+		while ((![(tempString = [tempString stringByDeletingLastPathComponent])
+					isEqualToString:EBOOK_PATH]) && 
+	  (![tempString isEqualToString:@"/"])) //sanity check
+		{
+			[tempArray addObject:[NSString stringWithString:tempString]];
+		} // while
+	} // if
 
-    NSEnumerator *pathEnum = [tempArray reverseObjectEnumerator];
-    NSString *curPath;  
-    while (nil != (curPath = [pathEnum nextObject]))
-      {
-	UINavigationItem *tempItem = [[UINavigationItem alloc]
-			     initWithTitle:[curPath lastPathComponent]];
-	[navBar pushNavigationItem:tempItem withBrowserPath:curPath];
-	[tempItem release];
-      }
+	NSEnumerator *pathEnum = [tempArray reverseObjectEnumerator];
+	NSString *curPath;  
+	while (nil != (curPath = [pathEnum nextObject]))
+	{
+		UINavigationItem *tempItem = [[UINavigationItem alloc]
+			initWithTitle:[curPath lastPathComponent]];
+		[navBar pushNavigationItem:tempItem withBrowserPath:curPath];
+		[tempItem release];
+	}
 
-    if (readingText)
-      {
-	if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
-	  {
+	if (readingText)
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
+		{
 
-	    UINavigationItem *tempItem = [[UINavigationItem alloc]
-		       initWithTitle:[[recentFile lastPathComponent] 
+			UINavigationItem *tempItem = [[UINavigationItem alloc]
+				initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
-	    int subchapter = [defaults lastSubchapterForFile:recentFile];
-	    float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
-	                                                    inSubchapter:subchapter];
+			int subchapter = [defaults lastSubchapterForFile:recentFile];
+			float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
+															inSubchapter:subchapter];
 
-	    [navBar pushNavigationItem:tempItem withView:textView];
-	    [textView loadBookWithPath:recentFile subchapter:subchapter];
-	    textViewNeedsFullText = NO;
-	    [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
-	                                 animated:NO];
-	    [tempItem release];
-	    [navBar hide:NO];
-	    [bottomNavBar hide:NO];
-	  }
-	else
-	  {  // Recent file has been deleted!  RESET!
-	    readingText = NO;
-	    [defaults setReadingText:NO];
-	    [defaults setFileBeingRead:@""];
-	    [defaults setLastBrowserPath:EBOOK_PATH];
-	    [defaults removePerFileDataForFile:recentFile];
-	  }
-      }
+			[navBar pushNavigationItem:tempItem withView:textView];
+			[textView loadBookWithPath:recentFile subchapter:subchapter];
+			textViewNeedsFullText = NO;
+			[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
+										 animated:NO];
+			[tempItem release];
+			[navBar hide:NO];
+			[bottomNavBar hide:NO];
+		}
+		else
+		{  // Recent file has been deleted!  RESET!
+			readingText = NO;
+			[defaults setReadingText:NO];
+			[defaults setFileBeingRead:@""];
+			[defaults setLastBrowserPath:EBOOK_PATH];
+			[defaults removePerFileDataForFile:recentFile];
+		}
+	}
 
-    imageSplashed = NO;
-    transitionHasBeenCalled = YES;
+	imageSplashed = NO;
+	transitionHasBeenCalled = YES;
 
 
-    [tempArray release];
+	[tempArray release];
 
-    [navBar enableAnimation];
-    [progressIndicator stopAnimation];
-    [progressIndicator removeFromSuperview];
-    [imageView removeFromSuperview];
-    [imageView release];
-    imageView = nil;
+	[navBar enableAnimation];
+	[progressIndicator stopAnimation];
+	[progressIndicator removeFromSuperview];
+	[imageView removeFromSuperview];
+	[imageView release];
+	imageView = nil;
 }
 
 - (void)heartbeatCallback:(id)unused
 {
-  if (!doneLaunching)
-    {
-      [self finishUpLaunch];
-      doneLaunching = YES;
-    }
-  if ((textViewNeedsFullText) && ![transitionView isTransitioning])
-    {
-      [textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
-      textViewNeedsFullText = NO;
-    }
-  if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
-    {
-      if ((textView != nil) && (defaults != nil))
+	if (!doneLaunching)
 	{
-	  //[self refreshTextViewFromDefaults];
+		[self finishUpLaunch];
+		doneLaunching = YES;
 	}
-    }
+	if ((textViewNeedsFullText) && ![transitionView isTransitioning])
+	{
+		[textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
+		textViewNeedsFullText = NO;
+	}
+	if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
+	{
+		if ((textView != nil) && (defaults != nil))
+		{
+			//[self refreshTextViewFromDefaults];
+		}
+	}
 }
 
 - (void)hideNavbars
 {
-  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-  rect.origin.x = rect.origin.y = 0.0f;
-  [textView setFrame:rect];
-  [navBar hide:NO];
-  [bottomNavBar hide:NO];
-  [self hideSlider];
+	struct CGRect rect = [defaults fullScreenApplicationContentRect];
+	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	//rect.origin.x = rect.origin.y = 0.0f;
+	[textView setFrame:rect];
+	[navBar hide:NO];
+	[bottomNavBar hide:NO];
+	[self hideSlider];
 }
 
 - (void)toggleNavbars
 {
-  [navBar toggle];
-  [bottomNavBar toggle];
-  if (nil == scrollerSlider)
-    [self showSlider];
-  else
-    [self hideSlider];
+	[navBar toggle];
+	[bottomNavBar toggle];
+	if (nil == scrollerSlider)
+		[self showSlider];
+	else
+		[self hideSlider];
 }
 
 - (void)showSlider
 {
-  if (nil == scrollerSlider)
-    {
-      CGRect rect = CGRectMake(0, 48, 320, 48);
-      scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
-      [mainView addSubview:scrollerSlider];
-    }
-  if (animator != nil)
-      [animator release];
-  animator = [[UIAnimator alloc] init];
-  if (alpha != nil)
-    [alpha release];
-  alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
-  [alpha setStartAlpha:0];
-  [alpha setEndAlpha:1];
-  CGRect theWholeShebang = [[textView _webView] frame];
-  CGRect visRect = [textView visibleRect];
-  int endPos = (int)theWholeShebang.size.height - 460;
-  [scrollerSlider setMinValue:0.0];
-  [scrollerSlider setMaxValue:(float)endPos];
-  [scrollerSlider setValue:visRect.origin.y];
-  float backParts[4] = {0, 0, 0, .5};
-  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  [scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
-  [scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
-  [scrollerSlider setAlpha:0];
-  //  [scrollerSlider setShowValue:YES];
-  UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
-  [scrollerSlider setMinValueImage:img];
-  [scrollerSlider setMaxValueImage:img];
-  [animator addAnimation:alpha withDuration:0.25 start:YES];
-  //[animator autorelease];
-  //[alpha autorelease];
+	if (nil == scrollerSlider)
+	{
+		
+		CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
+		scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
+		[mainView addSubview:scrollerSlider];
+	}
+	if (animator != nil)
+		[animator release];
+	animator = [[UIAnimator alloc] init];
+	if (alpha != nil)
+		[alpha release];
+	alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
+	[alpha setStartAlpha:0];
+	[alpha setEndAlpha:1];
+	CGRect theWholeShebang = [[textView _webView] frame];
+	CGRect visRect = [textView visibleRect];
+	int endPos = (int)theWholeShebang.size.height - 460;
+	[scrollerSlider setMinValue:0.0];
+	[scrollerSlider setMaxValue:(float)endPos];
+	[scrollerSlider setValue:visRect.origin.y];
+	float backParts[4] = {0, 0, 0, .5};
+	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+	[scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+	[scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
+	[scrollerSlider setAlpha:0];
+	//  [scrollerSlider setShowValue:YES];
+	UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
+	[scrollerSlider setMinValueImage:img];
+	[scrollerSlider setMaxValueImage:img];
+	[animator addAnimation:alpha withDuration:0.25 start:YES];
+	//[animator autorelease];
+	//[alpha autorelease];
 }
 
 - (void)hideSlider
 {
-  if (scrollerSlider != nil)
-    {
-      if (animator != nil)
-	[animator release];
-      animator = [[UIAnimator alloc] init];
-      if (alpha != nil)
-	[alpha release];
-      alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
-      [alpha setStartAlpha:1];
-      [alpha setEndAlpha:0];
-      [animator addAnimation:alpha withDuration:0.1 start:YES];
-      [scrollerSlider release];
-      scrollerSlider = nil;
-    }
+	if (scrollerSlider != nil)
+	{
+		if (animator != nil)
+			[animator release];
+		animator = [[UIAnimator alloc] init];
+		if (alpha != nil)
+			[alpha release];
+		alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
+		[alpha setStartAlpha:1];
+		[alpha setEndAlpha:0];
+		[animator addAnimation:alpha withDuration:0.1 start:YES];
+		[scrollerSlider release];
+		scrollerSlider = nil;
+	}
 }
 
 - (void)handleSlider:(id)sender
 {
-  if (scrollerSlider != nil)
-    {
-      CGPoint scrollness = CGPointMake(0, [scrollerSlider value]);
-      [textView scrollPointVisibleAtTopLeft:scrollness animated:NO];
-    }
+	if (scrollerSlider != nil)
+	{
+		CGPoint scrollness = CGPointMake(0, [scrollerSlider value]);
+		[textView scrollPointVisibleAtTopLeft:scrollness animated:NO];
+	}
 }
 
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file 
 {
-  NSFileManager *fileManager = [NSFileManager defaultManager];
-  BOOL isDir = NO;
-  if ([fileManager fileExistsAtPath:file isDirectory:&isDir] && isDir)
-    {
-      UINavigationItem *tempItem = [[UINavigationItem alloc]
-				     initWithTitle:[file lastPathComponent]];
-      [navBar pushNavigationItem:tempItem withBrowserPath:file];
-      [tempItem release];
-    }
-  else // not a directory
-    {
-      BOOL sameFile;
-      NSString *ext = [file pathExtension];
-      BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
-      if (isPicture)
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	BOOL isDir = NO;
+	if ([fileManager fileExistsAtPath:file isDirectory:&isDir] && isDir)
 	{
-	  if (nil != imageView)
-	    [imageView release];
-	  imageView = [[EBookImageView alloc] initWithContentsOfFile:file];
-	  UINavigationItem *tempItem = [[UINavigationItem alloc]
-	    		       initWithTitle:[[file lastPathComponent]
-					       stringByDeletingPathExtension]];
-	  [defaults removePerFileDataForFile:file];
-	  [navBar pushNavigationItem:tempItem withView:imageView];
-	  [tempItem release];
+		UINavigationItem *tempItem = [[UINavigationItem alloc]
+			initWithTitle:[file lastPathComponent]];
+		[navBar pushNavigationItem:tempItem withBrowserPath:file];
+		[tempItem release];
 	}
-      else //text or HTML file
+	else // not a directory
 	{
-	  readingText = YES;
-	  UINavigationItem *tempItem = [[UINavigationItem alloc]
-		        initWithTitle:[[file lastPathComponent]
-					stringByDeletingPathExtension]];
-	  sameFile = [[textView currentPath] isEqualToString:file];
-	  [navBar pushNavigationItem:tempItem withView:textView];
-	  if (!sameFile)
-	    // Slight optimization.  If the file is already loaded,
-	    // don't bother reloading.
-	    {
-	      int subchapter = [defaults lastSubchapterForFile:file];
-	      float scrollPoint = (float) [defaults lastScrollPointForFile:file
-	                                                      inSubchapter:subchapter];
-	      BOOL didLoadAll = NO;
-	      int numScreens = ((int) scrollPoint / 460) + 1;  // how many screens down are we?
-	      int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+		BOOL sameFile;
+		NSString *ext = [file pathExtension];
+		BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
+		if (isPicture)
+		{
+			if (nil != imageView)
+				[imageView release];
+			imageView = [[EBookImageView alloc] initWithContentsOfFile:file];
+			UINavigationItem *tempItem = [[UINavigationItem alloc]
+				initWithTitle:[[file lastPathComponent]
+				stringByDeletingPathExtension]];
+			[defaults removePerFileDataForFile:file];
+			[navBar pushNavigationItem:tempItem withView:imageView];
+			[tempItem release];
+		}
+		else //text or HTML file
+		{
+			readingText = YES;
+			UINavigationItem *tempItem = [[UINavigationItem alloc]
+				initWithTitle:[[file lastPathComponent]
+				stringByDeletingPathExtension]];
+			sameFile = [[textView currentPath] isEqualToString:file];
+			[navBar pushNavigationItem:tempItem withView:textView];
+			if (!sameFile)
+				// Slight optimization.  If the file is already loaded,
+				// don't bother reloading.
+			{
+				int subchapter = [defaults lastSubchapterForFile:file];
+				float scrollPoint = (float) [defaults lastScrollPointForFile:file
+																inSubchapter:subchapter];
+				BOOL didLoadAll = NO;
+				int numScreens = ((int) scrollPoint / 460) + 1;  // how many screens down are we?
+				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
 
-	      [textView loadBookWithPath:file
-	                   numCharacters:numChars
-	                      didLoadAll:&didLoadAll
-	                      subchapter:subchapter];
-	      [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
-	                                   animated:NO];
-	      textViewNeedsFullText = !didLoadAll;
-	    }
+				[textView loadBookWithPath:file
+							 numCharacters:numChars
+								didLoadAll:&didLoadAll
+								subchapter:subchapter];
+				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
+											 animated:NO];
+				textViewNeedsFullText = !didLoadAll;
+			}
 
-	  [tempItem release];
+			[tempItem release];
+		}
+		if (isPicture)
+		{
+			[navBar show];
+			[bottomNavBar hide:YES];
+		}
+		else
+		{
+			[navBar hide:NO];
+			if (![defaults toolbar])
+				[bottomNavBar show];
+			else
+				[bottomNavBar hide:NO];
+		}
 	}
-      if (isPicture)
-	{
-	  [navBar show];
-	  [bottomNavBar hide:YES];
-	}
-      else
-	{
-	  [navBar hide:NO];
-	  if (![defaults toolbar])
-	    [bottomNavBar show];
-	  else
-	    [bottomNavBar hide:NO];
-	}
-    }
 }
 
 - (void)textViewDidGoAway:(id)sender
 {
-  //  NSLog(@"textViewDidGoAway start...");
-  struct CGRect  selectionRect = [textView visibleRect];
-  int            subchapter    = [textView getSubchapter];
-  NSString      *filename      = [textView currentPath];
-  //  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
+	//  NSLog(@"textViewDidGoAway start...");
+	struct CGRect  selectionRect = [textView visibleRect];
+	int            subchapter    = [textView getSubchapter];
+	NSString      *filename      = [textView currentPath];
+	//  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
 
-  [defaults setLastScrollPoint: (unsigned int) selectionRect.origin.y
-	             forSubchapter:subchapter
-	                   forFile:filename];
-  [defaults setLastSubchapter:subchapter forFile:filename];
-  //  NSLog(@"set defaults ");
-  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
-					object:[textView currentPath]];
+	[defaults setLastScrollPoint: (unsigned int) selectionRect.origin.y
+				   forSubchapter:subchapter
+						 forFile:filename];
+	[defaults setLastSubchapter:subchapter forFile:filename];
+	//  NSLog(@"set defaults ");
+	[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+														object:[textView currentPath]];
 
-  readingText = NO;
-  [bottomNavBar hide:YES];
-  if (scrollerSlider != nil)
-    [self hideSlider];
-//  NSLog(@"end.\n");
+	readingText = NO;
+	[bottomNavBar hide:YES];
+	if (scrollerSlider != nil)
+		[self hideSlider];
+	//  NSLog(@"end.\n");
 }
 
 - (void)cleanUpBeforeQuit
 {
-  if (!readingText ||
-      (nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
-      {
-	NSData *defaultData;
-	if ([defaults inverted])
+	if (!readingText ||
+			(nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
 	{
-	  defaultData = [NSData dataWithContentsOfFile:
+		NSData *defaultData;
+		if ([defaults inverted])
+		{
+			defaultData = [NSData dataWithContentsOfFile:
 				  [[NSBundle mainBundle] pathForResource:@"Default_dark"
-							 ofType:@"png"]];
-	}
-	else
-	{
-	  defaultData = [NSData dataWithContentsOfFile:
+												  ofType:@"png"]];
+		}
+		else
+		{
+			defaultData = [NSData dataWithContentsOfFile:
 				  [[NSBundle mainBundle] pathForResource:@"Default_light"
-							 ofType:@"png"]];
+												  ofType:@"png"]];
+		}
+		[defaultData writeToFile:[[NSBundle mainBundle] pathForResource:@"Default"
+						  ofType:@"png"]
+					  atomically:YES];
 	}
-	[defaultData writeToFile:[[NSBundle mainBundle] pathForResource:@"Default"
-							ofType:@"png"]
-		     atomically:YES];
-      }
-  struct CGRect  selectionRect;
-  int            subchapter = [textView getSubchapter];
-  NSString      *filename   = [textView currentPath];
+	struct CGRect  selectionRect;
+	int            subchapter = [textView getSubchapter];
+	NSString      *filename   = [textView currentPath];
 
-  [defaults setFileBeingRead:filename];
-  selectionRect = [textView visibleRect];
-  [defaults setLastScrollPoint: (unsigned int)selectionRect.origin.y
-	             forSubchapter: subchapter
-	                   forFile: filename];
-  [defaults setLastSubchapter:subchapter forFile:filename];
-  [defaults setReadingText:readingText];
-  [defaults setLastBrowserPath:[navBar topBrowserPath]];
-  [defaults synchronize];
+	[defaults setFileBeingRead:filename];
+	selectionRect = [textView visibleRect];
+	[defaults setLastScrollPoint: (unsigned int)selectionRect.origin.y
+				   forSubchapter: subchapter
+						 forFile: filename];
+	[defaults setLastSubchapter:subchapter forFile:filename];
+	[defaults setReadingText:readingText];
+	[defaults setLastBrowserPath:[navBar topBrowserPath]];
+	[defaults synchronize];
 }
 
 - (void) applicationWillSuspend
 {
-  [self cleanUpBeforeQuit];
+	[self cleanUpBeforeQuit];
 }
 
 - (void)applicationWillTerminate
 {
-  [self cleanUpBeforeQuit];
+	[self cleanUpBeforeQuit];
 }
 
 - (void)embiggenText:(UINavBarButton *)button
 {
-  if (![button isPressed]) // mouse up events only, kids!
-    {
-	  CGRect rect = [[textView _webView] frame];
-      [textView embiggenText];
-      if (scrollerSlider != nil)
+	if (![button isPressed]) // mouse up events only, kids!
 	{
-	  float maxval = rect.size.height;
-	  float val = [scrollerSlider value];
-	  float percentage = val / maxval;
-	  rect = [[textView _webView] frame];
-	  [scrollerSlider setMaxValue:rect.size.height];
-	  [scrollerSlider setValue:(rect.size.height * percentage)];
+		CGRect rect = [[textView _webView] frame];
+		[textView embiggenText];
+		if (scrollerSlider != nil)
+		{
+			float maxval = rect.size.height;
+			float val = [scrollerSlider value];
+			float percentage = val / maxval;
+			rect = [[textView _webView] frame];
+			[scrollerSlider setMaxValue:rect.size.height];
+			[scrollerSlider setValue:(rect.size.height * percentage)];
+		}
+		[defaults setTextSize:[textView textSize]];
 	}
-      [defaults setTextSize:[textView textSize]];
-    }
 }
 
 - (void)ensmallenText:(UINavBarButton *)button
 {
-  if (![button isPressed]) // mouse up events only, kids!
-    {
-      CGRect rect = [[textView _webView] frame];
-      [textView ensmallenText];
-      if (scrollerSlider != nil)
+	if (![button isPressed]) // mouse up events only, kids!
 	{
-	  float maxval = rect.size.height;
-	  float val = [scrollerSlider value];
-	  float percentage = val / maxval;
-	  rect = [[textView _webView] frame];
-	  [scrollerSlider setMaxValue:rect.size.height];
-	  //[scrollerSlider setValue:oldRect.origin.y];
-	  [scrollerSlider setValue:(rect.size.height * percentage)];
+		CGRect rect = [[textView _webView] frame];
+		[textView ensmallenText];
+		if (scrollerSlider != nil)
+		{
+			float maxval = rect.size.height;
+			float val = [scrollerSlider value];
+			float percentage = val / maxval;
+			rect = [[textView _webView] frame];
+			[scrollerSlider setMaxValue:rect.size.height];
+			//[scrollerSlider setValue:oldRect.origin.y];
+			[scrollerSlider setValue:(rect.size.height * percentage)];
+		}
+		[defaults setTextSize:[textView textSize]];
 	}
-      [defaults setTextSize:[textView textSize]];
-    }
 }
 
 - (void)invertText:(UINavBarButton *)button 
 {
-  if (![button isPressed]) // mouse up events only, kids!
-    {
-      textInverted = !textInverted;
-      [textView invertText:textInverted];
-      [defaults setInverted:textInverted];
-	  [self toggleStatusBarColor];
-      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-      rect.origin.x = rect.origin.y = 0.0f;
-      [textView setFrame:rect];
-    }	
+	if (![button isPressed]) // mouse up events only, kids!
+	{
+		textInverted = !textInverted;
+		[textView invertText:textInverted];
+		[defaults setInverted:textInverted];
+		[self toggleStatusBarColor];
+		//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+		//rect.origin.x = rect.origin.y = 0.0f;
+		struct CGRect rect = [defaults fullScreenApplicationContentRect];
+		[textView setFrame:rect];
+	}	
 }
 
 - (void)pageDown:(UINavBarButton *)button 
 {
-  if (![button isPressed])
-    {
+	if (![button isPressed])
+	{
 		[textView pageDownWithTopBar:![defaults navbar]
-			  bottomBar:![defaults toolbar]];
-    }	
+						   bottomBar:![defaults toolbar]];
+	}	
 }
 
 - (void)pageUp:(UINavBarButton *)button 
 {
-  if (![button isPressed])
-    {
+	if (![button isPressed])
+	{
 		[textView pageUpWithTopBar:![defaults navbar]
-			  bottomBar:![defaults toolbar]];
-    }	
+						 bottomBar:![defaults toolbar]];
+	}	
 }
 
 - (void)chapForward:(UINavBarButton *)button 
 {
-  if (![button isPressed])
-    {
-      if ([textView gotoNextSubchapter] == YES)
+	if (![button isPressed])
 	{
-	  /*
-	  CGRect frame    = [[textView _webView] frame];
-	  CGRect viewable = [textView visibleRect];
-	  float endPos    = frame.size.height - viewable.size.height;
-	  [scrollerSlider setMinValue:0.0];
-	  [scrollerSlider setMaxValue:endPos];
-	  [scrollerSlider setValue:viewable.origin.y];
-	  */ // that dance isn't needed if we just hide the slider :)
-	  [self hideSlider];
-	  [navBar hide:NO];
-	  [bottomNavBar hide:NO];
-	}
-      else
-      {
-      NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
-      if ((nil != nextFile) && [nextFile isReadableTextFilePath])
-	{
-	  [self hideSlider];
-	  EBookView *tempView = textView;
-	  struct CGRect visRect = [tempView visibleRect];
-	  int            subchapter = [tempView getSubchapter];
-	  NSString      *filename   = [tempView currentPath];
+		if ([textView gotoNextSubchapter] == YES)
+		{
+			/*
+			   CGRect frame    = [[textView _webView] frame];
+			   CGRect viewable = [textView visibleRect];
+			   float endPos    = frame.size.height - viewable.size.height;
+			   [scrollerSlider setMinValue:0.0];
+			   [scrollerSlider setMaxValue:endPos];
+			   [scrollerSlider setValue:viewable.origin.y];
+			   */ // that dance isn't needed if we just hide the slider :)
+			[self hideSlider];
+			[navBar hide:NO];
+			[bottomNavBar hide:NO];
+		}
+		else
+		{
+			NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
+			if ((nil != nextFile) && [nextFile isReadableTextFilePath])
+			{
+				[self hideSlider];
+				EBookView *tempView = textView;
+				struct CGRect visRect = [tempView visibleRect];
+				int            subchapter = [tempView getSubchapter];
+				NSString      *filename   = [tempView currentPath];
 
-	  [defaults setLastScrollPoint:(unsigned int)visRect.origin.y
-		    forSubchapter:subchapter
-		    forFile:filename];
-	  [defaults setLastSubchapter:subchapter forFile:filename];
+				[defaults setLastScrollPoint:(unsigned int)visRect.origin.y
+							   forSubchapter:subchapter
+									 forFile:filename];
+				[defaults setLastSubchapter:subchapter forFile:filename];
 
-	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
-						object:[tempView currentPath]];
-	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
-	  [textView setHeartbeatDelegate:self];
+				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+																	object:[tempView currentPath]];
+				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
+				[textView setHeartbeatDelegate:self];
 
-	  UINavigationItem *tempItem = 
-	    [[UINavigationItem alloc] initWithTitle:
-		   [[nextFile lastPathComponent] 
-		     stringByDeletingPathExtension]];
-	  [navBar pushNavigationItem:tempItem withView:textView];
-	  [self refreshTextViewFromDefaults];
+				UINavigationItem *tempItem = 
+					[[UINavigationItem alloc] initWithTitle:
+					[[nextFile lastPathComponent] 
+					stringByDeletingPathExtension]];
+				[navBar pushNavigationItem:tempItem withView:textView];
+				[self refreshTextViewFromDefaults];
 
-	  subchapter = [defaults lastSubchapterForFile:nextFile];
-	  int lastPt = [defaults lastScrollPointForFile:nextFile
-	                                   inSubchapter:subchapter];
-	  BOOL didLoadAll = NO;
-	  int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
-	  int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
-	  [textView loadBookWithPath:nextFile numCharacters:numChars
-		    didLoadAll:&didLoadAll subchapter:subchapter];
-	  [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
-	                               animated:NO];
-	  textViewNeedsFullText = !didLoadAll;
-	  [tempItem release];
-	  [tempView autorelease];
-	}
-	}
-    }	
+				subchapter = [defaults lastSubchapterForFile:nextFile];
+				int lastPt = [defaults lastScrollPointForFile:nextFile
+												 inSubchapter:subchapter];
+				BOOL didLoadAll = NO;
+				int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
+				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+				[textView loadBookWithPath:nextFile numCharacters:numChars
+								didLoadAll:&didLoadAll subchapter:subchapter];
+				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
+											 animated:NO];
+				textViewNeedsFullText = !didLoadAll;
+				[tempItem release];
+				[tempView autorelease];
+			}
+		}
+	}	
 }
 
 - (void)chapBack:(UINavBarButton *)button 
 {
-  if (![button isPressed])
-    {
-      if ([textView gotoPreviousSubchapter] == YES)
+	if (![button isPressed])
 	{
-	  /*
-	  CGRect frame    = [[textView _webView] frame];
-	  CGRect viewable = [textView visibleRect];
-	  float endPos    = frame.size.height - viewable.size.height;
-	  [scrollerSlider setMinValue:0.0];
-	  [scrollerSlider setMaxValue:endPos];
-	  [scrollerSlider setValue:viewable.origin.y];
-	  */ // that dance isn't needed if we just hide the slider :)
-	  [self hideSlider];
-	  [navBar hide:NO];
-	  [bottomNavBar hide:NO];
-	}
+		if ([textView gotoPreviousSubchapter] == YES)
+		{
+			/*
+			   CGRect frame    = [[textView _webView] frame];
+			   CGRect viewable = [textView visibleRect];
+			   float endPos    = frame.size.height - viewable.size.height;
+			   [scrollerSlider setMinValue:0.0];
+			   [scrollerSlider setMaxValue:endPos];
+			   [scrollerSlider setValue:viewable.origin.y];
+			   */ // that dance isn't needed if we just hide the slider :)
+			[self hideSlider];
+			[navBar hide:NO];
+			[bottomNavBar hide:NO];
+		}
 
-      else
-      {
-      NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
-      if ((nil != prevFile) && [prevFile isReadableTextFilePath])
-	{
-	  [self hideSlider];
-	  EBookView *tempView = textView;
-	  struct CGRect visRect = [tempView visibleRect];
-	  int            subchapter = [tempView getSubchapter];
-	  NSString      *filename   = [tempView currentPath];
+		else
+		{
+			NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
+			if ((nil != prevFile) && [prevFile isReadableTextFilePath])
+			{
+				[self hideSlider];
+				EBookView *tempView = textView;
+				struct CGRect visRect = [tempView visibleRect];
+				int            subchapter = [tempView getSubchapter];
+				NSString      *filename   = [tempView currentPath];
 
-	  [defaults setLastScrollPoint: (unsigned int) visRect.origin.y
-		    forSubchapter: subchapter
-		    forFile: filename];
-	  [defaults setLastSubchapter:subchapter forFile:filename];
+				[defaults setLastScrollPoint: (unsigned int) visRect.origin.y
+							   forSubchapter: subchapter
+									 forFile: filename];
+				[defaults setLastSubchapter:subchapter forFile:filename];
 
-	  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
-						object:[tempView currentPath]];
-	  textView = [[EBookView alloc] initWithFrame:[tempView frame]];
-	  [textView setHeartbeatDelegate:self];
-	  UINavigationItem *tempItem = 
-	    [[UINavigationItem alloc] initWithTitle:
-		   [[prevFile lastPathComponent] 
-		     stringByDeletingPathExtension]];
+				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
+																	object:[tempView currentPath]];
+				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
+				[textView setHeartbeatDelegate:self];
+				UINavigationItem *tempItem = 
+					[[UINavigationItem alloc] initWithTitle:
+					[[prevFile lastPathComponent] 
+					stringByDeletingPathExtension]];
 
-	  [navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
-	  [self refreshTextViewFromDefaults];
-	  //[progressHUD show:YES];
+				[navBar pushNavigationItem:tempItem withView:textView reverseTransition:YES];
+				[self refreshTextViewFromDefaults];
+				//[progressHUD show:YES];
 
-	  subchapter = [defaults lastSubchapterForFile:prevFile];
-	  int lastPt = [defaults lastScrollPointForFile:prevFile
-	                                   inSubchapter:subchapter];
-	  [textView loadBookWithPath:prevFile subchapter:subchapter];
-	  [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
-	                               animated:NO];
-	  //[progressHUD show:NO];
-	  [tempItem release];
-	  [tempView autorelease];
-	}
-	}
-    }	
+				subchapter = [defaults lastSubchapterForFile:prevFile];
+				int lastPt = [defaults lastScrollPointForFile:prevFile
+												 inSubchapter:subchapter];
+				[textView loadBookWithPath:prevFile subchapter:subchapter];
+				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
+											 animated:NO];
+				//[progressHUD show:NO];
+				[tempItem release];
+				[tempView autorelease];
+			}
+		}
+	}	
 }
 
 // CHANGED: Moved navbar and toolbar setup here from applicationDidFinishLaunching
 
 - (void)setupNavbar
 {
-	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-    rect.origin.x = rect.origin.y = 0.0f;
+	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	//rect.origin.x = rect.origin.y = 0.0f;
 
+	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 	navBar = [[HideableNavBar alloc] initWithFrame:
-        CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
+		CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
 
-    [navBar setDelegate:self];
-    [navBar setBrowserDelegate:self];
-    [navBar setExtensions:[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil]];
-    [navBar hideButtons];
+	[navBar setDelegate:self];
+	[navBar setBrowserDelegate:self];
+	[navBar setExtensions:[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil]];
+	[navBar hideButtons];
 
-    [navBar disableAnimation];
-    [navBar setRightMargin:45];
+	[navBar disableAnimation];
+	float lMargin = 45.0f;
+	[navBar setRightMargin:lMargin];
+	//position the prefsButton in the margin
+	//for some reason cannot click on the button when it is there
+	prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(rect.size.width-lMargin,9,40,30) selector:@selector(showPrefs:) flipped:NO];
+	//prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:) flipped:NO];
 
-    prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:) flipped:NO];
-
-    [navBar addSubview:prefsButton];
+	[navBar addSubview:prefsButton];
 }
 
 - (void)setupToolbar
 {
-	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-    rect.origin.x = rect.origin.y = 0.0f;
+	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	//rect.origin.x = rect.origin.y = 0.0f;
+	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
-       CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
-		  rect.size.width, 48.0f)];
+		CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
+				rect.size.width, 48.0f)];
 
-    [bottomNavBar setBarStyle:0];
-    [bottomNavBar setDelegate:self];
+	[bottomNavBar setBarStyle:0];
+	[bottomNavBar setDelegate:self];
 
 	if ([defaults flipped]) {
 		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
 		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
-		
+
 		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
@@ -687,7 +739,7 @@
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
 		}
-		
+
 		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:) flipped:NO];
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
@@ -695,7 +747,7 @@
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
 		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:) flipped:NO];
-		
+
 		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
@@ -703,15 +755,15 @@
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];	
 		}
-		
+
 		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
 		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
 	}
-	
+
 	[bottomNavBar addSubview:minusButton];
 	[bottomNavBar addSubview:plusButton];
 	[bottomNavBar addSubview:invertButton];
-	
+
 	if ([defaults chapternav]) {
 		[bottomNavBar addSubview:leftButton];
 		[bottomNavBar addSubview:rightButton];
@@ -725,25 +777,25 @@
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped 
 {
 	UINavBarButton	*button = [[UINavBarButton alloc] initWithFrame:rect];
-	
-    [button setAutosizesToFit:NO];							
-    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
-    [button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
-    [button setDrawContentsCentered:YES];
-    [button addTarget:self action:selector forEvents: (255)];
-    [button setNavBarButtonStyle:0];
-    [button drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
-    [button setEnabled:YES];
+
+	[button setAutosizesToFit:NO];							
+	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
+	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
+	[button setDrawContentsCentered:YES];
+	[button addTarget:self action:selector forEvents: (255)];
+	[button setNavBarButtonStyle:0];
+	[button drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+	[button setEnabled:YES];
 	return button;
 }
 
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped
 {
-  NSBundle *bundle = [NSBundle mainBundle];
-  imgPath = [bundle pathForResource:name ofType:@"png"];
-  buttonImg = [[UIImage alloc]initWithContentsOfFile:imgPath];
-  if (flipped) [buttonImg setOrientation:4];
-  return buttonImg;
+	NSBundle *bundle = [NSBundle mainBundle];
+	imgPath = [bundle pathForResource:name ofType:@"png"];
+	buttonImg = [[UIImage alloc]initWithContentsOfFile:imgPath];
+	if (flipped) [buttonImg setOrientation:4];
+	return buttonImg;
 }
 
 - (void)updateToolbar:(NSNotification *)notification
@@ -761,11 +813,13 @@
 
 - (void)showPrefs:(UINavBarButton *)button
 {
-  if (![button isPressed]) // mouseUp only
-    {
-	NSLog(@"Showing Preferences View");
-	PreferencesController *prefsController = [[PreferencesController alloc] initWithAppController:self];
-    }
+	if (![button isPressed]) // mouseUp only
+	{
+		NSLog(@"Showing Preferences View");
+		if (!prefController)
+			prefController = [PreferencesController alloc];
+		[prefController initWithAppController:self];
+	}
 }
 
 - (UIWindow *)appsMainWindow
@@ -775,102 +829,107 @@
 
 - (void)anotherApplicationFinishedLaunching:(struct __GSEvent *)event
 {
-  [self applicationWillSuspend];
+	[self applicationWillSuspend];
 }
 
 - (void)refreshTextViewFromDefaults
 {
-  [self refreshTextViewFromDefaultsToolbarsOnly:NO];
+	[self refreshTextViewFromDefaultsToolbarsOnly:NO];
 }
 
 - (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly
 {
-  float scrollPercentage;
-  if (!toolbarsOnly)
-    {
-      [textView setTextSize:[defaults textSize]];
-      
-      textInverted = [defaults inverted];
-      [textView invertText:textInverted];
+	float scrollPercentage;
+	if (!toolbarsOnly)
+	{
+		[textView setTextSize:[defaults textSize]];
 
-      struct CGRect overallRect = [[textView _webView] frame];
-      NSLog(@"overall height: %f", overallRect.size.height);
-      struct CGRect visRect = [textView visibleRect];
-      scrollPercentage = visRect.origin.y / overallRect.size.height;
-      NSLog(@"scroll percent: %f",scrollPercentage);
-      [textView setTextFont:[defaults textFont]];
-      
-      [self toggleStatusBarColor];
-    }
-    if (readingText)
-      {  // Let's avoid the weird toggle behavior.
-	[navBar hide:NO];
-	[bottomNavBar hide:NO];
-	[self hideSlider];
-      }
-    else // not reading text
-      [bottomNavBar hide:YES];
+		textInverted = [defaults inverted];
+		[textView invertText:textInverted];
 
-    if (![defaults navbar])
-      [textView setMarginTop:48];
-    else
-      [textView setMarginTop:0];
-    if (![defaults toolbar])
-      [textView setBottomBufferHeight:48];
-    else
-      [textView setBottomBufferHeight:0];
-    if (!toolbarsOnly)
-      {
-	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-	rect.origin.x = rect.origin.y = 0.0f;
-	//	[textView loadBookWithPath:[textView currentPath]];
-	[textView setFrame:rect];
-	struct CGRect overallRect = [[textView _webView] frame];
-      NSLog(@"overall height: %f", overallRect.size.height);
-	struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
-	[textView scrollPointVisibleAtTopLeft:thePoint];
-      }
+		struct CGRect overallRect = [[textView _webView] frame];
+		NSLog(@"overall height: %f", overallRect.size.height);
+		struct CGRect visRect = [textView visibleRect];
+		scrollPercentage = visRect.origin.y / overallRect.size.height;
+		NSLog(@"scroll percent: %f",scrollPercentage);
+		[textView setTextFont:[defaults textFont]];
+
+		[self toggleStatusBarColor];
+	}
+	if (readingText)
+	{  // Let's avoid the weird toggle behavior.
+		[navBar hide:NO];
+		[bottomNavBar hide:NO];
+		[self hideSlider];
+	}
+	else // not reading text
+		[bottomNavBar hide:YES];
+
+	if (![defaults navbar])
+		[textView setMarginTop:48];
+	else
+		[textView setMarginTop:0];
+	if (![defaults toolbar])
+		[textView setBottomBufferHeight:48];
+	else
+		[textView setBottomBufferHeight:0];
+	if (!toolbarsOnly)
+	{
+		//	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+		//	rect.origin.x = rect.origin.y = 0.0f;
+		struct CGRect rect = [defaults fullScreenApplicationContentRect];
+		//	[textView loadBookWithPath:[textView currentPath]];
+		[textView setFrame:rect];
+		struct CGRect overallRect = [[textView _webView] frame];
+		NSLog(@"overall height: %f", overallRect.size.height);
+		struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
+		[textView scrollPointVisibleAtTopLeft:thePoint];
+	}
 }
 
 - (NSString *)currentBrowserPath
 {
-  return [[navBar topBrowser] path];
+	return [[navBar topBrowser] path];
 }
 
 - (void)toggleStatusBarColor 	// Thought this might be a nice touch
-  //TODO: This looks weird with the navbars down.  Perhaps we should change
-  //the navbars to the black type?  Or have the status bar be black only
-  //when the top navbar is hidden?  Also I'd prefer to have the status
-  //bar white when in the browser view, since the browser is white.
+//TODO: This looks weird with the navbars down.  Perhaps we should change
+//the navbars to the black type?  Or have the status bar be black only
+//when the top navbar is hidden?  Also I'd prefer to have the status
+//bar white when in the browser view, since the browser is white.
 {
+	int lOrientation = 0;
+	if ([defaults isRotate90])
+		lOrientation = 90;
+	NSLog(@"Orientation =%d", lOrientation);
 	if ([defaults inverted]) {
-		[self setStatusBarMode:3 duration:0.25];
-    } else {
-		[self setStatusBarMode:0 duration:0.25];
+		[self setStatusBarMode:3 orientation:lOrientation duration:0.25];
+	} else {
+		[self setStatusBarMode:0 orientation:lOrientation duration:0.25];
 	}
 }
 
 - (void) dealloc
 {
-  [navBar release];
-  [bottomNavBar release];
-  [mainView release];
-  [progressIndicator release];
-  [textView release];
-  if (nil != imageView)
-    [imageView release];
-  if (nil != scrollerSlider)
-    [scrollerSlider release];
-  if (nil != animator)
-    [animator release];
-  if (nil != alpha)
-    [alpha release];
-  [defaults release];
-  [buttonImg release];
-  [minusButton release];
-  [plusButton release];
-  [invertButton release];
-  [super dealloc];
+	[navBar release];
+	[bottomNavBar release];
+	[mainView release];
+	[progressIndicator release];
+	[textView release];
+	if (nil != imageView)
+		[imageView release];
+	if (nil != scrollerSlider)
+		[scrollerSlider release];
+	if (nil != animator)
+		[animator release];
+	if (nil != alpha)
+		[alpha release];
+	[defaults release];
+	[buttonImg release];
+	[minusButton release];
+	[plusButton release];
+	[invertButton release];
+	[super dealloc];
 }
 
 @end

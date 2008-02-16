@@ -53,6 +53,7 @@
 	UITransitionView *transitionView;
         EBookView   *textView;
 	EBookImageView *imageView;
+	PreferencesController *prefController;
 	NSString    *path;
 	NSError     *error;
 	BOOL        bookHasChapters;
@@ -63,6 +64,7 @@
 	BOOL        navbarsAreOn;
 	BOOL		textInverted;
 	BOOL        imageSplashed;
+	BOOL        rotate90;
 	float       size;
 	BooksDefaultsController *defaults;
 	UINavBarButton *minusButton;
@@ -82,8 +84,6 @@
 	UIAnimator *animator;
 	UIAlphaAnimation *alpha;
 }
-
-
 - (void)textViewDidGoAway:(id)sender;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
 

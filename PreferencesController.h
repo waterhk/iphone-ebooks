@@ -75,6 +75,7 @@
 	UIPreferencesControlTableCell *chapterButtonsPreferenceCell;
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
+	UIPreferencesControlTableCell *rotate90PreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
 	UIPreferencesControlTableCell *smartConversionPreferenceCell;
 	UIPreferencesControlTableCell *subchapteringPreferenceCell;

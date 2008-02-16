@@ -44,6 +44,9 @@
   BooksDefaultsController *defaults;
 
   NSString                *fullHTML;
+	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
+	int _orient;
+	CGAffineTransform _matrixprev;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
@@ -75,5 +78,8 @@
 - (void) setSubchapter: (int) chapter;
 - (BOOL) gotoNextSubchapter;
 - (BOOL) gotoPreviousSubchapter;
+//-(void) setOrientation: (int) orientation animate:(bool)anime;
+//- (void) fitRect;
+//-(void) afterRotate: (NSTimer*) timer;
 
 @end

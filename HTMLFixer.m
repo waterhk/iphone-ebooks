@@ -33,7 +33,7 @@ from some of the methods appear on compile.  They're probably unused.
 // You should always call +fileHasBeenFixed first to see if this method is needed.
 //FIXME: use the user-defined text encoding, if applicable.
 {
-    BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+    BooksDefaultsController *defaults = [BooksDefaultsController sharedBooksDefaultsController];
     NSMutableString *theHTML = [[NSMutableString alloc] initWithContentsOfFile:thePath
                                             encoding:NSUTF8StringEncoding
                                             error:NULL];
@@ -194,7 +194,7 @@ from some of the methods appear on compile.  They're probably unused.
 +(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size
   // Fixes all img tags within a given string
 {
-  BooksDefaultsController *defaults = [[BooksDefaultsController alloc] init];
+  BooksDefaultsController *defaults = [BooksDefaultsController sharedBooksDefaultsController];
   NSMutableString *theHTML = [NSMutableString stringWithString:theOldHTML];
   int thisImageHeight = 0;
   int height = 0;

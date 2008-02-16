@@ -1,8 +1,8 @@
 CC=arm-apple-darwin-gcc
 CFLAGS=-O3
-CPPFLAGS=-I/opt/local/include
+CPPFLAGS=-I/opt/local/include -I/home/benoit/dev/heavenly/usr/local/include
 LD=$(CC)
-LDFLAGS=-L$(HEAVENLY)/usr/lib -lz -lobjc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices -lcrypto
+LDFLAGS=-L$(HEAVENLY)/usr/lib -L/usr/local/lib/gcc/arm-apple-darwin/4.0.1 -lz -lobjc -lgcc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices -lcrypto
 
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";

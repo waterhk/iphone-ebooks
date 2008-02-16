@@ -26,8 +26,9 @@
   if (self = [super init])
     {
       NSLog(@"Creating font panel!");
-      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-      rect.origin.x = rect.origin.y = 0;
+      //struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+      //rect.origin.x = rect.origin.y = 0;
+      struct CGRect rect = [defaults fullScreenApplicationContentRect];
 
       fontTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-48)];
       NSString *fontFolderPath = @"/System/Library/Fonts/";
@@ -61,7 +62,7 @@
       [fontTable setDelegate:self];
       [fontTable setDataSource:self];
       [fontTable reloadData];
-      defaults = [[BooksDefaultsController alloc] init];
+      defaults = [BooksDefaultsController sharedBooksDefaultsController];
     }
   NSLog(@"Created fonts prefs!");
   return self;

@@ -44,7 +44,7 @@ Adapted for Books.app by Zachary Brewster-Geisz
 
 		_delegate = nil;
 
-		defaults = [[BooksDefaultsController alloc] init];
+		defaults = [BooksDefaultsController sharedBooksDefaultsController];
 		[self addSubview: _table];
 		[[NSNotificationCenter defaultCenter] 
 		  addObserver:self

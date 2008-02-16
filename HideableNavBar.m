@@ -27,6 +27,7 @@
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect
 {
   [super initWithFrame:rect];
+  defaults = [BooksDefaultsController sharedBooksDefaultsController];
   // Try to infer whether the navbar is on the top or bottom of the screen.
   if (rect.origin.y == 0.0f)
     isTop = YES;
@@ -50,6 +51,7 @@
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top
 {
   [super initWithFrame:rect];
+  defaults = [BooksDefaultsController sharedBooksDefaultsController];
   // If we can't infer, use this method instead.
   isTop = top;
 
@@ -110,8 +112,9 @@
 - (void)pushNavigationItem:(UINavigationItem *)item
 	   withBrowserPath:(NSString *)browserPath
 {
-  struct CGRect fullRect = [UIHardware fullScreenApplicationContentRect];
-  fullRect.origin.x = fullRect.origin.y = 0.0f;
+  //struct CGRect fullRect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
+  //fullRect.origin.x = fullRect.origin.y = 0.0f;
   FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
   [newBrowser setExtensions:_extensions];
   [newBrowser setPath:browserPath];
@@ -186,13 +189,11 @@
 		}
 
 		if (!forced) {
-			BooksDefaultsController	*defaults = [[BooksDefaultsController alloc] init];
 			if (isTop) {
 				if ([defaults navbar]) [self hideTopNavBar];
 			} else {
 				if ([defaults toolbar]) [self hideBotNavBar];
 			}
-			[defaults release];
 		}
 	}
 }
@@ -224,8 +225,9 @@
 
 - (void)showTopNavBar
 {
-  struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
-  hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
+  struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+  //struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  //hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
   //CHANGED: The "68" comes from SummerBoard--if we just use 48, 
   // the top nav bar shows under the status bar.
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
@@ -240,8 +242,9 @@
 
 - (void)hideTopNavBar
 {
-  struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
-  hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
+  struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+  //struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  //hardwareRect.origin.x = hardwareRect.origin.y = 0.0f;
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
   struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -68.0);
@@ -253,7 +256,10 @@
 
 - (void)showBotNavBar
 {
-  struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+  //struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  //bcc place where the origin of fullScreenApplicationContentRect is used
+  //NSLog(@"showBotNavBar Origin of fullScreenApplicationContentRect x:%f y:%f", hardwareRect.origin.x, hardwareRect.origin.y);
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
   struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
   [translate setStartTransform: trans];
@@ -264,7 +270,10 @@
 
 - (void)hideBotNavBar
 {
-  struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+  //struct CGRect hardwareRect = [UIHardware fullScreenApplicationContentRect];
+  //bcc place where the origin of fullScreenApplicationContentRect is used
+  //NSLog(@"hideBotNavBar Origin of fullScreenApplicationContentRect x:%f y:%f", hardwareRect.origin.x, hardwareRect.origin.y);
   [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
   struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
   [translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
@@ -295,6 +304,7 @@
   if (nil != _browserDelegate)
     [_browserDelegate release];
   [_browserArray release];
+  [defaults release];
   [super dealloc];
 }
 

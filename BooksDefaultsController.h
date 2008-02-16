@@ -17,7 +17,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import "common.h"
@@ -27,6 +26,7 @@
   BOOL            _readingText;
   NSString       *_fileBeingRead;
   BOOL            _inverted;
+  BOOL            _rotate90;
   NSString       *_browserPath;
   NSUserDefaults *_defaults;
   BOOL            _toolbarShouldUpdate;
@@ -73,6 +73,7 @@
 #define RENDERTABLESKEY        @"renderTablesKey"
 #define ENABLESUBCHAPTERINGKEY @"enableSubchapteringKey"
 #define SCROLLSPEEDINDEXKEY    @"scrollSpeedIndexKey"
+#define ISROTATE90KEY          @"isRotate90Key"
 
 - (id) init;
 - (void) updateOldPreferences;
@@ -95,6 +96,8 @@
 - (void)setToolbar:(BOOL)isToolbar;
 - (BOOL)flipped;
 - (void)setFlipped:(BOOL)isFlipped;
+- (BOOL)isRotate90;
+- (void)setRotate90:(BOOL)isRotate90;
 - (NSString *)textFont;
 - (void)setTextFont:(NSString *)font;
 - (BOOL)chapternav;
@@ -127,6 +130,15 @@
 - (void) removePerFileDataForFile: (NSString *) file;
 - (void) removePerFileDataForDirectory: (NSString *) directory;
 - (void) removePerFileData;
-
+/**
+ * retrieve the rectangle for the application taking into account the rotation preference.
+ * This will always have 0,0 as the origin (contrarily to the case of the UIHardware version).
+ *
+ */
+- (struct CGRect) fullScreenApplicationContentRect;
+/**
+ * singleton factory method
+ */
++ (BooksDefaultsController*)sharedBooksDefaultsController;
 @end
 

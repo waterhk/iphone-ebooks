@@ -30,7 +30,7 @@
 		contentRect.origin.y = 0.0f;
 
 		needsInAnimation = needsOutAnimation = NO;
-		defaults = [[BooksDefaultsController alloc] init];
+		defaults = [BooksDefaultsController sharedBooksDefaultsController];
 		[self createPreferenceCells];
 		[self showPreferences];
 				
@@ -188,6 +188,8 @@
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+	
+	[defaults setRotate90:[[[rotate90PreferenceCell control] valueForKey:@"value"] boolValue]];
 	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
 
@@ -282,6 +284,14 @@
 	[flippedSitchControl setValue:flipped];
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
+
+	rotate90PreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL isRotate90 = [defaults isRotate90];
+	[rotate90PreferenceCell setTitle:@"Landscape"];
+	UISwitchControl *rotate90SitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[rotate90SitchControl setValue:isRotate90];
+	[rotate90SitchControl setAlternateColors:YES];
+	[rotate90PreferenceCell setControl:rotate90SitchControl];	
 
 	//CHANGED: Zach's additions 9/6/07
 
@@ -439,7 +449,7 @@
 			      objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 	  version = @"??";
-	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, and Zachary Bedell.  BCC special 3\niphoneebooks.googlecode.com", version];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
@@ -529,7 +539,7 @@
 		rowCount = 2;
 		break;
 	case 2: //toolbar options
-		rowCount = 3;
+		rowCount = 4;
 		break;
 	case 3: //file import
 		rowCount = 4;
@@ -586,6 +596,9 @@
 			break;
 		case 2:
 			prefCell = flippedToolbarPreferenceCell;
+			break;
+		case 3:
+			prefCell = rotate90PreferenceCell;
 			break;
 		}
 		break;

@@ -25,9 +25,11 @@
 {
   if (self = [super init])
     {
+      defaults = [BooksDefaultsController sharedBooksDefaultsController];
       NSLog(@"Creating encoding prefs!");
-      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-      rect.origin.x = rect.origin.y = 0;
+      //struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+      struct CGRect rect = [defaults fullScreenApplicationContentRect];
+      //rect.origin.x = rect.origin.y = 0;
 
       encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-48)];
       [encodingTable setDelegate:self];
@@ -53,7 +55,6 @@
 	}
       encodingNames = [[NSArray alloc] initWithArray:tempEncodingNames];
       [tempEncodingNames release];
-      defaults = [[BooksDefaultsController alloc] init];
     }
   NSLog(@"Created encoding prefs!");
   return self;

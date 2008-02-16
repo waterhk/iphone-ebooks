@@ -44,6 +44,7 @@
   UITransitionView *_transView;
   NSMutableArray *_browserArray;
   NSArray *_extensions;
+  BooksDefaultsController	*defaults;
   id _browserDelegate;
 }
 

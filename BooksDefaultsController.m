@@ -18,6 +18,7 @@
 */
 
 #import "BooksDefaultsController.h"
+#import <UIKit/UIHardware.h>
 
 #define DEBUG 0
 #if DEBUG
@@ -36,7 +37,7 @@
   
   _defaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  temp = [[NSMutableDictionary alloc] initWithCapacity:15];
+  temp = [[NSMutableDictionary alloc] initWithCapacity:18];
   [temp setObject:@"0" forKey:READINGTEXTKEY];
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
@@ -54,6 +55,7 @@
   [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
   [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
+  [temp setObject:@"0" forKey:ISROTATE90KEY];
 
   [_defaults registerDefaults:temp];
   [temp release];
@@ -312,6 +314,20 @@
 	_toolbarShouldUpdate = YES;
 }
 
+- (BOOL)isRotate90
+{
+	BOOL value = [_defaults boolForKey:ISROTATE90KEY];
+
+	Debug (@"[_defaults Rotate90] = %s", (value) ? "YES" : "NO");
+	return value;
+}
+
+- (void)setRotate90:(BOOL)isRotate90
+{
+	[_defaults setBool:isRotate90 forKey:ISROTATE90KEY];
+	_toolbarShouldUpdate = YES;
+}
+
 - (BOOL)chapternav
 {
 	BOOL value = [_defaults boolForKey:CHAPTERNAV];
@@ -493,4 +509,113 @@
 	return;
 }
 
+//Bcc:  I think this should not be called so often. Most of the views should get the size of their parent view or window.
+//Not the size of the hardware.
+- (struct CGRect) fullScreenApplicationContentRect
+{
+	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	rect.origin.x = rect.origin.y = 0.0f;
+	if ([self isRotate90])
+	{
+		float oldwidth = rect.size.width;
+		rect.size.width = rect.size.height + 20;	//20 for the status bar
+		rect.size.height = oldwidth - 20; //20 for the status bar
+	}
+//	NSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	return rect;
+}
+
+
+//Bcc makes it into a singleton
+static BooksDefaultsController *sharedBooksDefaultsController = nil;
+
+ 
+
++ (BooksDefaultsController*)sharedBooksDefaultsController
+
+{
+
+    @synchronized(self) {
+
+        if (sharedBooksDefaultsController == nil) {
+
+            [[self alloc] init]; // assignment not done here
+
+        }
+
+    }
+
+    return sharedBooksDefaultsController;
+
+}
+
+ 
+
++ (id)allocWithZone:(NSZone *)zone
+
+{
+
+    @synchronized(self) {
+
+        if (sharedBooksDefaultsController == nil) {
+
+            sharedBooksDefaultsController = [super allocWithZone:zone];
+
+            return sharedBooksDefaultsController;  // assignment and return on first allocation
+
+        }
+
+    }
+
+    return nil; //on subsequent allocation attempts return nil
+
+}
+
+- (id)copyWithZone:(NSZone *)zone
+
+{
+
+    return self;
+
+}
+
+ 
+
+- (id)retain
+
+{
+
+    return self;
+
+}
+
+ 
+
+- (unsigned)retainCount
+
+{
+
+    return UINT_MAX;  //denotes an object that cannot be released
+
+}
+
+ 
+
+- (void)release
+
+{
+
+    //do nothing
+
+}
+
+ 
+
+- (id)autorelease
+
+{
+
+    return self;
+
+}
 @end
