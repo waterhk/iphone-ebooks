@@ -14,8 +14,8 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-
 */
+
 #import "BooksApp.h"
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
@@ -63,8 +63,8 @@
 	//Bcc: this positioning should be relative to the screen rect not to some arbitrary value
 	//based on the size of the current gen iphone
 	progressIndicator = [[UIProgressIndicator alloc] 
-		initWithFrame:CGRectMake((320-progsize.width)/2,
-				(460-progsize.height)/2,
+		initWithFrame:CGRectMake((rect.size.width-progsize.width)/2,
+				(rect.size.height-progsize.height)/2,
 				progsize.width, 
 				progsize.height)];
 	[progressIndicator setStyle:0];
@@ -255,6 +255,7 @@
 - (void)showSlider:(BOOL)withAnimation
 {
 	CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
+	CGRect lDefRect = [defaults fullScreenApplicationContentRect];
 	if (nil != scrollerSlider)
 	{
 		[scrollerSlider removeFromSuperview];
@@ -270,7 +271,7 @@
 	CGRect visRect = [textView visibleRect];
 	NSLog(@"visRect: x=%f, y=%f, w=%f, h=%f", visRect.origin.x, visRect.origin.y, visRect.size.width, visRect.size.height);
 	NSLog(@"theWholeShebang: x=%f, y=%f, w=%f, h=%f", theWholeShebang.origin.x, theWholeShebang.origin.y, theWholeShebang.size.width, theWholeShebang.size.height);
-	int endPos = (int)theWholeShebang.size.height - 460;
+	int endPos = (int)theWholeShebang.size.height - lDefRect.size.height;
 	[scrollerSlider setMinValue:0.0];
 	[scrollerSlider setMaxValue:(float)endPos];
 	[scrollerSlider setValue:visRect.origin.y];
@@ -375,7 +376,8 @@
 				float scrollPoint = (float) [defaults lastScrollPointForFile:file
 																inSubchapter:subchapter];
 				BOOL didLoadAll = NO;
-				int numScreens = ((int) scrollPoint / 460) + 1;  // how many screens down are we?
+				CGRect rect = [defaults fullScreenApplicationContentRect];
+				int numScreens = ((int) scrollPoint / rect.size.height) + 1;  // how many screens down are we?
 				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
 
 				[textView loadBookWithPath:file
@@ -581,6 +583,7 @@
 
 				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 																	object:[tempView currentPath]];
+				[textView autorelease];
 				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 				[textView setHeartbeatDelegate:self];
 
@@ -592,11 +595,10 @@
 				[self refreshTextViewFromDefaults];
 
 				subchapter = [defaults lastSubchapterForFile:nextFile];
-				int lastPt = [defaults lastScrollPointForFile:nextFile
-												 inSubchapter:subchapter];
-				BOOL didLoadAll = NO;
-				int numScreens = (lastPt / 460) + 1;  // how many screens down are we?
-				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));
+				int lastPt = [defaults lastScrollPointForFile:nextFile inSubchapter:subchapter]; BOOL didLoadAll = NO; 
+				CGRect rect = [defaults fullScreenApplicationContentRect];
+				int numScreens = (lastPt / rect.size.height) + 1;  // how many screens down are we?  
+				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));  //bcc I wonder what is 265000 but it has to be replaced
 				[textView loadBookWithPath:nextFile numCharacters:numChars
 								didLoadAll:&didLoadAll subchapter:subchapter];
 				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
@@ -735,7 +737,7 @@
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
 		} else {
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];	
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
 		}
 
 		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
@@ -761,13 +763,14 @@
 {
 	UINavBarButton	*button = [[UINavBarButton alloc] initWithFrame:rect];
 
-	[button setAutosizesToFit:NO];							
+	[button setAutosizesToFit:NO];
 	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
 	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
 	[button setDrawContentsCentered:YES];
 	[button addTarget:self action:selector forEvents: (255)];
 	[button setNavBarButtonStyle:0];
-	[button drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
+	//bcc this complains about an invalid context, it seems to work fine without anyway
+	//	[button drawImageAtPoint:CGPointMake(5.0f,0.0f) fraction:0.5];
 	[button setEnabled:YES];
 	return button;
 }
@@ -849,17 +852,12 @@
 	}
 	if (readingText)
 	{  // Let's avoid the weird toggle behavior.
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[navBar hide:NO];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[bottomNavBar hide:NO];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[self hideSlider];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	}
 	else // not reading text
 	{
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[bottomNavBar hide:YES];
 	}
 
@@ -873,15 +871,12 @@
 		[textView setBottomBufferHeight:0];
 	if (!toolbarsOnly)
 	{
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 		//	[textView loadBookWithPath:[textView currentPath]];
 		[textView setFrame:rect];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		struct CGRect overallRect = [[textView _webView] frame];
 		NSLog(@"overall height: %f", overallRect.size.height);
 		struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView scrollPointVisibleAtTopLeft:thePoint];
 	}
 }
@@ -946,13 +941,10 @@
 	CGSize lContentSize = [textView contentSize];	
 	NSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
 	NSLog(@"rotateApp");
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	//UIAnimator *anim = [[UIAnimator alloc] init];
 	[self toggleStatusBarColor];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	if ([defaults isRotate90])
 	{
 		int degree = 90;
@@ -967,19 +959,15 @@
 	} else
 	{
 	}
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	struct CGAffineTransform lMatrixprev = [window transform];
 	//NSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
 	//NSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
 	//NSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
 	{
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		NSLog(@"overall height: %f", overallRect.size.height);
 		struct CGRect visRect = [textView visibleRect];
 		float scrollPercentage = visRect.origin.y / overallRect.size.height;
@@ -990,6 +978,41 @@
 			[mainView setFrame: rect];
 			[mainView setBounds: rect];
 		}
+
+
+
+
+
+
+//#define newTextViewOnRotate
+#ifdef newTextViewOnRotate
+		[textView autorelease];
+
+		textView = [[EBookView alloc] initWithFrame:rect];
+		[textView setHeartbeatDelegate:self];
+
+		NSString *recentFile = [defaults fileBeingRead];
+		UINavigationItem *tempItem = 
+			[[UINavigationItem alloc] initWithTitle:
+			[[recentFile lastPathComponent] 
+			stringByDeletingPathExtension]];
+		[navBar pushNavigationItem:tempItem withView:textView];
+		[self refreshTextViewFromDefaults];
+
+		int subchapter = [defaults lastSubchapterForFile:recentFile];
+		int lastPt = [defaults lastScrollPointForFile:recentFile inSubchapter:subchapter];
+	   	BOOL didLoadAll = NO; 
+		
+		int numScreens = (lastPt / rect.size.height) + 1;  // how many screens down are we?  
+		int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));  //bcc I don't like relying on magic numbers like 265000
+		[textView loadBookWithPath:recentFile numCharacters:numChars
+						didLoadAll:&didLoadAll subchapter:subchapter];
+		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
+									 animated:NO];
+		textViewNeedsFullText = !didLoadAll;
+
+#else
+		[transitionView setFrame: rect];
 		[textView setFrame: rect];
 		[self refreshTextViewFromDefaults];
 		[textView setHeartbeatDelegate:self];
@@ -1001,14 +1024,11 @@
 		NSLog(@"new overall height: %f", overallRect.size.height);
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		textViewNeedsFullText = NO;
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
 									 animated:NO];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
+#endif
 
 
 		NSLog(@"rotating");
@@ -1019,27 +1039,44 @@
 			rect.origin.y+=20; //to take into account the status bar
 			[window setFrame: rect];
 		}
-		CGRect frame = [window frame];
-		CGRect bounds = [window bounds];
-		//NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-		//NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[self updateToolbar: 0];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[self updateNavbar];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
-		lContentSize = [textView contentSize];	
-	NSLog(@"%s:%d", __FILE__, __LINE__);
-		NSLog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
+
 		//[navBar showTopNavBar:NO];
 		//[navBar show];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
-	[bottomNavBar hide:NO];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
+		[bottomNavBar hide:NO];
 		NSLog(@"showing the slider");
 		[self hideSlider];
-	NSLog(@"%s:%d", __FILE__, __LINE__);
 	}
+//	
+//	NSLog(@"textView's super %@", [textView superview]);
+//	CGRect frame = [window frame];
+//	CGRect bounds = [window bounds];
+//	CGRect extent = [window extent];
+//	NSLog(@"window frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	NSLog(@"window bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	NSLog(@"window extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	frame = [transitionView frame];
+//	bounds = [transitionView bounds];
+//	extent = [transitionView extent];
+//	NSLog(@"transitionView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	NSLog(@"transitionView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	NSLog(@"transitionView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	frame = [textView frame];
+//	bounds = [textView bounds];
+//	extent = [textView extent];
+//	lContentSize = [textView contentSize];	
+//	NSLog(@"textView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	NSLog(@"textView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	NSLog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
+//	NSLog(@"textView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	frame = [[textView _webView] frame];
+//	bounds = [[textView _webView] bounds];
+//	extent = [[textView _webView]extent];
+//	NSLog(@"webView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	NSLog(@"webView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	NSLog(@"webView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+
 	//BCC: animate this
 	/*	
 		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];

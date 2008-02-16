@@ -115,8 +115,8 @@
 {
   NSString *title;
   BOOL checked = NO;
-
-  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
+CGRect rect = [defaults fullScreenApplicationContentRect];
+  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,48)];
   [theCell setTitle:[[availableFonts objectAtIndex:row] stringByDeletingPathExtension]];
   [theCell setChecked:([[theCell title] isEqualToString:[defaults textFont]])];
   return [theCell autorelease];

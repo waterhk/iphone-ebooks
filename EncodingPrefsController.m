@@ -136,7 +136,8 @@ int unsignedCompare(id x, id y, void *context)
       checked = ([[encodingNumbers objectAtIndex:(row - 1)] unsignedIntValue]
 		 == [defaults defaultTextEncoding]);
     }
-  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
+  CGRect rect = [defaults fullScreenApplicationContentRect];
+  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,48)];
   [theCell setTitle:title];
   [theCell setChecked:checked];
   return [theCell autorelease];

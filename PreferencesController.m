@@ -480,8 +480,9 @@
 		objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 		version = @"??";
-	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, and Zachary Bedell.  BCC special 3\niphoneebooks.googlecode.com", version];
-	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,320,240)];
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, BCC, and Zachary Bedell.   3\niphoneebooks.googlecode.com", version];
+	CGRect rect = [defaults fullScreenApplicationContentRect];
+	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,rect.size.width,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
 	[alertSheet addButtonWithTitle:@"Donate"];

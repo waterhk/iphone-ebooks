@@ -34,7 +34,13 @@
 
 - (id)initWithFrame:(struct CGRect)rect
 {
-  [super initWithFrame:rect];
+	CGRect lFrame = rect;
+	if (rect.size.width < rect.size.height)
+	{
+		lFrame.size.width = rect.size.height;
+	}
+  [super initWithFrame:lFrame];
+  [super setFrame:rect];	
   //  tapinfo = [[UIViewTapInfo alloc] initWithDelegate:self view:self];
 
   size = 16.0f;
@@ -44,7 +50,7 @@
   chapteredHTML = [[ChapteredHTML alloc] init];
   subchapter    = 0;
   defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
-  //[self setAdjustForContentSizeChange:YES];
+  [self setAdjustForContentSizeChange:YES];
   [self setEditable:NO];
   
   [self setTextSize:size];
