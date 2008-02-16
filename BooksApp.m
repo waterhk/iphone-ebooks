@@ -34,7 +34,7 @@
    */
 - (void) applicationDidFinishLaunching: (id) unused
 {
-	freopen("/var/logs/Books.traces", "a", stderr);
+//	freopen("/var/logs/Books.traces", "a", stderr);
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	NSString *recentFile;
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];

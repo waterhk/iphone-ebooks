@@ -398,8 +398,10 @@ theHTML = [self HTMLFromTextString:ret];
 	CGPoint clicked = GSEventGetLocationInWindow(event);
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
-	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, 48);
-	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
+	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
+	NSLog(@"zone height %d", lZoneHeight);
+	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
+	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 	if ([self isScrolling])
 	{
 		if (CGRectEqualToRect(lastVisibleRect, newRect))

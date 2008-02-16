@@ -355,9 +355,9 @@
 	return value;
 }
 
-- (void)setEnlargeNavZone:(BOOL)inverted
+- (void)setEnlargeNavZone:(BOOL)enlarged
 {
-	[_defaults setBool:inverted forKey:ENLARGENAVZONEKEY];
+	[_defaults setBool:enlarged forKey:ENLARGENAVZONEKEY];
 }
 
 

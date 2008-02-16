@@ -230,6 +230,8 @@
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
 	
 	[defaults setInverseNavZone:[[[invNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
+	
+	[defaults setEnlargeNavZone:[[[enlargeNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
