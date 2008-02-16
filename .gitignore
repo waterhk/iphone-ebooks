@@ -1,0 +1,10 @@
+#ignore build result
+*.o
+Books
+#ignore vim files
+*.swp
+#ignore tag files
+tags
+.tb.*.tags
+#miscelaneous scratch files
+Dimmensions.ods
