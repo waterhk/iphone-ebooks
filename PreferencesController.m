@@ -18,6 +18,7 @@
 */
 
 #import "PreferencesController.h"
+#import "BooksDefaultsController.h"
 
 @implementation PreferencesController
 
@@ -25,7 +26,7 @@
 	if(self = [super init])
 	{
 		controller = appController;
-		contentRect = [UIHardware fullScreenApplicationContentRect];
+		contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
 		contentRect.origin.x = 0.0f;
 		contentRect.origin.y = 0.0f;
 
@@ -41,6 +42,7 @@
 - (void)showPreferences {
   if (nil == preferencesView)
     {
+		//Bcc the view is created bellow the screen so as to smoothly appear
         struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
 				    contentRect.size.height,
 				    contentRect.size.width,

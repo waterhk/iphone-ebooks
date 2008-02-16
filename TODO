@@ -1,1 +1,5 @@
-For an up-to-date list of TODO items, visit http://iphoneebooks.googlecode.com/
+Landscape:
+		BUG: correct the pixel artifacts when scrolling
+DONE	BUG: correct the display of the cover art 
+		HL:switch orientation without restarting
+	

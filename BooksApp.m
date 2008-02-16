@@ -1,4 +1,3 @@
-
 /* ------ BooksApp, written by Zachary Brewster-Geisz
    (and others)
    This program is free software; you can redistribute it and/or
@@ -20,6 +19,7 @@
 #import "BooksApp.h"
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
+#import <UIKit/UIView-Rendering.h>
 
 @implementation BooksApp
 /*
@@ -93,7 +93,7 @@
 	if ([defaults isRotate90])
 	{
 		[self toggleStatusBarColor];
-		   int degree = 90;
+		int degree = 90;
 		CGRect lBounds1 = [mainView bounds];
 		CGRect lFrame1 = [mainView frame];
 		UIAnimator *anim = [[UIAnimator alloc] init];
@@ -111,10 +111,10 @@
 		[window setTransform: lTransform];
 		//BCC: animate this
 		/*UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: mainView];
-		struct CGAffineTransform lMatrixprev = [mainView transform];
-		[scaleAnim setStartTransform: lMatrixprev];
-		[scaleAnim setEndTransform: lTransform];
-		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; */
+		  struct CGAffineTransform lMatrixprev = [mainView transform];
+		  [scaleAnim setStartTransform: lMatrixprev];
+		  [scaleAnim setEndTransform: lTransform];
+		  [anim addAnimation:scaleAnim withDuration:5.0f start:YES]; */
 		struct CGRect lBounds = [mainView bounds];
 		struct CGRect lFrame = [mainView frame];
 	}
@@ -138,7 +138,7 @@
 												   ofType:@"png"];
 		[progressIndicator setStyle:![defaults inverted]];
 	}
-	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:CGSizeMake(320,460)];
+	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
 	[mainView addSubview:imageView];
 	[mainView addSubview:progressIndicator];
 	[progressIndicator startAnimation];
@@ -265,8 +265,6 @@
 - (void)hideNavbars
 {
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
-	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-	//rect.origin.x = rect.origin.y = 0.0f;
 	[textView setFrame:rect];
 	[navBar hide:NO];
 	[bottomNavBar hide:NO];
@@ -287,7 +285,7 @@
 {
 	if (nil == scrollerSlider)
 	{
-		
+
 		CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
 		scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
 		[mainView addSubview:scrollerSlider];
@@ -538,8 +536,6 @@
 		[textView invertText:textInverted];
 		[defaults setInverted:textInverted];
 		[self toggleStatusBarColor];
-		//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-		//rect.origin.x = rect.origin.y = 0.0f;
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 		[textView setFrame:rect];
 	}	
@@ -693,8 +689,6 @@
 
 - (void)setupNavbar
 {
-	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-	//rect.origin.x = rect.origin.y = 0.0f;
 
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 	navBar = [[HideableNavBar alloc] initWithFrame:
@@ -718,8 +712,6 @@
 
 - (void)setupToolbar
 {
-	//struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-	//rect.origin.x = rect.origin.y = 0.0f;
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
@@ -876,8 +868,6 @@
 		[textView setBottomBufferHeight:0];
 	if (!toolbarsOnly)
 	{
-		//	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-		//	rect.origin.x = rect.origin.y = 0.0f;
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 		//	[textView loadBookWithPath:[textView currentPath]];
 		[textView setFrame:rect];
@@ -933,4 +923,39 @@
 	[super dealloc];
 }
 
+- (void)rotateApp
+{
+	CGRect rect = [defaults fullScreenApplicationContentRect];
+	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
+	if ([defaults isRotate90])
+	{
+		[self toggleStatusBarColor];
+		int degree = 90;
+		UIAnimator *anim = [[UIAnimator alloc] init];
+		[window setFrame: rect];
+		[window setBounds: rect];
+		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
+		lTransform = CGAffineTransformMakeTranslation(-1*rect.size.width/2, -1*rect.size.height/2);
+		//BCC: perform the actual rotation
+		lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
+		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
+		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
+		//BCC: translate back so the top left corner of the view is at the top right of the phone
+		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
+	} else
+	{
+	}
+	[window setNeedsDisplay];
+	[window setTransform: lTransform];
+	//BCC: animate this
+	/*
+	  UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: mainView];
+	  struct CGAffineTransform lMatrixprev = [mainView transform];
+	  [scaleAnim setStartTransform: lMatrixprev];
+	  [scaleAnim setEndTransform: lTransform];
+	  [anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
+	[anim release];	//should we do this, it continues to leave for the duration of the animation
+	*/
+
+}
 @end

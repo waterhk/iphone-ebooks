@@ -391,7 +391,6 @@
   struct CGRect newRect = [self visibleRect];
   struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
   struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, 48);
-  //struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
   struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - 48, contentRect.size.width, 48);
   if ([self isScrolling])
     {
@@ -432,7 +431,6 @@
 // of the text.
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
 {
-  //struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
   struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
   float  scrollness = contentRect.size.height;
   scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
@@ -447,7 +445,6 @@
 
 -(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
 {
-  //struct CGRect contentRect = [UIHardware fullScreenApplicationContentRect];
   struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
   float  scrollness = contentRect.size.height;
   scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));

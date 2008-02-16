@@ -110,4 +110,5 @@
 - (void)toggleStatusBarColor;
 - (NSString *)currentBrowserPath;
 - (void)cleanUpBeforeQuit;
+- (void)rotateApp;
 @end

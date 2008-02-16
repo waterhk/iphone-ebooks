@@ -19,12 +19,13 @@
 */
 
 #import "EBookImageView.h"
+#import "BooksDefaultsController.h"
 
 @implementation EBookImageView
 
 -(EBookImageView *)initWithContentsOfFile:(NSString *)file
 {
-  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect rect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
   rect.origin.x = rect.origin.y = 0;
   self = [super initWithFrame:rect];
   [self setAllowsFourWayRubberBanding:YES];
@@ -74,7 +75,7 @@
 
 -(EBookImageView *)initWithContentsOfFile:(NSString *)file withinSize:(struct CGSize)size
 {
-  struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  struct CGRect rect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
   rect.origin.y = rect.origin.x = 0;
   self = [super initWithFrame:rect];
   [self setAllowsFourWayRubberBanding:YES];

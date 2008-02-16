@@ -1,0 +1,30 @@
+2008-01-20 23:04:10.889 plutil[193:d03] {
+    browserPathsKey = "/var/root/Media/EBooks/Humanx1"; 
+    chapterNavKey = 1; 
+    enableSubchapteringKey = 0; 
+    fileBeingReadKey = "/var/root/Media/EBooks/Humanx1/Humanx-1_Midworld2.txt"; 
+    fileSpecificData = {
+        "/var/root/Media/EBooks/Autobio. of Ben Franklin/000 20203-h.htm" = {currentSubchapter = 0; locationPerSubchapter = {0 = 8887; }; }; 
+        "/var/root/Media/EBooks/Autobio. of Ben Franklin/001 20203-h.htm" = {currentSubchapter = 0; locationPerSubchapter = {0 = 2160; }; }; 
+        "/var/root/Media/EBooks/Autobio. of Ben Franklin/002 20203-h.htm" = {currentSubchapter = 0; locationPerSubchapter = {0 = 21083; }; }; 
+        "/var/root/Media/EBooks/Autobio. of Ben Franklin/003 20203-h.htm" = {currentSubchapter = 0; locationPerSubchapter = {0 = 19950; }; }; 
+        "/var/root/Media/EBooks/Autobio. of Ben Franklin/004 20203-h.htm" = {currentSubchapter = 0; locationPerSubchapter = {0 = 864; }; }; 
+        "/var/root/Media/EBooks/The Hidden Layer/001 Cover.html" = {currentSubchapter = 0; locationPerSubchapter = {0 = 102; }; }; 
+        "/var/root/Media/EBooks/The Hidden Layer/002 Title.html" = {currentSubchapter = 0; locationPerSubchapter = {0 = 1079; }; }; 
+        "/var/root/Media/EBooks/The Hidden Layer/003 Prologue.html" = {currentSubchapter = 0; locationPerSubchapter = {0 = 23025; }; }; 
+        "/var/root/Media/EBooks/The Hidden Layer/004 Ch.1 Do You Forget?.html" = {currentSubchapter = 0; locationPerSubchapter = {0 = 35011; }; }; 
+        "/var/root/Media/EBooks/The Hidden Layer/009 Ch.6 I Know What It Means.html" = {currentSubchapter = 0; locationPerSubchapter = {0 = 0; }; }; 
+    }; 
+    flipToolbarKey = 0; 
+    isInvertedKey = 1; 
+    isRotate90Key = 0; 
+    navbarKey = 1; 
+    pageNavKey = 1; 
+    readingTextKey = 1; 
+    renderTablesKey = 1; 
+    scrollSpeedIndexKey = 1; 
+    smartConversionKey = 1; 
+    textSizeKey = 22; 
+    toolbarKey = 1; 
+}
+
