@@ -965,9 +965,29 @@
 			[window setBounds: rect];
 			[mainView setFrame: rect];
 			[mainView setBounds: rect];
-			[textView setFrame: rect];
-			[textView setBounds: rect];
 		}
+		//[textView removeFromSuperview];
+		//[textView release];
+		//textView = [[EBookView alloc] initWithFrame:rect];
+		[textView setFrame: rect];
+		[self refreshTextViewFromDefaults];
+		[textView setHeartbeatDelegate:self];
+		NSString *recentFile = [defaults fileBeingRead];
+		UINavigationItem *tempItem = [[UINavigationItem alloc]
+			initWithTitle:[[recentFile lastPathComponent] 
+			stringByDeletingPathExtension]];
+		int subchapter = [defaults lastSubchapterForFile:recentFile];
+		float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
+														inSubchapter:subchapter];
+		[navBar pushNavigationItem:tempItem withView:textView];
+
+		[textView loadBookWithPath:recentFile subchapter:subchapter];
+		textViewNeedsFullText = NO;
+		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
+									 animated:NO];
+
+		[tempItem release];
+
 		NSLog(@"rotating");
 		[window setTransform: lTransform];
 

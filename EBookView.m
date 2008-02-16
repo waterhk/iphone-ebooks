@@ -357,7 +357,7 @@
       oldRect.origin.y = middleRect - (oldRect.size.height / 2);
       NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
       [self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
-      [self setNeedsDisplay];
+	  [self setNeedsDisplay];
     }
 }
 // None of these tap methods work yet.  They may never work.
@@ -767,4 +767,23 @@
 	[self setNeedsDisplay];
 	return YES;
 }
+
+
+-(void) redraw
+{
+	      if ([defaults subchapteringEnabled] &&
+          (subchapter < [chapteredHTML chapterCount]))
+        {
+	      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+	    }
+	  else
+          [self setHTML:fullHTML];
+	  CGRect lWebViewFrame = [[self _webView] frame];
+	  CGRect lFrame = [self frame];
+	NSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
+	NSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
+	  [[self _webView]setFrame: [self frame]];
+      [self setNeedsDisplay];
+}
+
 @end
