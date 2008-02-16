@@ -30,6 +30,7 @@
   NSString       *_browserPath;
   NSUserDefaults *_defaults;
   BOOL            _toolbarShouldUpdate;
+  BOOL            _NeedRotate;
 }
 
 /*

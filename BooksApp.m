@@ -19,7 +19,6 @@
 #import "BooksApp.h"
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
-#import <UIKit/UIView-Rendering.h>
 
 @implementation BooksApp
 /*
@@ -55,6 +54,10 @@
 												 name:@"toolbarDefaultsChanged"
 											   object:nil];
 
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(rotateAppNeeded:)
+												 name:@"rotationDefaultChanged"
+											   object:nil];
 	window = [[UIWindow alloc] initWithContentRect: rect];
 
 	[window orderFront: self];
@@ -90,35 +93,7 @@
 
 	[window setContentView: mainView];
 	//bcc rotation
-	if ([defaults isRotate90])
-	{
-		[self toggleStatusBarColor];
-		int degree = 90;
-		CGRect lBounds1 = [mainView bounds];
-		CGRect lFrame1 = [mainView frame];
-		UIAnimator *anim = [[UIAnimator alloc] init];
-
-		[window setFrame: rect];
-		NSLog(@"rect x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
-		CGAffineTransform	lTransform = CGAffineTransformMakeTranslation(-1*rect.size.width/2, -1*rect.size.height/2);
-		//BCC: perform the actual rotation
-		lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
-		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
-		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
-		//BCC: translate back so the top left corner of the view is at the top right of the phone
-		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
-		[window setTransform: lTransform];
-		//BCC: animate this
-		/*UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: mainView];
-		  struct CGAffineTransform lMatrixprev = [mainView transform];
-		  [scaleAnim setStartTransform: lMatrixprev];
-		  [scaleAnim setEndTransform: lTransform];
-		  [anim addAnimation:scaleAnim withDuration:5.0f start:YES]; */
-		struct CGRect lBounds = [mainView bounds];
-		struct CGRect lFrame = [mainView frame];
-	}
-
+	[self rotateApp];
 	[mainView addSubview:transitionView];
 	[mainView addSubview:navBar];
 	[mainView addSubview:bottomNavBar];
@@ -799,6 +774,13 @@
 	[mainView addSubview:bottomNavBar];
 }
 
+- (void)rotateAppNeeded:(NSNotification *)notification
+{
+	NSLog(@"%s Got rotateAppNeeded notification.", _cmd);
+	[self rotateApp];
+}
+
+
 - (void)setTextInverted:(BOOL)b
 {
 	textInverted = b;
@@ -892,7 +874,7 @@
 	int lOrientation = 0;
 	if ([defaults isRotate90])
 		lOrientation = 90;
-	NSLog(@"Orientation =%d", lOrientation);
+	NSLog(@"toggleStatusBarColor Orientation =%d", lOrientation);
 	if ([defaults inverted]) {
 		[self setStatusBarMode:3 orientation:lOrientation duration:0.25];
 	} else {
@@ -925,15 +907,14 @@
 
 - (void)rotateApp
 {
+	NSLog(@"rotateApp");
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
+	//UIAnimator *anim = [[UIAnimator alloc] init];
+	[self toggleStatusBarColor];
 	if ([defaults isRotate90])
 	{
-		[self toggleStatusBarColor];
 		int degree = 90;
-		UIAnimator *anim = [[UIAnimator alloc] init];
-		[window setFrame: rect];
-		[window setBounds: rect];
 		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
 		lTransform = CGAffineTransformMakeTranslation(-1*rect.size.width/2, -1*rect.size.height/2);
 		//BCC: perform the actual rotation
@@ -945,17 +926,34 @@
 	} else
 	{
 	}
-	[window setNeedsDisplay];
-	[window setTransform: lTransform];
-	//BCC: animate this
-	/*
-	  UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: mainView];
-	  struct CGAffineTransform lMatrixprev = [mainView transform];
-	  [scaleAnim setStartTransform: lMatrixprev];
-	  [scaleAnim setEndTransform: lTransform];
-	  [anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
-	[anim release];	//should we do this, it continues to leave for the duration of the animation
-	*/
+	struct CGAffineTransform lMatrixprev = [window transform];
+	NSLog(@"prev matrix a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
+	NSLog(@"new matrix a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
+	NSLog(@"rect x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	CGRect frame = [window frame];
+	CGRect bounds = [window bounds];
+	NSLog(@"frame x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+	NSLog(@"bounds x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
+	{
+		[window setFrame: rect];
+		[window setBounds: rect];
+		[mainView setFrame: rect];
+		[mainView setBounds: rect];
+		[textView setFrame: rect];
+		[textView setBounds: rect];
 
+		NSLog(@"rotating");
+		[window setTransform: lTransform];
+	}
+	//BCC: animate this
+/*	
+ 	UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
+	struct CGAffineTransform lMatrixprev = [window transform];
+	[scaleAnim setStartTransform: lMatrixprev];
+	[scaleAnim setEndTransform: lTransform];
+	[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
+	[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
+	*/
 }
 @end

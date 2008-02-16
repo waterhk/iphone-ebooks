@@ -318,7 +318,7 @@
 {
 	BOOL value = [_defaults boolForKey:ISROTATE90KEY];
 
-	Debug (@"[_defaults Rotate90] = %s", (value) ? "YES" : "NO");
+	_toolbarShouldUpdate = YES;
 	return value;
 }
 
@@ -326,6 +326,7 @@
 {
 	[_defaults setBool:isRotate90 forKey:ISROTATE90KEY];
 	_toolbarShouldUpdate = YES;
+	_NeedRotate = YES;
 }
 
 - (BOOL)chapternav
@@ -360,6 +361,8 @@
 {
 	if (_toolbarShouldUpdate)
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
+	if (_NeedRotate)
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"rotationDefaultChanged" object:self];
 	return [_defaults synchronize];
 }
 
