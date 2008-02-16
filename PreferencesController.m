@@ -133,12 +133,12 @@
 	{
 		//BCC the contentRect may have changed let's update it
 		NSLog(@"prefs animation out");
-//		contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
+		CGRect lNewContentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
 		[preferencesView setFrame:contentRect];
 		struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 		[translate setStartTransform:trans];
 		[translate setEndTransform:CGAffineTransformMake(1,0,0,1,0,0)];
-		[animator addAnimation:translate withDuration:0.5 start:YES];
+		[animator addAnimation:translate withDuration:5 start:YES];
 
 		needsOutAnimation = NO;
 	}

@@ -927,33 +927,41 @@
 	{
 	}
 	struct CGAffineTransform lMatrixprev = [window transform];
-	NSLog(@"prev matrix a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
-	NSLog(@"new matrix a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
-	NSLog(@"rect x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-	CGRect frame = [window frame];
-	CGRect bounds = [window bounds];
-	NSLog(@"frame x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-	NSLog(@"bounds x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+	NSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
+	NSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
+	NSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+
 	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
 	{
-		[window setFrame: rect];
-		[window setBounds: rect];
-		[mainView setFrame: rect];
-		[mainView setBounds: rect];
-		[textView setFrame: rect];
-		[textView setBounds: rect];
-
+		if ([defaults isRotate90])
+		{
+			[window setFrame: rect];
+			[window setBounds: rect];
+			[mainView setFrame: rect];
+			[mainView setBounds: rect];
+			[textView setFrame: rect];
+			[textView setBounds: rect];
+		}
 		NSLog(@"rotating");
 		[window setTransform: lTransform];
 	}
+	if (![defaults isRotate90])
+	{
+		rect.origin.y+=20; //to take into account the status bar
+		[window setFrame: rect];
+	}
+	CGRect frame = [window frame];
+	CGRect bounds = [window bounds];
+	NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+	NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 	//BCC: animate this
-/*	
- 	UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
-	struct CGAffineTransform lMatrixprev = [window transform];
-	[scaleAnim setStartTransform: lMatrixprev];
-	[scaleAnim setEndTransform: lTransform];
-	[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
-	[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
-	*/
+	/*	
+		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
+		struct CGAffineTransform lMatrixprev = [window transform];
+		[scaleAnim setStartTransform: lMatrixprev];
+		[scaleAnim setEndTransform: lTransform];
+		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
+		[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
+		*/
 }
 @end
