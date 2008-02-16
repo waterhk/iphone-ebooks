@@ -959,6 +959,11 @@
 
 	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
 	{
+		//remember the previous position
+		struct CGRect overallRect = [[textView _webView] frame];
+		NSLog(@"overall height: %f", overallRect.size.height);
+		struct CGRect visRect = [textView visibleRect];
+		float scrollPercentage = visRect.origin.y / overallRect.size.height;
 		if ([defaults isRotate90])
 		{
 			[window setFrame: rect];
@@ -966,30 +971,25 @@
 			[mainView setFrame: rect];
 			[mainView setBounds: rect];
 		}
-		//[textView removeFromSuperview];
-		//[textView release];
-		//textView = [[EBookView alloc] initWithFrame:rect];
 		[textView setFrame: rect];
 		[self refreshTextViewFromDefaults];
 		[textView setHeartbeatDelegate:self];
 		NSString *recentFile = [defaults fileBeingRead];
-		UINavigationItem *tempItem = [[UINavigationItem alloc]
-			initWithTitle:[[recentFile lastPathComponent] 
-			stringByDeletingPathExtension]];
 		int subchapter = [defaults lastSubchapterForFile:recentFile];
-		float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
-														inSubchapter:subchapter];
-		[navBar pushNavigationItem:tempItem withView:textView];
+		
+		
+		overallRect = [[textView _webView] frame];
+		NSLog(@"new overall height: %f", overallRect.size.height);
+		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
 		textViewNeedsFullText = NO;
 		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
 									 animated:NO];
 
-		[tempItem release];
 
 		NSLog(@"rotating");
-		[window setTransform: lTransform];
+		 [window setTransform: lTransform];
 
 	}
 	if (![defaults isRotate90])
