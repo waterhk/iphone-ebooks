@@ -228,6 +228,8 @@
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
+	
+	[defaults setInverseNavZone:[[[invNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
@@ -323,6 +325,22 @@
 	[flippedSitchControl setValue:flipped];
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
+
+	invNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL invertedZones = [defaults inverseNavZone];
+	[invNavZonePreferenceCell setTitle:@"invert nav zone"];
+	UISwitchControl *invNavZoneSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[invNavZoneSitchControl setValue:invertedZones];
+	[invNavZoneSitchControl setAlternateColors:YES];
+	[invNavZonePreferenceCell setControl:invNavZoneSitchControl];	
+
+	enlargeNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	BOOL enlargedZones = [defaults enlargeNavZone];
+	[enlargeNavZonePreferenceCell setTitle:@"enlarge nav zone"];
+	UISwitchControl *enlargeNavZoneSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	[enlargeNavZoneSwitchControl setValue:enlargedZones];
+	[enlargeNavZoneSwitchControl setAlternateColors:YES];
+	[enlargeNavZonePreferenceCell setControl:enlargeNavZoneSwitchControl];	
 
 	//CHANGED: Zach's additions 9/6/07
 
@@ -422,16 +440,16 @@
 		case 1: // font
 			[self makeFontPrefsPane];
 			break;
-		case 12: // text encoding
+		case 14: // text encoding
 			[self makeEncodingPrefsPane];
 			break;
-		case 18: // mark current book as new
+		case 20: // mark current book as new
 	  [defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 	  [[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
 	  [markCurrentBookAsNewCell setEnabled:NO];
 	  [markCurrentBookAsNewCell setSelected:NO withFade:YES];
 	  break;
-		case 19: // mark all books as new
+		case 21: // mark all books as new
 	  [defaults removePerFileData];
 	  [[NSNotificationCenter defaultCenter] postNotificationName:RELOADALLBROWSERS object:self];
 	  [markAllBooksAsNewCell setEnabled:NO];
@@ -577,7 +595,7 @@
 			rowCount = 2;
 			break;
 		case 2: //toolbar options
-			rowCount = 3;
+			rowCount = 5;
 			break;
 		case 3: //file import
 			rowCount = 4;
@@ -634,6 +652,12 @@
 					break;
 				case 2:
 					prefCell = flippedToolbarPreferenceCell;
+					break;
+				case 3:
+					prefCell = invNavZonePreferenceCell;
+					break;
+				case 4:
+					prefCell = enlargeNavZonePreferenceCell;
 					break;
 			}
 			break;

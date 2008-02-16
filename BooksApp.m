@@ -20,6 +20,7 @@
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
 #include "dolog.h"
+#include <stdio.h>
 @implementation BooksApp
 /*
    enum {
@@ -33,6 +34,7 @@
    */
 - (void) applicationDidFinishLaunching: (id) unused
 {
+	freopen("/var/logs/Books.traces", "a", stderr);
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	NSString *recentFile;
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
@@ -120,7 +122,7 @@
 	   enclist = [NSString availableStringEncodings];
 	   while (*enclist != 0)
 	   {
-	   NSLog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
+	   dolog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
 	   }
 	   free(enclist);
 	   */
@@ -141,16 +143,16 @@
 	}
 
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
-	[navBar pushNavigationItem:tempItem withBrowserPath:EBOOK_PATH];
+	[navBar pushNavigationItem:tempItem withBrowserPath:[BooksDefaultsController defaultEBookPath]];
 
 	NSString *tempString = [defaults lastBrowserPath];
 	NSMutableArray *tempArray = [[NSMutableArray alloc] init]; 
 
-	if (![tempString isEqualToString:EBOOK_PATH])
+	if (![tempString isEqualToString:[BooksDefaultsController defaultEBookPath]])
 	{
 		[tempArray addObject:[NSString stringWithString:tempString]];
 		while ((![(tempString = [tempString stringByDeletingLastPathComponent])
-					isEqualToString:EBOOK_PATH]) && 
+					isEqualToString:[BooksDefaultsController defaultEBookPath]]) && 
 	  (![tempString isEqualToString:@"/"])) //sanity check
 		{
 			[tempArray addObject:[NSString stringWithString:tempString]];
@@ -193,7 +195,7 @@
 			readingText = NO;
 			[defaults setReadingText:NO];
 			[defaults setFileBeingRead:@""];
-			[defaults setLastBrowserPath:EBOOK_PATH];
+			[defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
 			[defaults removePerFileDataForFile:recentFile];
 		}
 	}
@@ -269,8 +271,8 @@
 	[mainView addSubview:scrollerSlider];
 	CGRect theWholeShebang = [[textView _webView] frame];
 	CGRect visRect = [textView visibleRect];
-	NSLog(@"visRect: x=%f, y=%f, w=%f, h=%f", visRect.origin.x, visRect.origin.y, visRect.size.width, visRect.size.height);
-	NSLog(@"theWholeShebang: x=%f, y=%f, w=%f, h=%f", theWholeShebang.origin.x, theWholeShebang.origin.y, theWholeShebang.size.width, theWholeShebang.size.height);
+	dolog(@"visRect: x=%f, y=%f, w=%f, h=%f", visRect.origin.x, visRect.origin.y, visRect.size.width, visRect.size.height);
+	dolog(@"theWholeShebang: x=%f, y=%f, w=%f, h=%f", theWholeShebang.origin.x, theWholeShebang.origin.y, theWholeShebang.size.width, theWholeShebang.size.height);
 	int endPos = (int)theWholeShebang.size.height - lDefRect.size.height;
 	[scrollerSlider setMinValue:0.0];
 	[scrollerSlider setMaxValue:(float)endPos];
@@ -409,17 +411,17 @@
 
 - (void)textViewDidGoAway:(id)sender
 {
-	//  NSLog(@"textViewDidGoAway start...");
+	//  dolog(@"textViewDidGoAway start...");
 	struct CGRect  selectionRect = [textView visibleRect];
 	int            subchapter    = [textView getSubchapter];
 	NSString      *filename      = [textView currentPath];
-	//  NSLog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
+	//  dolog(@"called visiblerect, origin.y is %d ", (unsigned int)selectionRect.origin.y);
 
 	[defaults setLastScrollPoint: (unsigned int) selectionRect.origin.y
 				   forSubchapter:subchapter
 						 forFile:filename];
 	[defaults setLastSubchapter:subchapter forFile:filename];
-	//  NSLog(@"set defaults ");
+	//  dolog(@"set defaults ");
 	[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 														object:[textView currentPath]];
 
@@ -427,7 +429,7 @@
 	[bottomNavBar hide:YES];
 	if (scrollerSlider != nil)
 		[self hideSlider];
-	//  NSLog(@"end.\n");
+	//  dolog(@"end.\n");
 }
 
 - (void)cleanUpBeforeQuit
@@ -794,7 +796,7 @@
 
 - (void)updateToolbar:(NSNotification *)notification
 {
-	NSLog(@"%s Got toolbar update notification.", _cmd);
+	dolog(@"%s Got toolbar update notification.", _cmd);
 	[bottomNavBar removeFromSuperview];
 	[self setupToolbar];
 	[mainView addSubview:bottomNavBar];
@@ -809,7 +811,7 @@
 {
 	if (![button isPressed]) // mouseUp only
 	{
-		NSLog(@"Showing Preferences View");
+		dolog(@"Showing Preferences View");
 		PreferencesController *prefsController = [[PreferencesController alloc] initWithAppController:self];
 		[prefsButton setEnabled:false];
 		[prefsController showPreferences];
@@ -842,10 +844,10 @@
 		[textView invertText:textInverted];
 
 		struct CGRect overallRect = [[textView _webView] frame];
-		NSLog(@"overall height: %f", overallRect.size.height);
+		dolog(@"overall height: %f", overallRect.size.height);
 		struct CGRect visRect = [textView visibleRect];
 		scrollPercentage = visRect.origin.y / overallRect.size.height;
-		NSLog(@"scroll percent: %f",scrollPercentage);
+		dolog(@"scroll percent: %f",scrollPercentage);
 		[textView setTextFont:[defaults textFont]];
 
 		[self toggleStatusBarColor];
@@ -875,7 +877,7 @@
 		//	[textView loadBookWithPath:[textView currentPath]];
 		[textView setFrame:rect];
 		struct CGRect overallRect = [[textView _webView] frame];
-		NSLog(@"overall height: %f", overallRect.size.height);
+		dolog(@"overall height: %f", overallRect.size.height);
 		struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
 		[textView scrollPointVisibleAtTopLeft:thePoint];
 	}
@@ -895,7 +897,7 @@
 	int lOrientation = 0;
 	if ([defaults isRotate90])
 		lOrientation = 90;
-	NSLog(@"toggleStatusBarColor Orientation =%d", lOrientation);
+	dolog(@"toggleStatusBarColor Orientation =%d", lOrientation);
 	if ([defaults inverted]) {
 		[self setStatusBarMode:3 orientation:lOrientation duration:0.25];
 	} else {
@@ -939,8 +941,8 @@
 - (void)rotateApp
 {
 	CGSize lContentSize = [textView contentSize];	
-	NSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
-	NSLog(@"rotateApp");
+	dolog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
+	dolog(@"rotateApp");
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
 	//UIAnimator *anim = [[UIAnimator alloc] init];
@@ -948,10 +950,12 @@
 	if ([defaults isRotate90])
 	{
 		int degree = 90;
+		CGAffineTransform lTransform2  = CGAffineTransformMake(0, 1, -1, 0, 0, 0);
 		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
-		lTransform = CGAffineTransformMakeTranslation(-1*rect.size.width/2, -1*rect.size.height/2);
+		lTransform = CGAffineTransformTranslate(lTransform, -1*rect.size.width/2, -1*rect.size.height/2);
 		//BCC: perform the actual rotation
-		lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
+		//lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
+		lTransform = CGAffineTransformConcat(lTransform2, lTransform);
 		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
 		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
 		//BCC: translate back so the top left corner of the view is at the top right of the phone
@@ -960,15 +964,15 @@
 	{
 	}
 	struct CGAffineTransform lMatrixprev = [window transform];
-	//NSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
-	//NSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
-	//NSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	//dolog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
+	//dolog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
+	//dolog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
 	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
 	{
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
-		NSLog(@"overall height: %f", overallRect.size.height);
+		dolog(@"overall height: %f", overallRect.size.height);
 		struct CGRect visRect = [textView visibleRect];
 		float scrollPercentage = visRect.origin.y / overallRect.size.height;
 		if ([defaults isRotate90])
@@ -1021,7 +1025,7 @@
 
 
 		overallRect = [[textView _webView] frame];
-		NSLog(@"new overall height: %f", overallRect.size.height);
+		dolog(@"new overall height: %f", overallRect.size.height);
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
@@ -1031,7 +1035,7 @@
 #endif
 
 
-		NSLog(@"rotating");
+		dolog(@"rotating");
 		[window setTransform: lTransform];
 
 		if (![defaults isRotate90])
@@ -1045,37 +1049,37 @@
 		//[navBar showTopNavBar:NO];
 		//[navBar show];
 		[bottomNavBar hide:NO];
-		NSLog(@"showing the slider");
+		dolog(@"showing the slider");
 		[self hideSlider];
 	}
 //	
-//	NSLog(@"textView's super %@", [textView superview]);
+//	dolog(@"textView's super %@", [textView superview]);
 //	CGRect frame = [window frame];
 //	CGRect bounds = [window bounds];
 //	CGRect extent = [window extent];
-//	NSLog(@"window frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	NSLog(@"window bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	NSLog(@"window extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	dolog(@"window frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	dolog(@"window bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	dolog(@"window extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
 //	frame = [transitionView frame];
 //	bounds = [transitionView bounds];
 //	extent = [transitionView extent];
-//	NSLog(@"transitionView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	NSLog(@"transitionView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	NSLog(@"transitionView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	dolog(@"transitionView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	dolog(@"transitionView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	dolog(@"transitionView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
 //	frame = [textView frame];
 //	bounds = [textView bounds];
 //	extent = [textView extent];
 //	lContentSize = [textView contentSize];	
-//	NSLog(@"textView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	NSLog(@"textView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	NSLog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
-//	NSLog(@"textView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	dolog(@"textView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	dolog(@"textView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	dolog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
+//	dolog(@"textView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
 //	frame = [[textView _webView] frame];
 //	bounds = [[textView _webView] bounds];
 //	extent = [[textView _webView]extent];
-//	NSLog(@"webView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	NSLog(@"webView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	NSLog(@"webView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
+//	dolog(@"webView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+//	dolog(@"webView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+//	dolog(@"webView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
 
 	//BCC: animate this
 	/*	

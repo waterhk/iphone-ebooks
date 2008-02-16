@@ -88,7 +88,7 @@
 		_pixOnTop = NO;
 		if ([self isAnimationEnabled])
 			[_transView transition:2 toView:[_browserArray lastObject]];
-		NSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
+		dolog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
 		[super popNavigationItem];
 		if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
@@ -100,7 +100,7 @@
 
 		[_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
-		NSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
+		dolog(@"Popped to %@\n", [[_browserArray lastObject] path]);
 		[super popNavigationItem];
 	}
 }
@@ -121,7 +121,7 @@
 	[_browserArray addObject:newBrowser];
 	[_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
 	[newBrowser release];  // we still have it in the array, don't worry!
-	NSLog(@"Pushed %@\n", browserPath);
+	dolog(@"Pushed %@\n", browserPath);
 	[super pushNavigationItem:item];
 }
 
@@ -146,13 +146,13 @@
 
 	_textIsOnTop = thisIsText;
 	_pixOnTop = !thisIsText;
-	NSLog(@"Pushed view\n");
+	dolog(@"Pushed view\n");
 	int transitionType = reversed ? 2 : 1;
 	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
 					toView:view];
-	NSLog(@"transitioned");
+	dolog(@"transitioned");
 	[super pushNavigationItem:item];
-	NSLog(@"called super");
+	dolog(@"called super");
 }
 
 - (FileBrowser *)topBrowser
@@ -224,7 +224,7 @@
 
 - (void)showTopNavBar:(BOOL)withAnimation
 {
-	NSLog(@"showTopNavBar");
+	dolog(@"showTopNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
 	// the top nav bar shows under the status bar.
@@ -244,7 +244,7 @@
 
 - (void)hideTopNavBar
 {
-	NSLog(@"hideTopNavBar");
+	dolog(@"hideTopNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
@@ -257,7 +257,7 @@
 
 - (void)showBotNavBar
 {
-	NSLog(@"hideBotNavBar");
+	dolog(@"hideBotNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
@@ -269,7 +269,7 @@
 
 - (void)hideBotNavBar
 {
-	NSLog(@"hideBotNavBar");
+	dolog(@"hideBotNavBar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);

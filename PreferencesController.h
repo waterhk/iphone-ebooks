@@ -75,6 +75,8 @@ enum PreferenceAnimationType{inAnim, outAnim, none} ;
 	UIPreferencesControlTableCell *chapterButtonsPreferenceCell;
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
+	UIPreferencesControlTableCell *invNavZonePreferenceCell;
+	UIPreferencesControlTableCell *enlargeNavZonePreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
 	UIPreferencesControlTableCell *smartConversionPreferenceCell;
 	UIPreferencesControlTableCell *subchapteringPreferenceCell;

@@ -29,6 +29,13 @@
 
 @implementation BooksDefaultsController
 
++ (NSString*) defaultEBookPath
+{
+	static NSString *_default_EBookPath;
+   _default_EBookPath	= [[NSHomeDirectory() stringByAppendingPathComponent: EBOOK_PATH_SUFFIX] retain];
+	return _default_EBookPath;
+}
+
 - (id) init
 {
   NSMutableDictionary *temp;
@@ -42,7 +49,7 @@
   [temp setObject:@"" forKey:FILEBEINGREADKEY];
   [temp setObject:@"16" forKey:TEXTSIZEKEY];
   [temp setObject:@"0" forKey:ISINVERTEDKEY];
-  [temp setObject:EBOOK_PATH forKey:BROWSERFILESKEY];
+  [temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
   [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
   [temp setObject:@"1" forKey:NAVBAR];
   [temp setObject:@"1" forKey:TOOLBAR];
@@ -56,6 +63,8 @@
   [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
   [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
   [temp setObject:@"0" forKey:ISROTATE90KEY];
+  [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
+  [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
 
   [_defaults registerDefaults:temp];
   [temp release];
@@ -328,6 +337,31 @@
 	_toolbarShouldUpdate = YES;
 	_NeedRotate = YES;
 }
+
+- (BOOL)inverseNavZone
+{
+	BOOL value = [_defaults boolForKey:INVERSENAVZONEKEY];
+	return value;
+}
+
+- (void)setInverseNavZone:(BOOL)inverted
+{
+	[_defaults setBool:inverted forKey:INVERSENAVZONEKEY];
+}- 
+
+(BOOL)enlargeNavZone
+{
+	BOOL value = [_defaults boolForKey:ENLARGENAVZONEKEY];
+	return value;
+}
+
+- (void)setEnlargeNavZone:(BOOL)inverted
+{
+	[_defaults setBool:inverted forKey:ENLARGENAVZONEKEY];
+}
+
+
+
 
 - (BOOL)chapternav
 {

@@ -20,8 +20,10 @@
 
 #ifndef COMMON_H
 #define COMMON_H
-
-#define EBOOK_PATH @"/var/root/Media/EBooks"
+/**
+ * appended to the home directory to create the real EBooksPath
+ */
+#define EBOOK_PATH_SUFFIX @"Media/EBooks"
 
 #define MIN_FONT_SIZE (10)
 #define MAX_FONT_SIZE (36)

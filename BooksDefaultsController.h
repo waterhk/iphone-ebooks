@@ -31,6 +31,7 @@
   NSUserDefaults *_defaults;
   BOOL            _toolbarShouldUpdate;
   BOOL            _NeedRotate;
+  BOOL            _inverseNavZone;
 }
 
 /*
@@ -75,6 +76,8 @@
 #define ENABLESUBCHAPTERINGKEY @"enableSubchapteringKey"
 #define SCROLLSPEEDINDEXKEY    @"scrollSpeedIndexKey"
 #define ISROTATE90KEY          @"isRotate90Key"
+#define INVERSENAVZONEKEY      @"inverseNavZoneKey"
+#define ENLARGENAVZONEKEY      @"enlargeNavZoneKey"
 
 - (id) init;
 - (void) updateOldPreferences;
@@ -97,6 +100,10 @@
 - (void)setToolbar:(BOOL)isToolbar;
 - (BOOL)flipped;
 - (void)setFlipped:(BOOL)isFlipped;
+- (BOOL)inverseNavZone;
+- (void)setInverseNavZone:(BOOL)Inversed;
+- (BOOL)enlargeNavZone;
+- (void)setEnlargeNavZone:(BOOL)Enlarge;
 - (BOOL)isRotate90;
 - (void)setRotate90:(BOOL)isRotate90;
 - (NSString *)textFont;
@@ -137,6 +144,14 @@
  *
  */
 - (struct CGRect) fullScreenApplicationContentRect;
+/**
+ * retrieve the apps default location for EBooks.
+ * Note that this is not the location stored in prefs but the default.  This is needed as opposed to the previous
+ * approach of the macro EBOOK_PATH as between 1.1.2 and 1.1.3 there is a change in user and therefore location for this
+ * default path
+ *
+ */
++ (NSString*) defaultEBookPath;
 /**
  * singleton factory method
  */
