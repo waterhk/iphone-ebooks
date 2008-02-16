@@ -122,7 +122,10 @@
 {
 	NSLog(@"animator called");
 	if (_curAnimation == outAnim)
+	{
 		[controller preferenceAnimationDidFinish];
+		[preferencesView removeFromSuperview];
+	}
 	_curAnimation = none;
 }
 

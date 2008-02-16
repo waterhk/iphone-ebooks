@@ -768,9 +768,10 @@
 
 - (void)updateNavbar
 {
-	[navBar removeFromSuperview];
-	[self setupNavbar];
-	[mainView addSubview:navBar];
+	CGRect rect = [defaults fullScreenApplicationContentRect];
+	[navBar setFrame: 	CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
+	float lMargin = 45.0f;
+	[prefsButton setFrame:CGRectMake(rect.size.width-lMargin,9,40,30) ];
 }
 
 - (void)updateToolbar:(NSNotification *)notification
@@ -966,6 +967,7 @@
 	NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
 	NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 	[self updateToolbar: 0];
+	[self updateNavbar];
 	//BCC: animate this
 	/*	
 		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
