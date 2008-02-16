@@ -54,10 +54,6 @@
 												 name:@"toolbarDefaultsChanged"
 											   object:nil];
 
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(rotateAppNeeded:)
-												 name:@"rotationDefaultChanged"
-											   object:nil];
 	window = [[UIWindow alloc] initWithContentRect: rect];
 
 	[window orderFront: self];
@@ -666,6 +662,7 @@
 {
 
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
+	[navBar release]; //BCC in case this is not the first time this method is called
 	navBar = [[HideableNavBar alloc] initWithFrame:
 		CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
 
@@ -688,7 +685,7 @@
 - (void)setupToolbar
 {
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
-
+	[bottomNavBar release]; //BCC in case this is not the first time this method is called
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
 		CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
 				rect.size.width, 48.0f)];
@@ -708,13 +705,15 @@
 			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
 		}
 
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(192,9,40,30) selector:@selector(invertText:) flipped:NO];
+		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
 	} else {
 		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
 		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(88,9,40,30) selector:@selector(invertText:) flipped:NO];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
+		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
 
 		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
 			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
@@ -731,6 +730,7 @@
 	[bottomNavBar addSubview:minusButton];
 	[bottomNavBar addSubview:plusButton];
 	[bottomNavBar addSubview:invertButton];
+	[bottomNavBar addSubview:rotateButton];
 
 	if ([defaults chapternav]) {
 		[bottomNavBar addSubview:leftButton];
@@ -766,6 +766,13 @@
 	return buttonImg;
 }
 
+- (void)updateNavbar
+{
+	[navBar removeFromSuperview];
+	[self setupNavbar];
+	[mainView addSubview:navBar];
+}
+
 - (void)updateToolbar:(NSNotification *)notification
 {
 	NSLog(@"%s Got toolbar update notification.", _cmd);
@@ -773,13 +780,6 @@
 	[self setupToolbar];
 	[mainView addSubview:bottomNavBar];
 }
-
-- (void)rotateAppNeeded:(NSNotification *)notification
-{
-	NSLog(@"%s Got rotateAppNeeded notification.", _cmd);
-	[self rotateApp];
-}
-
 
 - (void)setTextInverted:(BOOL)b
 {
@@ -791,9 +791,9 @@
 	if (![button isPressed]) // mouseUp only
 	{
 		NSLog(@"Showing Preferences View");
-		if (!prefController)
-			prefController = [PreferencesController alloc];
-		[prefController initWithAppController:self];
+		PreferencesController *prefsController = [[PreferencesController alloc] initWithAppController:self];
+		[prefsButton setEnabled:false];
+		[prefsController showPreferences];
 	}
 }
 
@@ -902,7 +902,17 @@
 	[minusButton release];
 	[plusButton release];
 	[invertButton release];
+	[rotateButton release];
 	[super dealloc];
+}
+
+- (void) rotateButtonCallback:(UINavBarButton*) button
+{
+	if (![button isPressed]) // mouse up events only, kids!
+	{
+		[defaults setRotate90:![defaults isRotate90]];
+		[self rotateApp];
+	}	
 }
 
 - (void)rotateApp
@@ -944,6 +954,7 @@
 		}
 		NSLog(@"rotating");
 		[window setTransform: lTransform];
+		
 	}
 	if (![defaults isRotate90])
 	{
@@ -954,6 +965,7 @@
 	CGRect bounds = [window bounds];
 	NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
 	NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+	[self updateToolbar: 0];
 	//BCC: animate this
 	/*	
 		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
@@ -963,5 +975,9 @@
 		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
 		[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
 		*/
+}
+- (void) preferenceAnimationDidFinish
+{
+	[prefsButton setEnabled:true];
 }
 @end

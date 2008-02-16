@@ -50,7 +50,7 @@
 #import "BooksDefaultsController.h"
 #import "EncodingPrefsController.h"
 #import "FontChoiceController.h"
-
+enum PreferenceAnimationType{inAnim, outAnim, none} ;
 @interface PreferencesController : NSObject {
 	
 	UINavigationBar				*navigationBar;
@@ -75,7 +75,6 @@
 	UIPreferencesControlTableCell *chapterButtonsPreferenceCell;
 	UIPreferencesControlTableCell *pageButtonsPreferenceCell;	
 	UIPreferencesControlTableCell *flippedToolbarPreferenceCell;
-	UIPreferencesControlTableCell *rotate90PreferenceCell;
 	UIPreferencesControlTableCell *defaultEncodingPreferenceCell;
 	UIPreferencesControlTableCell *smartConversionPreferenceCell;
 	UIPreferencesControlTableCell *subchapteringPreferenceCell;
@@ -89,12 +88,13 @@
 	BOOL needsInAnimation, needsOutAnimation; // here's hoping.
 	UIAnimator *animator;
 	UITransformAnimation *translate;
-
-       	EncodingPrefsController *encodingPrefs;
+	enum PreferenceAnimationType _curAnimation;
+	EncodingPrefsController *encodingPrefs;
 	FontChoiceController *fontChoicePrefs;
 }
 
 - (id)initWithAppController:(BooksApp *)appController;
+- (void)buildPreferenceView;
 - (void)showPreferences;
 - (void)hidePreferences;
 - (void)createPreferenceCells;

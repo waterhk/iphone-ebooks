@@ -19,27 +19,31 @@
 
 #import "PreferencesController.h"
 #import "BooksDefaultsController.h"
-
+#import <UIKit/UIView-Animation.h>
 @implementation PreferencesController
+//trace delegate calls
+#include "peekaboo.m"
 
-- (id)initWithAppController:(BooksApp *)appController {
-		if(self = [super init])
-		{
-			controller = appController;
-			contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
-		contentRect.origin.x = 0.0f;
-		contentRect.origin.y = 0.0f;
+- (id)initWithAppController:(BooksApp *)appController 
+{
+	if(self = [super init])
+	{
+		controller = appController;
+		contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
+		//contentRect.origin.x = 0.0f;
+		//contentRect.origin.y = 0.0f;
 
-			needsInAnimation = needsOutAnimation = NO;
-			defaults = [BooksDefaultsController sharedBooksDefaultsController];
-			[self createPreferenceCells];
-			[self showPreferences];
+		needsInAnimation = needsOutAnimation = NO;
+		defaults = [BooksDefaultsController sharedBooksDefaultsController];
+		_curAnimation = none;
+		[self createPreferenceCells];
+		[self buildPreferenceView];
 
-		}
-		return self;
+	}
+	return self;
 }
 
-- (void)showPreferences {
+	- (void)buildPreferenceView {
 		if (nil == preferencesView)
 		{
 			//Bcc the view is created bellow the screen so as to smoothly appear
@@ -104,13 +108,24 @@
 		}
 
 		[preferencesTable reloadData];
+	}
 
-		needsInAnimation = YES;
-		[[NSNotificationCenter defaultCenter] 
-			postNotificationName:PREFS_NEEDS_ANIMATE
-						  object:self];
+- (void)showPreferences {
+	needsInAnimation = YES;
+	[[NSNotificationCenter defaultCenter] 
+		postNotificationName:PREFS_NEEDS_ANIMATE
+					  object:self];
 
 }
+
+- (void) animator:(UIAnimator *) animator stopAnimation:(UIAnimation *) animation
+{
+	NSLog(@"animator called");
+	if (_curAnimation == outAnim)
+		[controller preferenceAnimationDidFinish];
+	_curAnimation = none;
+}
+
 
 - (void)checkForAnimation:(id)unused
 {
@@ -126,6 +141,8 @@
 		struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 		[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
 		[translate setEndTransform:trans];
+		[translate setDelegate:self];
+		_curAnimation = inAnim;
 		[animator addAnimation:translate withDuration:0.5 start:YES]; 
 		needsInAnimation = NO;
 	}
@@ -133,13 +150,16 @@
 	{
 		//BCC the contentRect may have changed let's update it
 		NSLog(@"prefs animation out");
-		CGRect lNewContentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
 		[preferencesView setFrame:contentRect];
 		struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 		[translate setStartTransform:trans];
-		[translate setEndTransform:CGAffineTransformMake(1,0,0,1,0,0)];
-		[animator addAnimation:translate withDuration:5 start:YES];
-
+		[translate setEndTransform:CGAffineTransformIdentity];
+		[UIView setAnimationDelegate:self];
+		NSLog(@"turlute3");
+		[UIView setAnimationDidStopSelector:@selector(animationDidStop:)];
+		[translate setDelegate:self];
+		_curAnimation = outAnim;
+		[animator addAnimation:translate withDuration:0.5 start:YES];
 		needsOutAnimation = NO;
 	}
 }
@@ -206,7 +226,6 @@
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
 
-	[defaults setRotate90:[[[rotate90PreferenceCell control] valueForKey:@"value"] boolValue]];
 	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
 
@@ -301,14 +320,6 @@
 	[flippedSitchControl setValue:flipped];
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
-
-	rotate90PreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
-	BOOL isRotate90 = [defaults isRotate90];
-	[rotate90PreferenceCell setTitle:@"Landscape"];
-	UISwitchControl *rotate90SitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
-	[rotate90SitchControl setValue:isRotate90];
-	[rotate90SitchControl setAlternateColors:YES];
-	[rotate90PreferenceCell setControl:rotate90SitchControl];	
 
 	//CHANGED: Zach's additions 9/6/07
 
@@ -528,15 +539,21 @@
 
 - (void)navigationBar:(UINavigationBar*)navbar buttonClicked:(int)button 
 {
-	switch (button) 
+	NSLog(@"curanim %d", (int)_curAnimation);
+	NSLog(@"none %d, inAnim %d, outAnim %d", (int)none, (int)inAnim, (int)outAnim);
+	if (_curAnimation == none)
 	{
-		case 0: // Changed to comport with Apple's UI
-			[self hidePreferences]; 
-			break;
-		case 1:
-			[self aboutAlert];
-			break;
+		switch (button) 
+		{
+			case 0: // Changed to comport with Apple's UI
+				[self hidePreferences]; 
+				break;
+			case 1:
+				[self aboutAlert];
+				break;
+		}
 	}
+
 }
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
@@ -556,7 +573,7 @@
 			rowCount = 2;
 			break;
 		case 2: //toolbar options
-			rowCount = 4;
+			rowCount = 3;
 			break;
 		case 3: //file import
 			rowCount = 4;
@@ -613,9 +630,6 @@
 					break;
 				case 2:
 					prefCell = flippedToolbarPreferenceCell;
-					break;
-				case 3:
-					prefCell = rotate90PreferenceCell;
 					break;
 			}
 			break;
@@ -693,7 +707,7 @@
 
 
 
-- (void)dealloc {
+	- (void)dealloc {
 		if (preferencesView != nil)
 		{
 			[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -712,6 +726,6 @@
 		[defaults release];
 		[controller release];
 		[super dealloc];
-}
+	}
 
 @end

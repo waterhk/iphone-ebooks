@@ -42,7 +42,7 @@
 #import "BooksDefaultsController.h"
 #import "HideableNavBar.h"
 #import "common.h"
-
+enum PreferenceAnimationType;
 @class PreferencesController;
 
 @interface BooksApp : UIApplication {
@@ -53,7 +53,6 @@
 	UITransitionView *transitionView;
         EBookView   *textView;
 	EBookImageView *imageView;
-	PreferencesController *prefController;
 	NSString    *path;
 	NSError     *error;
 	BOOL        bookHasChapters;
@@ -70,6 +69,7 @@
 	UINavBarButton *minusButton;
 	UINavBarButton *plusButton;
 	UINavBarButton *invertButton;
+	UINavBarButton *rotateButton;
 	UINavBarButton *prefsButton;
 	UINavBarButton *downButton;
 	UINavBarButton *upButton;
@@ -100,6 +100,7 @@
 - (void)setupNavbar;
 - (void)setupToolbar;
 - (void)updateToolbar:(NSNotification *)notification;
+- (void)updateNavbar;
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped;
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
 - (void)textViewDidGoAway:(id)sender;
@@ -111,4 +112,7 @@
 - (NSString *)currentBrowserPath;
 - (void)cleanUpBeforeQuit;
 - (void)rotateApp;
+- (void)rotateButtonCallback:(UINavBarButton*) button;
+- (void) applicationDidFinishLaunching: (id) unused;
+- (void) preferenceAnimationDidFinish;
 @end
