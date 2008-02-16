@@ -21,7 +21,7 @@ Books:  mainapp.o BooksApp.o EBookView.o FileBrowser.o FileTable.o \
 	EncodingPrefsController.o NSString-BooksAppAdditions.o EBookImageView.o \
 	HTMLFixer.o FontChoiceController.o \
 	palm/unpluck.o palm/palmconvert.o palm/util.o palm/pluckhtml.o \
-       	palm/txt2pdbdoc.o palm/libjpeg.a Regex.o ChapteredHTML.o
+       	palm/txt2pdbdoc.o palm/libjpeg.a Regex.o ChapteredHTML.o dolog.o
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
 %.o:    %.m 

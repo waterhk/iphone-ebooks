@@ -49,7 +49,7 @@
 }
 
 - (void)hideTopNavBar;
-- (void)showTopNavBar;
+- (void)showTopNavBar:(BOOL)withAnimation;
 - (void)hideBotNavBar;
 - (void)showBotNavBar;
 
@@ -71,5 +71,11 @@
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
 - (void)shouldReloadAllBrowsers:(NSNotification *)notification;
 - (NSString *)topBrowserPath;
+
+@end
+//informal protocol declaration
+@interface NSObject (FileBrowserDelegate)
+
+- (void)textViewDidGoAway:(id)sender;
 
 @end

@@ -44,7 +44,7 @@
   chapteredHTML = [[ChapteredHTML alloc] init];
   subchapter    = 0;
   defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
-
+  //[self setAdjustForContentSizeChange:YES];
   [self setEditable:NO];
   
   [self setTextSize:size];
@@ -152,6 +152,8 @@
 	      didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
 {
   NSString *theHTML = nil;
+  NSLog(@"path:");
+  NSLog(thePath);
   path = [[thePath copy] retain];
   if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
     {

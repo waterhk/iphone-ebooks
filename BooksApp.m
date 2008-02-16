@@ -19,7 +19,7 @@
 #import "BooksApp.h"
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
-
+#include "dolog.h"
 @implementation BooksApp
 /*
    enum {
@@ -849,12 +849,19 @@
 	}
 	if (readingText)
 	{  // Let's avoid the weird toggle behavior.
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[navBar hide:NO];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[bottomNavBar hide:NO];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[self hideSlider];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	}
 	else // not reading text
+	{
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[bottomNavBar hide:YES];
+	}
 
 	if (![defaults navbar])
 		[textView setMarginTop:48];
@@ -866,12 +873,15 @@
 		[textView setBottomBufferHeight:0];
 	if (!toolbarsOnly)
 	{
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 		//	[textView loadBookWithPath:[textView currentPath]];
 		[textView setFrame:rect];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		struct CGRect overallRect = [[textView _webView] frame];
 		NSLog(@"overall height: %f", overallRect.size.height);
 		struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView scrollPointVisibleAtTopLeft:thePoint];
 	}
 }
@@ -933,11 +943,16 @@
 
 - (void)rotateApp
 {
+	CGSize lContentSize = [textView contentSize];	
+	NSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
 	NSLog(@"rotateApp");
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	//UIAnimator *anim = [[UIAnimator alloc] init];
 	[self toggleStatusBarColor];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	if ([defaults isRotate90])
 	{
 		int degree = 90;
@@ -952,15 +967,19 @@
 	} else
 	{
 	}
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	struct CGAffineTransform lMatrixprev = [window transform];
-	NSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
-	NSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
-	NSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	//NSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
+	//NSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
+	//NSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
 	{
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		NSLog(@"overall height: %f", overallRect.size.height);
 		struct CGRect visRect = [textView visibleRect];
 		float scrollPercentage = visRect.origin.y / overallRect.size.height;
@@ -976,37 +995,50 @@
 		[textView setHeartbeatDelegate:self];
 		NSString *recentFile = [defaults fileBeingRead];
 		int subchapter = [defaults lastSubchapterForFile:recentFile];
-		
-		
+
+
 		overallRect = [[textView _webView] frame];
 		NSLog(@"new overall height: %f", overallRect.size.height);
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		textViewNeedsFullText = NO;
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
 									 animated:NO];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 
 
 		NSLog(@"rotating");
-		 [window setTransform: lTransform];
+		[window setTransform: lTransform];
 
-	}
-	if (![defaults isRotate90])
-	{
-		rect.origin.y+=20; //to take into account the status bar
-		[window setFrame: rect];
-	}
-	CGRect frame = [window frame];
-	CGRect bounds = [window bounds];
-	NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-	NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-	[self updateToolbar: 0];
-	[self updateNavbar];
-	if (scrollerSlider)
-	{
+		if (![defaults isRotate90])
+		{
+			rect.origin.y+=20; //to take into account the status bar
+			[window setFrame: rect];
+		}
+		CGRect frame = [window frame];
+		CGRect bounds = [window bounds];
+		//NSLog(@"frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+		//NSLog(@"bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+	NSLog(@"%s:%d", __FILE__, __LINE__);
+		[self updateToolbar: 0];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
+		[self updateNavbar];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
+		lContentSize = [textView contentSize];	
+	NSLog(@"%s:%d", __FILE__, __LINE__);
+		NSLog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
+		//[navBar showTopNavBar:NO];
+		//[navBar show];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
+	[bottomNavBar hide:NO];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 		NSLog(@"showing the slider");
-		[self showSlider:false];
+		[self hideSlider];
+	NSLog(@"%s:%d", __FILE__, __LINE__);
 	}
 	//BCC: animate this
 	/*	
