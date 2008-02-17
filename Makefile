@@ -1,8 +1,11 @@
 CC=arm-apple-darwin-gcc
 CFLAGS=-O3
-CPPFLAGS=-I/opt/local/include -I/home/benoit/dev/heavenly/usr/local/include
+CPPFLAGS=-I/opt/local/include
 LD=$(CC)
-LDFLAGS=-L$(HEAVENLY)/usr/lib -L/usr/local/lib/gcc/arm-apple-darwin/4.0.1 -lz -lobjc -lgcc -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit -framework CoreGraphics -framework GraphicsServices -lcrypto
+LDFLAGS=-L$(HEAVENLY)/usr/lib -L/usr/local/lib/gcc/arm-apple-darwin/4.0.1 \
+	-lz -lobjc -lgcc -framework CoreFoundation -framework Foundation \
+	-framework UIKit -framework LayerKit -framework CoreGraphics \
+	-framework GraphicsServices -lcrypto
 
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";
@@ -62,3 +65,8 @@ package: Books
 	cp right_up.png Books.app/right_up.png
 	cp UnreadIndicator.png Books.app/UnreadIndicator.png
 	cp ReadIndicator.png Books.app/ReadIndicator.png
+	
+deploy: Books
+	scp Books iphone:/Applications/Books.app/
+	ssh iphone chmod +x /Applications/Books.app/Books
+
