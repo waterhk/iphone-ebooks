@@ -70,3 +70,6 @@ deploy: Books
 	scp Books iphone:/Applications/Books.app/
 	ssh iphone chmod +x /Applications/Books.app/Books
 
+deploy-app: package
+		scp -r Books.app iphone:/Applications/
+		ssh iphone chmod +x /Applications/Books.app/Books

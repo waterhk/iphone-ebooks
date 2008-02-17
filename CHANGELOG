@@ -1,3 +1,8 @@
+v. 1.4-pre01 - Several changes contributed by benoitcerrina, including:
+   - Landscape mode with view rotate (#81)
+   - Double-display of preferences window fixed (#77)
+   - Support for 1.1.3 firmware improved (#92, #94, #96)   
+
 v. 1.3.7 - Moved encoding system over to txt2pdbdoc.  Palm DOC files
 	   now respond to encoding preferences.  Plucker unknown.
 
