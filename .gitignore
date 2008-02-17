@@ -1,6 +1,7 @@
 #ignore build result
 *.o
 Books
+Books.app
 #ignore vim files
 *.swp
 #ignore tag files
