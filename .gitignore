@@ -2,6 +2,7 @@
 *.o
 Books
 Books.app
+Books-*.zip
 #ignore vim files
 *.swp
 #ignore tag files

@@ -7,6 +7,8 @@ LDFLAGS=-L$(HEAVENLY)/usr/lib -L/usr/local/lib/gcc/arm-apple-darwin/4.0.1 \
 	-framework UIKit -framework LayerKit -framework CoreGraphics \
 	-framework GraphicsServices -lcrypto
 
+VERSION=$(shell ./getversion.sh)
+
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";
 	QL	= @echo "Linking   [$@]";
@@ -71,5 +73,8 @@ deploy: Books
 	ssh iphone chmod +x /Applications/Books.app/Books
 
 deploy-app: package
-		scp -r Books.app iphone:/Applications/
-		ssh iphone chmod +x /Applications/Books.app/Books
+	scp -r Books.app iphone:/Applications/
+	ssh iphone chmod +x /Applications/Books.app/Books
+
+zip: package
+	zip -r Books-$(VERSION).zip Books.app
