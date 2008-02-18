@@ -1,3 +1,5 @@
+# Books.app Makefile
+
 CC=arm-apple-darwin-gcc
 CFLAGS=-O3
 CPPFLAGS=-I/opt/local/include
