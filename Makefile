@@ -18,7 +18,7 @@ OBJECTS=$(patsubst source/%,obj/%,$(patsubst source/palm/%,obj/%, \
 
 IMAGES=$(wildcard images/*.png)
 
-ARCHIVE=Books-$(VERSION).tbz
+ARCHIVE=Books-$(VERSION).zip
 
 BASEURL=http://www.thebedells.org/books/
 SCP_BASE=www:~/wwwroot/books/
@@ -88,7 +88,7 @@ deploy-app: bundle
 	ssh iphone chmod +x /Applications/Books.app/Books
 
 package: bundle
-	tar -cjvf $(ARCHIVE) Books.app
+	zip -r9 $(ARCHIVE) Books.app
 	
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)
