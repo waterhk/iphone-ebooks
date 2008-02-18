@@ -20,7 +20,8 @@ IMAGES=$(wildcard images/*.png)
 
 ARCHIVE=Books-$(VERSION).tbz
 
-BASEURL=http://iphoneebooks.googlecode.com/files/
+BASEURL=http://www.thebedells.org/books/
+SCP_BASE=www:~/wwwroot/books/
 
 QUIET=true
 
@@ -88,3 +89,7 @@ deploy-app: bundle
 
 package: bundle
 	tar -cjvf $(ARCHIVE) Books.app
+	
+deploy-repo: package repo.xml
+	scp $(ARCHIVE) $(SCP_BASE)
+	scp repo.xml $(SCP_BASE)
