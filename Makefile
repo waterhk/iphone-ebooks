@@ -1,6 +1,6 @@
-#
+#  
 # Books.app Makefile
-#
+# 
  
 CC=arm-apple-darwin-gcc
 CFLAGS=-O3
@@ -97,3 +97,4 @@ package: bundle
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)
 	scp repo.xml $(SCP_BASE)
+
