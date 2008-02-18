@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>info</key>
+		<dict>
+			<key>name</key>
+			<string>Books Repository in Exile</string>
+			<key>description</key>
+			<string>Temporary home for Books during the primary developer's sabbatical</string>
+			<key>maintainer</key>
+			<string>Zachary Bedell</string>
+			<key>contact</key>
+			<string>pendorbound@gmail.com</string>
+			<key>url</key>
+			<string>http://code.google.com/p/iphoneebooks/</string>
+			<key>category</key>
+			<string>Productivity</string>
+		</dict>
+		<key>packages</key>
+		<array>
+			<dict>
+				<key>bundleIdentifier</key>
+				<string>com.zacharybrewstergeisz.books</string>
+				<key>name</key>
+				<string>Books</string>
+				<key>version</key>
+				<string>__VERSION__</string>
+				<key>location</key>
+				<string>__PKG_URL__</string>
+				<key>size</key>
+				<string>__PKG_SIZE__</string>
+				<key>description</key>
+				<string>Native eBook reader capable of displaying HTML, text, and several PalmOS book formats</string>
+				<key>author</key>
+				<string>Zachary Brewster-Geisz, Chris Born, BCC, and Zachary Bedell</string>
+				<key>restartSpringBoard</key>
+				<true/>
+				<key>scripts</key>
+				<dict>
+					<key>install</key>
+					<array>
+						<array>
+							<string>CopyPath</string>
+							<string>Books.app</string>
+							<string>/Applications/Books.app</string>
+						</array>
+					</array>
+					<key>uninstall</key>
+					<array>
+						<array>
+							<string>RemovePath</string>
+							<string>/Applications/Books.app</string>
+						</array>
+					</array>
+				</dict>
+				<key>category</key>
+				<string>Productivity</string>
+				<key>date</key>
+				<string>__RELEASE_DATE__</string>
+			</dict>
+		</array>
+	</dict>
+</plist>

@@ -1,3 +1,6 @@
+v. 1.4-pre02 - Add missing image files for toolbars
+   - Package as TBZ instead of ZIP - more likely to keep +x bit in place.
+
 v. 1.4-pre01 - Several changes contributed by benoitcerrina, including:
    - Landscape mode with view rotate (#81)
    - Double-display of preferences window fixed (#77)

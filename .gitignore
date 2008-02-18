@@ -3,6 +3,7 @@
 Books
 Books.app
 Books-*.zip
+Books-*.tbz
 #ignore vim files
 *.swp
 #ignore tag files
@@ -10,3 +11,7 @@ tags
 .tb.*.tags
 #miscelaneous scratch files
 Dimmensions.ods
+obj
+Info.plist
+repo.xml
+.DS*
