@@ -200,7 +200,7 @@
 
 - (NSString *)lastBrowserPath
 {
-	NSString *path = [_defaults objectForKey:BROWSERFILESKEY];
+	NSString *path = [[_defaults objectForKey:BROWSERFILESKEY] stringByExpandingTildeInPath];
 
 	Debug (@"[_defaults lastBrowserPath] = %s", [path cString]);
 	return path;
