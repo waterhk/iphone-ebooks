@@ -34,7 +34,7 @@
    */
 - (void) applicationDidFinishLaunching: (id) unused
 {
-//	freopen("/var/logs/Books.traces", "a", stderr);
+	freopen("/var/logs/Books.traces", "w", stderr);
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	NSString *recentFile;
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
@@ -132,11 +132,13 @@
 - (void)finishUpLaunch
 {
 	NSString *recentFile = [defaults fileBeingRead];
+	
 	if (imageSplashed)
 	{
 		[self _dumpScreenContents:nil];
-		NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
-																ofType:@"png"];
+	//	NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
+	//															ofType:@"png"];
+		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Books/Default.png"];
 		NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
 		[nsdat writeToFile:defaultPath atomically:YES];
 		imageSplashed = NO;
@@ -554,6 +556,7 @@
 
 - (void)chapForward:(UINavBarButton *)button 
 {
+	GSLog(@"chapForward start");
 	if (![button isPressed])
 	{
 		if ([textView gotoNextSubchapter] == YES)
@@ -588,7 +591,7 @@
 
 				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 																	object:[tempView currentPath]];
-				[textView autorelease];
+//				[textView autorelease];
 				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 				[textView setHeartbeatDelegate:self];
 
@@ -614,6 +617,8 @@
 			}
 		}
 	}	
+
+	GSLog(@"chapForward end");
 }
 
 - (void)chapBack:(UINavBarButton *)button 
@@ -800,9 +805,12 @@
 - (void)updateToolbar:(NSNotification *)notification
 {
 	GSLog(@"%s Got toolbar update notification.", _cmd);
+	BOOL lBottomBarHidden = [bottomNavBar hidden];
 	[bottomNavBar removeFromSuperview];
 	[self setupToolbar];
 	[mainView addSubview:bottomNavBar];
+	if (lBottomBarHidden)
+		[bottomNavBar hide:NO];
 }
 
 - (void)setTextInverted:(BOOL)b
@@ -996,8 +1004,8 @@
 		[textView setFrame: rect];
 		[self refreshTextViewFromDefaults];
 		[textView setHeartbeatDelegate:self];
-		NSString *recentFile = [defaults fileBeingRead];
-		int subchapter = [defaults lastSubchapterForFile:recentFile];
+		int            subchapter = [textView getSubchapter];
+		NSString      *recentFile   = [textView currentPath];
 
 
 		overallRect = [[textView _webView] frame];
@@ -1026,33 +1034,6 @@
 		[self hideSlider];
 	}
 //	
-//	GSLog(@"textView's super %@", [textView superview]);
-//	CGRect frame = [window frame];
-//	CGRect bounds = [window bounds];
-//	CGRect extent = [window extent];
-//	GSLog(@"window frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	GSLog(@"window bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	GSLog(@"window extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
-//	frame = [transitionView frame];
-//	bounds = [transitionView bounds];
-//	extent = [transitionView extent];
-//	GSLog(@"transitionView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	GSLog(@"transitionView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	GSLog(@"transitionView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
-//	frame = [textView frame];
-//	bounds = [textView bounds];
-//	extent = [textView extent];
-//	lContentSize = [textView contentSize];	
-//	GSLog(@"textView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	GSLog(@"textView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	GSLog(@"contentSize after rotation:w=%f, h=%f", lContentSize.width, lContentSize.height);
-//	GSLog(@"textView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
-//	frame = [[textView _webView] frame];
-//	bounds = [[textView _webView] bounds];
-//	extent = [[textView _webView]extent];
-//	GSLog(@"webView frame after:  x=%f, y=%f, w=%f, h=%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//	GSLog(@"webView bounds after: x=%f, y=%f, w=%f, h=%f", bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-//	GSLog(@"webView extent after: x=%f, y=%f, w=%f, h=%f", extent.origin.x, extent.origin.y, extent.size.width, extent.size.height);
 
 	//BCC: animate this
 	/*	

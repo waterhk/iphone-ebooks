@@ -22,7 +22,7 @@
 
 #define DEBUG 0
 #if DEBUG
-# define Debug(x...) NSLog(x)
+# define Debug(x...) GSLog(x)
 #else
 # define Debug(x...)
 #endif
@@ -143,6 +143,7 @@
 
 - (void)setFileBeingRead:(NSString *)file
 {
+	Debug (@"[_defaults setFileBeingRead %s]", file);
 	[_defaults setObject:file forKey:FILEBEINGREADKEY];
 }
 

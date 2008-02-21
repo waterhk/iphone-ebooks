@@ -39,10 +39,10 @@ else
 	QN	=
 endif
 
+all:    Books
+
 test:
 	echo $(OBJECTS)
-
-all:    Books
 	
 bundle: Books.app
 
@@ -82,17 +82,19 @@ Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@rm -fr Books.app
 	@mkdir -p Books.app
 	@cp $^ Books.app/
+	@rm Books.app/Default.png
+	@ln  -s '~/Library/Books/Default.png' Books.app/Default.png
 	
 deploy: obj/Books
 	scp obj/Books iphone:/Applications/Books.app/
 	ssh iphone chmod +x /Applications/Books.app/Books
 
 deploy-app: bundle
-	scp -r Books.app iphone:/Applications/
-	ssh iphone chmod +x /Applications/Books.app/Books
+	scp -r Books.app root@iphone:/Applications/
+	ssh root@iphone chmod +x /Applications/Books.app/Books
 
 package: bundle
-	zip -r9 $(ARCHIVE) Books.app
+	zip -r9 $(ARCHIVE) Books.app images/Default.png
 	
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)

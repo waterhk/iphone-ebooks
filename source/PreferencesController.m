@@ -514,7 +514,7 @@
 		objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 		version = @"??";
-	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, BCC, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, Benoit Cerrina, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,240,rect.size.width,240)];
 	[alertSheet setTitle:@"About Books"];
