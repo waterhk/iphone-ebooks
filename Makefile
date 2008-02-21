@@ -82,8 +82,6 @@ Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@rm -fr Books.app
 	@mkdir -p Books.app
 	@cp $^ Books.app/
-	@rm Books.app/Default.png
-	@ln  -s '~/Library/Books/Default.png' Books.app/Default.png
 	
 deploy: obj/Books
 	scp obj/Books iphone:/Applications/Books.app/
@@ -94,7 +92,7 @@ deploy-app: bundle
 	ssh root@iphone chmod +x /Applications/Books.app/Books
 
 package: bundle
-	zip -r9 $(ARCHIVE) Books.app images/Default.png
+	zip -r9 $(ARCHIVE) Books.app
 	
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)

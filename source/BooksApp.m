@@ -109,7 +109,7 @@
 	{
 		coverart = [[NSBundle mainBundle] pathForResource:@"Default"
 												   ofType:@"png"];
-		[progressIndicator setStyle:![defaults inverted]];
+		//[progressIndicator setStyle:![defaults inverted]];
 	}
 	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
 	[mainView addSubview:imageView];
@@ -132,18 +132,19 @@
 - (void)finishUpLaunch
 {
 	NSString *recentFile = [defaults fileBeingRead];
-	
+	/*
 	if (imageSplashed)
 	{
 		[self _dumpScreenContents:nil];
 	//	NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
 	//															ofType:@"png"];
 		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Books/Default.png"];
-		NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
+		NSData *nsdat = [NSData dataWithContentsOfFile:defaultPath];
 		[nsdat writeToFile:defaultPath atomically:YES];
 		imageSplashed = NO;
 	}
-
+	*/
+	
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
 	[navBar pushNavigationItem:tempItem withBrowserPath:[BooksDefaultsController defaultEBookPath]];
 
