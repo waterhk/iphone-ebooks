@@ -56,3 +56,7 @@ int numberCompare(id, id, void *);
 - (void)shouldDeleteFileFromCell:(NSNotification *)aNotification;
 
 @end
+//informal protocol declaration for _delegate
+@interface NSObject (FileBrowserDelegate)
+- (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
+@end

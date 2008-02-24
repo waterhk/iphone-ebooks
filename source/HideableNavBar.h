@@ -73,8 +73,8 @@
 - (NSString *)topBrowserPath;
 
 @end
-//informal protocol declaration
-@interface NSObject (FileBrowserDelegate)
+//informal protocol declaration for _browserDelegate
+@interface NSObject (BrowserDelegate)
 
 - (void)textViewDidGoAway:(id)sender;
 

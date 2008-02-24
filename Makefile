@@ -51,7 +51,7 @@ Books: obj/Books
 obj/Books:  $(OBJECTS) lib/libjpeg.a
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
-obj/%.o:    source/%.m
+obj/%.o:    source/%.m source/%.h
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
@@ -59,7 +59,7 @@ obj/%.o:    source/%.c
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
-obj/%.o:    source/palm/%.m
+obj/%.o:    source/palm/%.m source/palm/%.h
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
@@ -82,17 +82,20 @@ Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@rm -fr Books.app
 	@mkdir -p Books.app
 	@cp $^ Books.app/
+	@rm Books.app/Default.png
+	@ln  -f -s '~/Library/Books/Default.png' Books.app/Default.png
 	
 deploy: obj/Books
 	scp obj/Books iphone:/Applications/Books.app/
-	ssh iphone chmod +x /Applications/Books.app/Books
+	#ssh iphone chmod +x /Applications/Books.app/Books
 
 deploy-app: bundle
 	scp -r Books.app root@iphone:/Applications/
-	ssh root@iphone chmod +x /Applications/Books.app/Books
+	ln -f -s '~/Library/Books/Default.png' Books.app/Default.png
+	ssh root@iphone ln -f -s '/var/mobile/Library/Books/Default.png' /Applications/Books.app/Default.png
 
 package: bundle
-	zip -r9 $(ARCHIVE) Books.app
+	zip -y -r9 $(ARCHIVE) Books.app
 	
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)

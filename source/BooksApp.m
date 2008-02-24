@@ -109,7 +109,7 @@
 	{
 		coverart = [[NSBundle mainBundle] pathForResource:@"Default"
 												   ofType:@"png"];
-		//[progressIndicator setStyle:![defaults inverted]];
+		[progressIndicator setStyle:![defaults inverted]];
 	}
 	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
 	[mainView addSubview:imageView];
@@ -132,19 +132,20 @@
 - (void)finishUpLaunch
 {
 	NSString *recentFile = [defaults fileBeingRead];
-	/*
+	
 	if (imageSplashed)
 	{
 		[self _dumpScreenContents:nil];
 	//	NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
 	//															ofType:@"png"];
-		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Books/Default.png"];
-		NSData *nsdat = [NSData dataWithContentsOfFile:defaultPath];
+		NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
+		if (![[NSFileManager defaultManager] fileExistsAtPath: lPath])
+			[[NSFileManager defaultManager] createDirectoryAtPath:lPath attributes:nil];
+		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
+		NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
 		[nsdat writeToFile:defaultPath atomically:YES];
 		imageSplashed = NO;
 	}
-	*/
-	
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
 	[navBar pushNavigationItem:tempItem withBrowserPath:[BooksDefaultsController defaultEBookPath]];
 
@@ -444,6 +445,9 @@
 			(nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
 	{
 		NSData *defaultData;
+		NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
+		if (![[NSFileManager defaultManager] fileExistsAtPath: lPath])
+			[[NSFileManager defaultManager] createDirectoryAtPath:lPath attributes:nil];
 		if ([defaults inverted])
 		{
 			defaultData = [NSData dataWithContentsOfFile:
@@ -456,9 +460,8 @@
 				  [[NSBundle mainBundle] pathForResource:@"Default_light"
 												  ofType:@"png"]];
 		}
-		[defaultData writeToFile:[[NSBundle mainBundle] pathForResource:@"Default"
-						  ofType:@"png"]
-					  atomically:YES];
+		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
+		[defaultData writeToFile:defaultPath atomically:YES];
 	}
 	struct CGRect  selectionRect;
 	int            subchapter = [textView getSubchapter];
