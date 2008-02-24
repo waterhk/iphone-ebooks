@@ -51,7 +51,7 @@ Books: obj/Books
 obj/Books:  $(OBJECTS) lib/libjpeg.a
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
-obj/%.o:    source/%.m source/%.h
+obj/%.o:    source/%.m
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
@@ -59,7 +59,7 @@ obj/%.o:    source/%.c
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
-obj/%.o:    source/palm/%.m source/palm/%.h
+obj/%.o:    source/palm/%.m
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
@@ -68,7 +68,7 @@ obj/%.o:    source/palm/%.c
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -rf obj Books.app Books-*.tbz repo.xml
+	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."
