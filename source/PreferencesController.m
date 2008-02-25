@@ -24,7 +24,7 @@
 /*
 // Peekaboo. Uncomment to reveal selectors during runtime
 //use 
-//:'<,'>s/;/;\r NSLog(@"%s:%d", __FILE__, __LINE__);
+//:'<,'>s/;/;\r GSLog(@"%s:%d", __FILE__, __LINE__);
 //to trace what happens line by line
 
 -(BOOL) respondsToSelector:(SEL)aSelector {
@@ -134,7 +134,7 @@ return [super respondsToSelector:aSelector];
 
 - (void) animator:(UIAnimator *) animator stopAnimation:(UIAnimation *) animation
 {
-	NSLog(@"animator called");
+	//GSLog(@"animator called");
 	if (_curAnimation == outAnim)
 	{
 		[controller preferenceAnimationDidFinish];
@@ -148,7 +148,7 @@ return [super respondsToSelector:aSelector];
 {
 	if (needsInAnimation)
 	{
-		NSLog(@"prefs animation in");
+		//GSLog(@"prefs animation in");
 		struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
 				contentRect.size.height,
 				contentRect.size.width,
@@ -166,13 +166,12 @@ return [super respondsToSelector:aSelector];
 	else if (needsOutAnimation)
 	{
 		//BCC the contentRect may have changed let's update it
-		NSLog(@"prefs animation out");
+		//GSLog(@"prefs animation out");
 		[preferencesView setFrame:contentRect];
 		struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 		[translate setStartTransform:trans];
 		[translate setEndTransform:CGAffineTransformIdentity];
 		[UIView setAnimationDelegate:self];
-		NSLog(@"turlute3");
 		[UIView setAnimationDidStopSelector:@selector(animationDidStop:)];
 		[translate setDelegate:self];
 		_curAnimation = outAnim;
@@ -216,7 +215,7 @@ return [super respondsToSelector:aSelector];
 		[defaults setTextFont:proposedFont];
 		textNeedsRefresh = YES;
 	}
-	//NSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
+	//GSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
 	int proposedSize = [[fontSizePreferenceCell value] intValue];
 	proposedSize = (proposedSize > MAX_FONT_SIZE) ? MAX_FONT_SIZE : proposedSize;
 	proposedSize = (proposedSize < MIN_FONT_SIZE) ? MIN_FONT_SIZE : proposedSize;
@@ -258,7 +257,7 @@ return [super respondsToSelector:aSelector];
 
 
 	if ([defaults synchronize]){
-		NSLog(@"Synced defaults from prefs pane.");
+		GSLog(@"Synced defaults from prefs pane.");
 	}
 	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
 	needsOutAnimation = YES;
@@ -450,7 +449,7 @@ return [super respondsToSelector:aSelector];
 - (void)tableRowSelected:(NSNotification *)notification 
 {
 	int i = [preferencesTable selectedRow];
-	NSLog(@"Selected!Prefs! Row %d!", i);
+	GSLog(@"Selected!Prefs! Row %d!", i);
 	switch (i)
 	{
 		case 1: // font
@@ -485,12 +484,12 @@ return [super respondsToSelector:aSelector];
 	UINavigationItem *encodingItem = [[UINavigationItem alloc] initWithTitle:@"Text Encoding"];
 	if (nil == encodingPrefs)
 		encodingPrefs = [[EncodingPrefsController alloc] init];
-	NSLog(@"pushing nav item...");
+	//GSLog(@"pushing nav item...");
 	[navigationBar pushNavigationItem:encodingItem];
-	NSLog(@"attempting transition...");
+	//GSLog(@"attempting transition...");
 	[transitionView transition:1 toView:[encodingPrefs table]];
 
-	NSLog(@"attempted transition...");
+	//GSLog(@"attempted transition...");
 	[encodingPrefs reloadData];
 	[encodingItem release];
 	//  [encodingPrefs autorelease];
@@ -501,12 +500,12 @@ return [super respondsToSelector:aSelector];
 	UINavigationItem *fontItem = [[UINavigationItem alloc] initWithTitle:@"Font"];
 	if (nil == fontChoicePrefs)
 		fontChoicePrefs = [[FontChoiceController alloc] init];
-	NSLog(@"pushing nav item...");
+	//GSLog(@"pushing nav item...");
 	[navigationBar pushNavigationItem:fontItem];
-	NSLog(@"attempting transition...");
+	//GSLog(@"attempting transition...");
 	[transitionView transition:1 toView:[fontChoicePrefs table]];
 
-	NSLog(@"attempted transition...");
+	//GSLog(@"attempted transition...");
 	[fontChoicePrefs reloadData];
 	[fontItem release];
 	//  [encodingPrefs autorelease];
@@ -558,7 +557,7 @@ return [super respondsToSelector:aSelector];
 			font = [NSString stringWithString:@"TimesNewRoman"];
 			break;	
 	}
-	NSLog(@"%s Font selected is %@", _cmd, font);
+	GSLog(@"%s Font selected is %@", _cmd, font);
 	return font;
 }
 
@@ -566,9 +565,9 @@ return [super respondsToSelector:aSelector];
 // Delegate methods
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
 	if (sheet == alertSheet) {
-		NSLog(@"%s", _cmd);
+		GSLog(@"%s", _cmd);
 	} else {
-		NSLog(@"%s", _cmd);
+		GSLog(@"%s", _cmd);
 	}
 	[sheet dismissAnimated:YES];
 	if (1 == button) //They wanna donate!  Hooray!  Money for college!
@@ -580,8 +579,8 @@ return [super respondsToSelector:aSelector];
 
 - (void)navigationBar:(UINavigationBar*)navbar buttonClicked:(int)button 
 {
-	NSLog(@"curanim %d", (int)_curAnimation);
-	NSLog(@"none %d, inAnim %d, outAnim %d", (int)none, (int)inAnim, (int)outAnim);
+	//GSLog(@"curanim %d", (int)_curAnimation);
+	//GSLog(@"none %d, inAnim %d, outAnim %d", (int)none, (int)inAnim, (int)outAnim);
 	if (_curAnimation == none)
 	{
 		switch (button) 
@@ -631,7 +630,7 @@ return [super respondsToSelector:aSelector];
 
 - (id)preferencesTable:(id)preferencesTable cellForRow:(int)row inGroup:(int)group
 {
-	//NSLog(@"PreferencesController: cellForRow:");
+	GSLog(@"PreferencesController: cellForRow:%d inGroup:%d", row, group);
 	id prefCell = nil;
 	switch (group)
 	{
