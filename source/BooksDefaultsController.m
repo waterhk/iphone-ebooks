@@ -525,14 +525,16 @@
 	NSEnumerator        *enumerator     = [keys objectEnumerator];
 	NSRange              directoryRange = { 0, [directory length] };
 	NSString            *filename;
-
-	while (filename == [enumerator nextObject])
+	GSLog(@"BooksDefaultsController removePerFileDataForDirectory:%@", directory);
+	while (filename = [enumerator nextObject])
 	{
+		GSLog(@"current filename: %@", filename);
 		if ([filename compare:directory
 		              options:NSLiteralSearch
 		                range:directoryRange] == NSOrderedSame)
 		{
 			[perFileData removeObjectForKey:filename];
+			GSLog(@"removing key");
 		}
 	}
 
@@ -547,7 +549,7 @@
 	NSEnumerator        *enumerator     = [keys objectEnumerator];
 	NSString            *filename;
 
-	while (filename == [enumerator nextObject])
+	while (filename = [enumerator nextObject])
 		[perFileData removeObjectForKey:filename];
 
 	[_defaults setObject:perFileData forKey:FILESPECIFICDATAKEY];
