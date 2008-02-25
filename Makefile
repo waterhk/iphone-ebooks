@@ -20,6 +20,8 @@ OBJECTS=$(patsubst source/%,obj/%,$(patsubst source/palm/%,obj/%, \
 	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SOURCES))) \
 ))
 
+
+
 IMAGES=$(wildcard images/*.png)
 
 ARCHIVE=Books-$(VERSION).zip
@@ -31,15 +33,21 @@ QUIET=true
 
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";
+	QD	= @echo "Computing dependencies [$@]";
 	QL	= @echo "Linking   [$@]";
 	QN	= > /dev/null 2>&1
 else
 	QC	=
+	QD	=
 	QL	= 
 	QN	=
 endif
 
 all:    Books
+
+
+# pull in dependency info for *existing* .o files
+-include $(OBJECTS:.o=.d)
 
 test:
 	echo $(OBJECTS)
@@ -51,24 +59,55 @@ Books: obj/Books
 obj/Books:  $(OBJECTS) lib/libjpeg.a
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
+# more complicated dependency computation, so all prereqs listed
+# will also become command-less, prereq-less targets
+#   sed:    strip the target (everything before colon)
+#   sed:    remove any continuation backslashes
+#   fmt -1: list words one per line
+#   sed:    strip leading spaces
+#   sed:    add trailing colons
 obj/%.o:    source/%.m
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $<  > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
 
 obj/%.o:    source/%.c
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $< > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
 
-obj/%.o:    source/palm/%.m
+obj/%.o:    source/palm/%.m 
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $< > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
 
 obj/%.o:    source/palm/%.c
 	@mkdir -p obj
 	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $< > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
 
 clean:
-	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml
+	rm -rf obj Books.app Books-*.tbz repo.xml 
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."

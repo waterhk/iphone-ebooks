@@ -5,6 +5,7 @@ Books
 Books.app
 Books-*.zip
 Books-*.tbz
+*.d
 #ignore vim files
 *.swp
 #ignore tag files

@@ -29,11 +29,11 @@
 
 -(BOOL) respondsToSelector:(SEL)aSelector {
 
-   printf("SELECTOR: %s\n", 
+printf("SELECTOR: %s\n", 
 
-      [NSStringFromSelector(aSelector) UTF8String]);
+[NSStringFromSelector(aSelector) UTF8String]);
 
-   return [super respondsToSelector:aSelector];
+return [super respondsToSelector:aSelector];
 
 }
 */
@@ -242,9 +242,9 @@
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
-	
+
 	[defaults setInverseNavZone:[[[invNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
-	
+
 	[defaults setEnlargeNavZone:[[[enlargeNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
 
 	//FIXME: these three  should make the text refresh
@@ -460,17 +460,20 @@
 			[self makeEncodingPrefsPane];
 			break;
 		case 20: // mark current book as new
-	  [defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
-	  [[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
-	  [markCurrentBookAsNewCell setEnabled:NO];
-	  [markCurrentBookAsNewCell setSelected:NO withFade:YES];
-	  break;
+			GSLog(@"mark current book as new");
+			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
+			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
+			[markCurrentBookAsNewCell setEnabled:NO];
+			[markCurrentBookAsNewCell setSelected:NO withFade:YES];
+			break;
 		case 21: // mark all books as new
-	  [defaults removePerFileData];
-	  [[NSNotificationCenter defaultCenter] postNotificationName:RELOADALLBROWSERS object:self];
-	  [markAllBooksAsNewCell setEnabled:NO];
-	  [markAllBooksAsNewCell setSelected:NO withFade:YES];
-	  break;
+			GSLog(@"mark all book as new");
+			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
+			[defaults removePerFileData];
+			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADALLBROWSERS object:self];
+			[markAllBooksAsNewCell setEnabled:NO];
+			[markAllBooksAsNewCell setSelected:NO withFade:YES];
+			break;
 		default:
 	  [[preferencesTable cellAtRow:i column:0] setSelected:NO];
 	  break;
