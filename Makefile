@@ -47,6 +47,7 @@ all:    Books
 
 
 # pull in dependency info for *existing* .o files
+# this needs to be done after the default target is defined (to avoid defining a meaningless default target)
 -include $(OBJECTS:.o=.d)
 
 test:
@@ -61,6 +62,7 @@ obj/Books:  $(OBJECTS) lib/libjpeg.a
 
 # more complicated dependency computation, so all prereqs listed
 # will also become command-less, prereq-less targets
+#   sed:    put the real target (obj/*.o) in the dependency file
 #   sed:    strip the target (everything before colon)
 #   sed:    remove any continuation backslashes
 #   fmt -1: list words one per line
