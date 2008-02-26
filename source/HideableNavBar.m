@@ -84,24 +84,41 @@
 {
 	if (_textIsOnTop || _pixOnTop)
 	{
-		_textIsOnTop = NO;
-		_pixOnTop = NO;
-		if ([self isAnimationEnabled])
-			[_transView transition:2 toView:[_browserArray lastObject]];
 		GSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
-		[super popNavigationItem];
+	}
+	else
+	{
+		[_browserArray removeLastObject];
+	}
+
+	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
+	if (!CGRectEqualToRect([[_browserArray lastObject] frame], fullRect))
+	{
+		GSLog(@"geometry changed creating new browser");
+		FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
+		[newBrowser setExtensions:_extensions];
+		[newBrowser setPath:[[_browserArray lastObject] path]];
+		[newBrowser setDelegate:_browserDelegate];
+		[_browserArray removeLastObject];
+		[_browserArray addObject: newBrowser];
+		[newBrowser release];  // we still have it in the array, don't worry!
+	}
+
+	[_transView transition:([self isAnimationEnabled]? 2 : 0) toView:[_browserArray lastObject]];
+	[super popNavigationItem];
+
+	if (_textIsOnTop || _pixOnTop)
+	{
+		_textIsOnTop = NO;
+		_pixOnTop = NO;
+
 		if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
 			 [_browserDelegate textViewDidGoAway:self];
 	}
 	else
 	{
-		[_browserArray removeLastObject];
-
-		[_transView transition:([self isAnimationEnabled] ? 2 : 0) toView:[_browserArray lastObject]];
-		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
 		GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
-		[super popNavigationItem];
 	}
 }
 

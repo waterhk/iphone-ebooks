@@ -1,19 +1,19 @@
 /// BooksDefaultsController.m, for Books.app by Zachary Brewster-Geisz
 /*
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; version 2
- of the License.
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; version 2
+   of the License.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
@@ -32,47 +32,47 @@
 + (NSString*) defaultEBookPath
 {
 	static NSString *_default_EBookPath;
-   _default_EBookPath	= [[NSHomeDirectory() stringByAppendingPathComponent: EBOOK_PATH_SUFFIX] retain];
+	_default_EBookPath	= [[NSHomeDirectory() stringByAppendingPathComponent: EBOOK_PATH_SUFFIX] retain];
 	return _default_EBookPath;
 }
 
 - (id) init
 {
-  NSMutableDictionary *temp;
+	NSMutableDictionary *temp;
 
-  self = [super init];
+	self = [super init];
 	_toolbarShouldUpdate = NO;
 	_NeedRotate = NO;
-  
-  _defaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  temp = [[NSMutableDictionary alloc] initWithCapacity:18];
-  [temp setObject:@"0" forKey:READINGTEXTKEY];
-  [temp setObject:@"" forKey:FILEBEINGREADKEY];
-  [temp setObject:@"16" forKey:TEXTSIZEKEY];
-  [temp setObject:@"0" forKey:ISINVERTEDKEY];
-  [temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
-  [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
-  [temp setObject:@"1" forKey:NAVBAR];
-  [temp setObject:@"1" forKey:TOOLBAR];
-  [temp setObject:@"0" forKey:FLIPTOOLBAR];
-  [temp setObject:@"1" forKey:CHAPTERNAV];
-  [temp setObject:@"1" forKey:PAGENAV];
-  [temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
-  [temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
-  [temp setObject:@"0" forKey:RENDERTABLESKEY];
-  [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
-  [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
-  [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
-  [temp setObject:@"0" forKey:ISROTATE90KEY];
-  [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
-  [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
+	_defaults = [[NSUserDefaults standardUserDefaults] retain];
 
-  [_defaults registerDefaults:temp];
-  [temp release];
+	temp = [[NSMutableDictionary alloc] initWithCapacity:18];
+	[temp setObject:@"0" forKey:READINGTEXTKEY];
+	[temp setObject:@"" forKey:FILEBEINGREADKEY];
+	[temp setObject:@"16" forKey:TEXTSIZEKEY];
+	[temp setObject:@"0" forKey:ISINVERTEDKEY];
+	[temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
+	[temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
+	[temp setObject:@"1" forKey:NAVBAR];
+	[temp setObject:@"1" forKey:TOOLBAR];
+	[temp setObject:@"0" forKey:FLIPTOOLBAR];
+	[temp setObject:@"1" forKey:CHAPTERNAV];
+	[temp setObject:@"1" forKey:PAGENAV];
+	[temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
+	[temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
+	[temp setObject:@"0" forKey:RENDERTABLESKEY];
+	[temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
+	[temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
+	[temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
+	[temp setObject:@"0" forKey:ISROTATE90KEY];
+	[temp setObject:@"0" forKey:INVERSENAVZONEKEY];
+	[temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
 
-  [self updateOldPreferences];
-  return self;
+	[_defaults registerDefaults:temp];
+	[temp release];
+
+	[self updateOldPreferences];
+	return self;
 }
 
 - (void) updateOldPreferences
@@ -117,11 +117,11 @@
 				subchapter = [[subchapterData objectForKey:filename] intValue];
 			else
 				subchapter = 0;
-					
+
 			[self setLastSubchapter:subchapter forFile:filename];
 			[self setLastScrollPoint:point
-			           forSubchapter:subchapter
-			                 forFile:filename];
+					   forSubchapter:subchapter
+							 forFile:filename];
 		}
 	}
 
@@ -202,9 +202,29 @@
 - (NSString *)lastBrowserPath
 {
 	NSString *path = [[_defaults objectForKey:BROWSERFILESKEY] stringByExpandingTildeInPath];
+	NSString * lDefaultPath = [BooksDefaultsController defaultEBookPath];
+	if (![path hasPrefix:lDefaultPath])
+	{
 
-	Debug (@"[_defaults lastBrowserPath] = %s", [path cString]);
+		NSString *bodyText = [NSString stringWithFormat:@"The last visited directory was %@ this is not a subdirectory of the Books directory (%@) this is typically the sign of a 1.1.2 to 1.1.3 migration.\n  Current path reset to the default one.  If you haven't recently migrated you may have a corrupt preference file.", path, lDefaultPath];
+		path = lDefaultPath;
+		CGRect rect = [self fullScreenApplicationContentRect];
+		UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 48, rect.size.width,240)];
+		[alertSheet setTitle:@"Path reset"];
+		[alertSheet setBodyText:bodyText];
+		[alertSheet addButtonWithTitle:@"OK"];
+		[alertSheet setDelegate: self];
+		[alertSheet popupAlertAnimated:YES];
+		[alertSheet autorelease];
+		[_defaults setObject:path forKey:BROWSERFILESKEY];
+	}
+	Debug (@"[_defaults lastBrowserPath] = %@", path);
 	return path;
+}
+
+// Delegate methods
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
+	[sheet dismissAnimated:YES];
 }
 
 - (void)setLastBrowserPath:(NSString *)browserPath
@@ -422,7 +442,7 @@
 - (BOOL) dataExistsForFile: (NSString *) filename
 {
 	NSDictionary *perFileData = [_defaults objectForKey:FILESPECIFICDATAKEY];
-	
+
 	if ([perFileData objectForKey:filename] == nil)
 		return FALSE;
 
@@ -434,7 +454,7 @@
 	NSDictionary *perFileData = [_defaults objectForKey:FILESPECIFICDATAKEY];
 	NSDictionary *bookData    = [perFileData objectForKey:filename];
 	BOOL          enabled     = ([[bookData objectForKey:FILESUBCHAPTERENABLE]
-	                              intValue]) ? YES : NO;
+									   intValue]) ? YES : NO;
 
 	if (bookData == nil)
 		enabled =  NO;
@@ -443,7 +463,7 @@
 }
 
 - (void) setSubchapteringEnabled: (BOOL) enabled
-                         forFile: (NSString *) filename
+						 forFile: (NSString *) filename
 {
 	NSMutableDictionary *perFileData = [NSMutableDictionary dictionaryWithDictionary:[_defaults objectForKey:FILESPECIFICDATAKEY]];
 	NSMutableDictionary *bookData = [NSMutableDictionary dictionaryWithDictionary:[perFileData objectForKey:filename]];
@@ -459,7 +479,7 @@
 	NSDictionary *perFileData = [_defaults objectForKey:FILESPECIFICDATAKEY];
 	NSDictionary *bookData    = [perFileData objectForKey:filename];
 	int           subchapter  = [[bookData objectForKey:FILECURRENTSUBCHAPTER]
-	                             intValue];
+		intValue];
 
 	if (bookData == nil)
 		subchapter = 0;
@@ -468,7 +488,7 @@
 }
 
 - (void) setLastSubchapter: (unsigned int) subchapter
-                   forFile: (NSString *) filename
+				   forFile: (NSString *) filename
 {
 	NSMutableDictionary *perFileData = [NSMutableDictionary dictionaryWithDictionary:[_defaults objectForKey:FILESPECIFICDATAKEY]];
 	NSMutableDictionary *bookData = [NSMutableDictionary dictionaryWithDictionary:[perFileData objectForKey:filename]];
@@ -480,7 +500,7 @@
 }
 
 - (unsigned int) lastScrollPointForFile: (NSString *) filename
-                           inSubchapter: (unsigned int) subchapter
+						   inSubchapter: (unsigned int) subchapter
 {
 	NSString     *location     = [NSString stringWithFormat:@"%d", subchapter];
 	NSDictionary *perFileData  = [_defaults objectForKey:FILESPECIFICDATAKEY];
@@ -495,8 +515,8 @@
 }
 
 - (void) setLastScrollPoint: (unsigned int) scrollPoint
-              forSubchapter: (unsigned int) subchapter
-                    forFile: (NSString *) filename
+			  forSubchapter: (unsigned int) subchapter
+					forFile: (NSString *) filename
 {
 	NSString            *location     = [NSString stringWithFormat:@"%d", subchapter];
 	NSMutableDictionary *perFileData  = [NSMutableDictionary dictionaryWithDictionary:[_defaults objectForKey:FILESPECIFICDATAKEY]];
@@ -530,8 +550,8 @@
 	{
 		GSLog(@"current filename: %@", filename);
 		if ([filename compare:directory
-		              options:NSLiteralSearch
-		                range:directoryRange] == NSOrderedSame)
+					  options:NSLiteralSearch
+						range:directoryRange] == NSOrderedSame)
 		{
 			[perFileData removeObjectForKey:filename];
 			GSLog(@"removing key");
@@ -568,7 +588,7 @@
 		rect.size.width = rect.size.height + 20;	//20 for the status bar
 		rect.size.height = oldwidth - 20; //20 for the status bar
 	}
-//	NSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	//	NSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 	return rect;
 }
 
@@ -576,45 +596,45 @@
 //Bcc makes it into a singleton
 static BooksDefaultsController *sharedBooksDefaultsController = nil;
 
- 
+
 
 + (BooksDefaultsController*)sharedBooksDefaultsController
 
 {
 
-    @synchronized(self) {
+	@synchronized(self) {
 
-        if (sharedBooksDefaultsController == nil) {
+		if (sharedBooksDefaultsController == nil) {
 
-            [[self alloc] init]; // assignment not done here
+			[[self alloc] init]; // assignment not done here
 
-        }
+		}
 
-    }
+	}
 
-    return sharedBooksDefaultsController;
+	return sharedBooksDefaultsController;
 
 }
 
- 
+
 
 + (id)allocWithZone:(NSZone *)zone
 
 {
 
-    @synchronized(self) {
+	@synchronized(self) {
 
-        if (sharedBooksDefaultsController == nil) {
+		if (sharedBooksDefaultsController == nil) {
 
-            sharedBooksDefaultsController = [super allocWithZone:zone];
+			sharedBooksDefaultsController = [super allocWithZone:zone];
 
-            return sharedBooksDefaultsController;  // assignment and return on first allocation
+			return sharedBooksDefaultsController;  // assignment and return on first allocation
 
-        }
+		}
 
-    }
+	}
 
-    return nil; //on subsequent allocation attempts return nil
+	return nil; //on subsequent allocation attempts return nil
 
 }
 
@@ -622,47 +642,47 @@ static BooksDefaultsController *sharedBooksDefaultsController = nil;
 
 {
 
-    return self;
+	return self;
 
 }
 
- 
+
 
 - (id)retain
 
 {
 
-    return self;
+	return self;
 
 }
 
- 
+
 
 - (unsigned)retainCount
 
 {
 
-    return UINT_MAX;  //denotes an object that cannot be released
+	return UINT_MAX;  //denotes an object that cannot be released
 
 }
 
- 
+
 
 - (void)release
 
 {
 
-    //do nothing
+	//do nothing
 
 }
 
- 
+
 
 - (id)autorelease
 
 {
 
-    return self;
+	return self;
 
 }
 @end

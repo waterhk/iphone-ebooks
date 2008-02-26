@@ -23,6 +23,7 @@ Adapted for Books.app by Zachary Brewster-Geisz
 
 @implementation FileBrowser 
 - (id)initWithFrame:(struct CGRect)frame{
+	GSLog(@"FileBrowser initWithFrame x:%f, y:%f, w:%f, h:%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
 	if ((self == [super initWithFrame: frame]) != nil) {
 		UITableColumn *col = [[UITableColumn alloc]
 			initWithTitle: @"FileName"

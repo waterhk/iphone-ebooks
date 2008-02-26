@@ -35,7 +35,6 @@
 #import <UIKit/UISegmentedControl.h>
 #import <UIKit/UISwitchControl.h>
 #import <UIKit/UITextLabel.h>
-#import <UIKit/UIAlertSheet.h>
 #import <UIKit/CDStructures.h>
 #import <UIKit/UIAlertSheet.h>
 #import <UIKit/UIAnimator.h>
