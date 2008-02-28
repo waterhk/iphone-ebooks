@@ -109,7 +109,7 @@ obj/%.o:    source/palm/%.c
 	@rm -f obj/$*.d.tmp
 
 clean:
-	rm -rf obj Books.app Books-*.tbz repo.xml 
+	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml 
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."
