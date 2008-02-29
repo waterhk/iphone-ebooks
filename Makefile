@@ -28,6 +28,7 @@ ARCHIVE=Books-$(VERSION).zip
 
 BASEURL=http://www.thebedells.org/books/
 SCP_BASE=www:~/wwwroot/books/
+NIGHTLY_PICKUP=/tmp/Books-nightly
 
 QUIET=false
 
@@ -141,3 +142,14 @@ package: bundle
 deploy-repo: package repo.xml
 	scp $(ARCHIVE) $(SCP_BASE)
 	scp repo.xml $(SCP_BASE)
+
+# The nightly build builds the ZIP and repo XML, then places them both in a known location
+# where the build server will find them to deploy to the site.
+# The lock file ensure that the deployment job won't try to move files that are half copied.
+nightly: package repo.xml
+	mkdir -p $(NIGHTLY_PICKUP)
+	touch $(NIGHTLY_PICKUP)/lock-file
+	cp repo.xml $(NIGHTLY_PICKUP)
+	cp Books-*.zip $(NIGHTLY_PICKUP)
+	rm $(NIGHTLY_PICKUP)/lock-file
+	
