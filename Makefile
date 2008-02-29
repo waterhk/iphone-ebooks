@@ -20,7 +20,8 @@ OBJECTS=$(patsubst source/%,obj/%,$(patsubst source/palm/%,obj/%, \
 	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SOURCES))) \
 ))
 
-
+# Override this on the command line for nightly builds.
+REPOTAG=Repository in Exile
 
 IMAGES=$(wildcard images/*.png)
 
@@ -117,7 +118,13 @@ obj/Info.plist: Info.plist.tmpl
 	@sed -e 's|__VERSION__|$(VERSION)|g' < $< > $@
 
 repo.xml: repo.xml.tmpl package
-	sed -e 's|__VERSION__|$(VERSION)|g' -e 's|__PKG_SIZE__|$(shell ./filesize.sh $(ARCHIVE))|g' -e 's|__RELEASE_DATE__|$(shell date +%s)|g' -e 's|__PKG_URL__|$(BASEURL)$(ARCHIVE)|g' -e 's|__REPOTAG__|$(REPOTAG)|g' < repo.xml.tmpl | awk 'gsub(/[ \t]+/, " ");' > $@
+	sed -e 's|__VERSION__|$(VERSION)|g' \
+		-e 's|__PKG_SIZE__|$(shell ./filesize.sh $(ARCHIVE))|g' \
+		-e 's|__RELEASE_DATE__|$(shell date +%s)|g' \
+		-e 's|__PKG_URL__|$(BASEURL)$(ARCHIVE)|g' \
+		-e 's|__REPOTAG__| $(REPOTAG)|g' \
+		-e 's/^[[:space:]]*\(\([[:space:]]*[^[:space:]][^[:space:]]*\)*\)[[:space:]]*$($)/\1/' \
+		< repo.xml.tmpl > $@
 
 Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@echo "Creating application bundle."
