@@ -29,7 +29,7 @@ ARCHIVE=Books-$(VERSION).zip
 BASEURL=http://www.thebedells.org/books/
 SCP_BASE=www:~/wwwroot/books/
 
-QUIET=true
+QUIET=false
 
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";
