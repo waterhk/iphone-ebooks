@@ -117,7 +117,7 @@ obj/Info.plist: Info.plist.tmpl
 	@sed -e 's|__VERSION__|$(VERSION)|g' < $< > $@
 
 repo.xml: repo.xml.tmpl package
-	sed -e 's|__VERSION__|$(VERSION)|g' -e 's|__PKG_SIZE__|$(shell ./filesize.sh $(ARCHIVE))|g' -e 's|__RELEASE_DATE__|$(shell date +%s)|g' -e 's|__PKG_URL__|$(BASEURL)$(ARCHIVE)|g' < repo.xml.tmpl > $@
+	sed -e 's|__VERSION__|$(VERSION)|g' -e 's|__PKG_SIZE__|$(shell ./filesize.sh $(ARCHIVE))|g' -e 's|__RELEASE_DATE__|$(shell date +%s)|g' -e 's|__PKG_URL__|$(BASEURL)$(ARCHIVE)|g' -e 's|__REPOTAG__|$(REPOTAG)|g' < repo.xml.tmpl | awk 'gsub(/[ \t]+/, " ");' > $@
 
 Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@echo "Creating application bundle."
@@ -151,5 +151,6 @@ nightly: package repo.xml
 	touch $(NIGHTLY_PICKUP)/lock-file
 	cp repo.xml $(NIGHTLY_PICKUP)
 	cp Books-*.zip $(NIGHTLY_PICKUP)
+	chmod g+w $(NIGHTLY_PICKUP)/*
 	rm $(NIGHTLY_PICKUP)/lock-file
 	
