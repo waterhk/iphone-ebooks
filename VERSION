@@ -1,4 +1,4 @@
 # Version file for Books
 # The string on the LAST line of this file (as determined by `tail -n 1 VERSION`)
 # will be used as the version string in the plist file and archive names.
-1.4-pre02
+1.4-pre03
