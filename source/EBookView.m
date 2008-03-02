@@ -45,7 +45,6 @@
 
 	size = 16.0f;
 
-	path = @"";
 	fullHTML      = nil;
 	chapteredHTML = [[ChapteredHTML alloc] init];
 	subchapter    = 0;
@@ -151,16 +150,21 @@
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath
 //USE WITH CAUTION!!!!
 {
-	path = [[thePath copy] retain];
+  [thePath retain];
+  [path release];
+	path = thePath;
 }
 
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
 			  didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
 {
 	NSString *theHTML = nil;
-	NSLog(@"path:");
-	NSLog(thePath);
-	path = [[thePath copy] retain];
+	NSLog(@"path: %@", thePath);
+
+  [thePath retain];
+  [path release];
+	path = thePath;
+  
 	if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
 	{
 		theHTML = [self HTMLFromTextFile:thePath];
