@@ -111,7 +111,7 @@ obj/%.o:    source/palm/%.c
 	@rm -f obj/$*.d.tmp
 
 clean:
-	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml 
+	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."
@@ -123,16 +123,18 @@ repo.xml: repo.xml.tmpl package
 		-e 's|__RELEASE_DATE__|$(shell date +%s)|g' \
 		-e 's|__PKG_URL__|$(BASEURL)$(ARCHIVE)|g' \
 		-e 's|__REPOTAG__| $(REPOTAG)|g' \
+		-e 's|__MD5__|$(shell ./getMd5.sh $(ARCHIVE))|g' \
 		-e 's/^[[:space:]]*\(\([[:space:]]*[^[:space:]][^[:space:]]*\)*\)[[:space:]]*$($)/\1/' \
 		< repo.xml.tmpl > $@
+	gzip -9 < $@ > $@.gz
 
 Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@echo "Creating application bundle."
 	@rm -fr Books.app
 	@mkdir -p Books.app
 	@cp $^ Books.app/
-	@rm Books.app/Default.png
-	@ln  -f -s '~/Library/Books/Default.png' Books.app/Default.png
+#	@rm Books.app/Default.png
+#	@ln  -f -s '~/Library/Books/Default.png' Books.app/Default.png
 	
 deploy: obj/Books
 	scp obj/Books iphone:/Applications/Books.app/
@@ -157,6 +159,7 @@ nightly: package repo.xml
 	mkdir -p $(NIGHTLY_PICKUP)
 	touch $(NIGHTLY_PICKUP)/lock-file
 	cp repo.xml $(NIGHTLY_PICKUP)
+	cp repo.xml.gz $(NIGHTLY_PICKUP)
 	cp Books-*.zip $(NIGHTLY_PICKUP)
 	chmod g+w $(NIGHTLY_PICKUP)/*
 	rm $(NIGHTLY_PICKUP)/lock-file

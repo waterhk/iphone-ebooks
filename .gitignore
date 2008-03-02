@@ -18,4 +18,5 @@ obj
 build
 Info.plist
 repo.xml
+repo.xml.gz
 .DS*
