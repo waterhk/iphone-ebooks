@@ -165,7 +165,7 @@
   [path release];
 	path = thePath;
   
-	if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
+  if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
 	{
 		theHTML = [self HTMLFromTextFile:thePath];
 	}
@@ -181,9 +181,9 @@
 		NSMutableString *ret;
 		ret = ReadPDBFile(thePath, &retType);
 		if([@"txt" isEqualToString:retType]) {
-theHTML = [self HTMLFromTextString:ret];
+      theHTML = [self HTMLFromTextString:ret];
 		} else {
-			theHTML = [ret retain];
+			theHTML = ret;
 		}
 	}
 

@@ -51,7 +51,7 @@ enum PreferenceAnimationType;
 	HideableNavBar  *navBar, *bottomNavBar;
 	UISliderControl *scrollerSlider;
 	UITransitionView *transitionView;
-        EBookView   *textView;
+  EBookView   *textView;
 	EBookImageView *imageView;
 	NSString    *path;
 	NSError     *error;
