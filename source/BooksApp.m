@@ -21,6 +21,9 @@
 #import <UIKit/UIView-Geometry.h>
 //#include "dolog.h"
 #include <stdio.h>
+
+
+
 @implementation BooksApp
 /*
    enum {
@@ -34,7 +37,12 @@
    */
 - (void) applicationDidFinishLaunching: (id) unused
 {
-	freopen("/var/logs/Books.traces", "w", stderr);
+  // Only log if the log file already exists!
+  if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {    
+    freopen([OUT_FILE cString], "w", stdout);
+    freopen([ERR_FILE cString], "w", stderr);
+  }
+	
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	NSString *recentFile;
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];

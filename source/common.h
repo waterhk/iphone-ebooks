@@ -23,6 +23,9 @@
 /**
  * appended to the home directory to create the real EBooksPath
  */
+#define OUT_FILE @"/var/logs/Books.out"
+#define ERR_FILE @"/var/logs/Books.err"
+
 #define EBOOK_PATH_SUFFIX @"Media/EBooks"
 #define LIBRARY_PATH @"Library/Books"
 #define DEFAULT_REAL_PATH @"Library/Books/Default.png"
