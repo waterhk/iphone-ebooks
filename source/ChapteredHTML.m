@@ -237,9 +237,9 @@ fclose (file);
 	[chapterRanges release];
 	      
     if ([dictionary writeToFile:filename atomically:NO] == YES)
-    	NSLog (@"Wrote cachefile: %s", [filename cString]);
+    	GSLog (@"Wrote cachefile: %s", [filename cString]);
     else
-    	NSLog (@"Unable to write cachefile: %s", [filename cString]);
+    	GSLog (@"Unable to write cachefile: %s", [filename cString]);
 
 	[dictionary release];
 }
@@ -383,7 +383,7 @@ fclose (file);
 					NSRange chapterNameRange = { offset, [regex matchedChars] };
 					NSString *chapterName =
 						[_fullHTML substringWithRange:chapterNameRange];
-					NSLog (@"Chapter %2d (offset %6d): '%s'\n",
+					GSLog (@"Chapter %2d (offset %6d): '%s'\n",
 					       _chapterCount,
 					       offset,
 					       [chapterName UTF8String]);

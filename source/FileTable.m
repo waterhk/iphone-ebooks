@@ -31,7 +31,7 @@
         CGPoint rect = GSEventGetLocationInWindow(event);
         CGPoint point = CGPointMake(rect.x, rect.y - 45);
         CGPoint offset = _startOffset; 
-        NSLog(@"FileTable.swipe: %d %f, %f", type, point.x, point.y);
+        GSLog(@"FileTable.swipe: %d %f, %f", type, point.x, point.y);
 
         point.x += offset.x;
         point.y += offset.y;

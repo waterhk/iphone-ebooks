@@ -160,7 +160,7 @@ int numberCompare(id firstString, id secondString, void *context)
     {
       if ([firstString characterAtIndex:i] == (unichar)'_')
         {
-          //NSLog(@"underscore at index: %d", i);       
+          //GSLog(@"underscore at index: %d", i);       
           underscoreFound = YES;
           break;
         }
@@ -224,7 +224,7 @@ int numberCompare(id firstString, id secondString, void *context)
 		     height = (int)(46*frac);
 		     width = 46;
 		   }
-		 //NSLog("new w: %d h: %d", width, height);
+		 //GSLog("new w: %d h: %d", width, height);
 		 [cell setImage:coverart];
 		 [[cell iconImageView] setFrame:CGRectMake(-10,0,width,height)];
 	       }
@@ -250,7 +250,7 @@ int numberCompare(id firstString, id secondString, void *context)
 }
 
 - (void)tableRowSelected:(NSNotification *)notification {
-  //NSLog(@"tableRowSelected!");
+  //GSLog(@"tableRowSelected!");
 	if( [_delegate respondsToSelector:@selector( fileBrowser:fileSelected: )] )
 		[_delegate fileBrowser:self fileSelected:[self selectedFile]];
 }
@@ -266,10 +266,10 @@ int numberCompare(id firstString, id secondString, void *context)
 {
   NSString *theFilepath = [aNotification object];
   NSString *basePath = [theFilepath stringByDeletingLastPathComponent];
-  NSLog(@"shouldReloadThisCell\n   _path: %@\nbasePath: %@", _path, basePath);
+  GSLog(@"shouldReloadThisCell\n   _path: %@\nbasePath: %@", _path, basePath);
   if ([basePath isEqualToString:_path])
     {
-      NSLog(@"Yes, it blends!");
+      GSLog(@"Yes, it blends!");
       [self reloadCellForFilename:theFilepath];
     }
 }
@@ -287,7 +287,7 @@ int numberCompare(id firstString, id secondString, void *context)
 	return;
       }
     }
-      NSLog(@"In theory we should never get here.");
+      GSLog(@"In theory we should never get here.");
 }
 
 - (NSString *)fileBeforeFileNamed:(NSString *)thePath
@@ -334,30 +334,30 @@ int numberCompare(id firstString, id secondString, void *context)
   BOOL isDir = NO;
   DeletableCell *theCell = (DeletableCell *)[aNotification object];
   NSString *path = [theCell path];
-  NSLog(@"Cell path: %@", path);
+  GSLog(@"Cell path: %@", path);
   if ([_files containsObject:[path lastPathComponent]])
     //FIXME:This could cause side effects in the rare case where a
     //FileBrowser contains cells with the same name!!!!
     {
-      NSLog(@"_files contains %@", [path lastPathComponent]);
+      GSLog(@"_files contains %@", [path lastPathComponent]);
       if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir)
 	{
 	  [defaults removePerFileDataForDirectory:path];
 	}
       else
 	[defaults removePerFileDataForFile:path];
-      NSLog(@"_files before: %@", _files);
+      GSLog(@"_files before: %@", _files);
       BOOL success = [[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
       if (success)
 	{
 	  [_files removeObject:[path lastPathComponent]];
 	  _rowCount--;
 	  //[_table reloadData]; //erg...
-	  NSLog(@"_files after: %@", _files);
+	  GSLog(@"_files after: %@", _files);
 	}
     }
   else
-    NSLog(@"_files does not contain %@", [path lastPathComponent]);
+    GSLog(@"_files does not contain %@", [path lastPathComponent]);
 }
 
 @end

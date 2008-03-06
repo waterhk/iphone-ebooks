@@ -588,7 +588,7 @@
 		rect.size.width = rect.size.height + 20;	//20 for the status bar
 		rect.size.height = oldwidth - 20; //20 for the status bar
 	}
-	//	NSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+	//	GSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 	return rect;
 }
 

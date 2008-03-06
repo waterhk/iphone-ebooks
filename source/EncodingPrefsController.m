@@ -26,7 +26,7 @@
   if (self = [super init])
     {
       defaults = [BooksDefaultsController sharedBooksDefaultsController];
-      NSLog(@"Creating encoding prefs!");
+      GSLog(@"Creating encoding prefs!");
       struct CGRect rect = [defaults fullScreenApplicationContentRect];
 
       encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-48)];
@@ -48,13 +48,13 @@
       NSNumber *i;
       while (nil != (i = [enumerator nextObject]))
 	{
-	  NSLog(@"\n   num: %u\nstring: %@", [i unsignedLongValue], [NSString localizedNameOfStringEncoding:[i unsignedIntValue]]);
+	  GSLog(@"\n   num: %u\nstring: %@", [i unsignedLongValue], [NSString localizedNameOfStringEncoding:[i unsignedIntValue]]);
 	  [tempEncodingNames addObject:[NSString localizedNameOfStringEncoding:[i unsignedIntValue]]];
 	}
       encodingNames = [[NSArray alloc] initWithArray:tempEncodingNames];
       [tempEncodingNames release];
     }
-  NSLog(@"Created encoding prefs!");
+  GSLog(@"Created encoding prefs!");
   return self;
 }
 

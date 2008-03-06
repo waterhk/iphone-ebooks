@@ -61,7 +61,7 @@
 	[self scrollToMakeCaretVisible:NO];
 
 	[self setScrollDecelerationFactor:0.996f];
-	//  NSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
+	//  GSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
 	[self setTapDelegate:self];
 	[self setScrollerIndicatorsPinToContent:NO];
 	lastVisibleRect = [self visibleRect];
@@ -159,7 +159,7 @@
 			  didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
 {
 	NSString *theHTML = nil;
-	NSLog(@"path: %@", thePath);
+	GSLog(@"path: %@", thePath);
 
   [thePath retain];
   [path release];
@@ -239,17 +239,17 @@
 	NSStringEncoding encoding = [defaults defaultTextEncoding];
 	NSMutableString *originalText;
 	NSString *outputHTML;
-	NSLog(@"Checking encoding...");
+	GSLog(@"Checking encoding...");
 	if (AUTOMATIC_ENCODING == encoding)
 	{
 		originalText = [[NSMutableString alloc]
 			initWithContentsOfFile:thePath
 					  usedEncoding:&encoding
 							 error:NULL];
-		NSLog(@"Encoding: %d",encoding);
+		GSLog(@"Encoding: %d",encoding);
 		if (nil == originalText)
 		{
-			NSLog(@"Trying UTF-8 encoding...");
+			GSLog(@"Trying UTF-8 encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:thePath
 							  encoding: NSUTF8StringEncoding
@@ -257,7 +257,7 @@
 		}
 		if (nil == originalText)
 		{
-			NSLog(@"Trying ISO Latin-1 encoding...");
+			GSLog(@"Trying ISO Latin-1 encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:thePath
 							  encoding: NSISOLatin1StringEncoding
@@ -265,7 +265,7 @@
 		}
 		if (nil == originalText)
 		{
-			NSLog(@"Trying Mac OS Roman encoding...");
+			GSLog(@"Trying Mac OS Roman encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:thePath
 							  encoding: NSMacOSRomanStringEncoding
@@ -273,7 +273,7 @@
 		}
 		if (nil == originalText)
 		{
-			NSLog(@"Trying ASCII encoding...");
+			GSLog(@"Trying ASCII encoding...");
 			originalText = [[NSMutableString alloc] 
 				initWithContentsOfFile:thePath
 							  encoding: NSASCIIStringEncoding
@@ -304,7 +304,7 @@
 	outputHTML = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
 
 	//  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
-	//  NSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
+	//  GSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
 	return outputHTML;
 }
 
@@ -320,7 +320,7 @@
 	{
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
-		NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
 		size += 2.0f;
@@ -337,7 +337,7 @@
 		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-		NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
 		[self setNeedsDisplay];
 	}
@@ -350,7 +350,7 @@
 	{
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
-		NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
 		size -= 2.0f;
@@ -367,7 +367,7 @@
 		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-		NSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
 		[self setNeedsDisplay];
 	}
@@ -403,7 +403,7 @@
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
-	NSLog(@"zone height %d", lZoneHeight);
+	GSLog(@"zone height %d", lZoneHeight);
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 	if ([self isScrolling])
@@ -524,44 +524,44 @@
 	NSMutableString *originalText;
 	if (AUTOMATIC_ENCODING == encoding)
 	{
-		//NSLog(@"Trying to determine encoding...");
+		//GSLog(@"Trying to determine encoding...");
 		originalText = [[NSMutableString alloc] 
 			initWithContentsOfFile:file
 					  usedEncoding:&encoding
 							 error:NULL];
-		//NSLog(@"Found encoding: %d", encoding);
+		//GSLog(@"Found encoding: %d", encoding);
 
 		if (nil == originalText)
 		{
-			//NSLog(@"Checking UTF-8 encoding...");
+			//GSLog(@"Checking UTF-8 encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:file
 							  encoding:NSUTF8StringEncoding error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//NSLog(@"Checking ISO Latin-1 encoding...");
+			//GSLog(@"Checking ISO Latin-1 encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:file
 							  encoding:NSISOLatin1StringEncoding error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//NSLog(@"Checking Windows Latin-1 encoding...");
+			//GSLog(@"Checking Windows Latin-1 encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:file
 							  encoding:NSWindowsCP1252StringEncoding error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//NSLog(@"Checking Mac OS Roman encoding...");
+			//GSLog(@"Checking Mac OS Roman encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:file
 							  encoding:NSMacOSRomanStringEncoding error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//NSLog(@"Checking ASCII encoding...");
+			//GSLog(@"Checking ASCII encoding...");
 			originalText = [[NSMutableString alloc]
 				initWithContentsOfFile:file
 							  encoding:NSASCIIStringEncoding error:NULL];
@@ -598,24 +598,24 @@
 	j=0;
 	i = [originalText replaceOccurrencesOfString:@"&" withString:@"&amp;"
 		options:NSLiteralSearch range:fullRange];
-	//NSLog(@"replaced %d &s\n", i);
+	//GSLog(@"replaced %d &s\n", i);
 	j += i;
 	fullRange = NSMakeRange(0, [originalText length]);
 	i = [originalText replaceOccurrencesOfString:@"<" withString:@"&lt;"
 		options:NSLiteralSearch range:fullRange];
-	//NSLog(@"replaced %d <s\n", i);
+	//GSLog(@"replaced %d <s\n", i);
 	j += i;
 	fullRange = NSMakeRange(0, [originalText length]);
 	i = [originalText replaceOccurrencesOfString:@">" withString:@"&gt;"
 		options:NSLiteralSearch range:fullRange];
-	//NSLog(@"replaced %d >s\n", i);
+	//GSLog(@"replaced %d >s\n", i);
 	j += i;
 	fullRange = NSMakeRange(0, [originalText length]);
 
 	// Argh, bloody MS line breaks!  Change them to UNIX, then...
 	i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
 										 options:NSLiteralSearch range:fullRange];
-	//NSLog(@"replaced %d carriage return/newlines\n", i);
+	//GSLog(@"replaced %d carriage return/newlines\n", i);
 	j += i;
 	fullRange = NSMakeRange(0, [originalText length]);
 
@@ -624,26 +624,26 @@
 		//Change double-newlines to </p><p>.
 		i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
 											 options:NSLiteralSearch range:fullRange];
-		//NSLog(@"replaced %d double-newlines\n", i);
+		//GSLog(@"replaced %d double-newlines\n", i);
 		j += i;
 		fullRange = NSMakeRange(0, [originalText length]);
 
 		// And just in case someone has a Classic MacOS textfile...
 		i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
 											 options:NSLiteralSearch range:fullRange];
-		//NSLog(@"replaced %d double-carriage-returns\n", i);
+		//GSLog(@"replaced %d double-carriage-returns\n", i);
 		j += i;
 
 		// Lots of text files start new paragraphs with newline-space-space or newline-tab
 		i = [originalText replaceOccurrencesOfString:@"\n  " withString:@"</p>\n<p>"
 											 options:NSLiteralSearch range:fullRange];
-		//NSLog(@"replaced %d double-spaces\n", i);
+		//GSLog(@"replaced %d double-spaces\n", i);
 		j += i;
 		fullRange = NSMakeRange(0, [originalText length]);
 
 		i = [originalText replaceOccurrencesOfString:@"\n\t" withString:@"</p>\n<p>"
 											 options:NSLiteralSearch range:fullRange];
-		//NSLog(@"replaced %d double-spaces\n", i);
+		//GSLog(@"replaced %d double-spaces\n", i);
 		j += i;
 	}
 	else
@@ -656,7 +656,7 @@
 		// And just in case someone has a Classic MacOS textfile...
 		i = [originalText replaceOccurrencesOfString:@"\r" withString:@"<br />\n"
 											 options:NSLiteralSearch range:fullRange];
-		//NSLog(@"replaced %d double-carriage-returns\n", i);
+		//GSLog(@"replaced %d double-carriage-returns\n", i);
 		j += i;
 
 	}
@@ -664,7 +664,7 @@
 
 	i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
 		options:NSLiteralSearch range:fullRange];
-	//NSLog(@"replaced %d double-spaces\n", i);
+	//GSLog(@"replaced %d double-spaces\n", i);
 	j += i;
 	fullRange = NSMakeRange(0, [originalText length]);
 
@@ -810,8 +810,8 @@
 		[self setHTML:fullHTML];
 	CGRect lWebViewFrame = [[self _webView] frame];
 	CGRect lFrame = [self frame];
-	NSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
-	NSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
+	GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
+	GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
 	[[self _webView]setFrame: [self frame]];
 	[self setNeedsDisplay];
 }
