@@ -352,7 +352,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
   struct jpeg_compress_struct  cinfo;
   struct jpeg_error_mgr        jerr;
   JSAMPROW                     row_pointer[1];/* pointer to JSAMPLE row[s] */
-    
+
     palmimage = image_bytes_in;
     width = READ_BIGENDIAN_SHORT(palmimage + 0);
     height = READ_BIGENDIAN_SHORT(palmimage + 2);
@@ -364,7 +364,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
     transparent_index = palmimage[12];
     compression_type = palmimage[13];
     /* bytes 14 and 15 are reserved by Palm and always 0 */
-    
+
     if(compression_type == PALM_COMPRESSION_PACKBITS) {
       return NO;
     }
@@ -373,7 +373,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
             (compression_type != PALM_COMPRESSION_SCANLINE)) {
       return NO;
     }
-    
+
     /* as of PalmOS 4.0, there are 6 different kinds of Palm pixmaps:
       
       1, 2, or 4 bit grayscale
@@ -386,7 +386,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
       
       We begin by constructing the colormap.
       */
-    
+
     if(flags & PALM_HAS_COLORMAP_FLAG) {
       return NO;
     }
@@ -422,7 +422,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
     else {
       return NO;
     }
-    
+
     /* now create the JPEG image row buffer */
     jpeg_row =(JSAMPLE *) malloc(sizeof(JSAMPLE) *(width * 3));
     
@@ -445,13 +445,13 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
     row_pointer[0] = &jpeg_row[0];
     
     jpeg_start_compress(&cinfo, YES);
-    
+
     /* row by row, uncompress the Palm image and copy it to the JPEG buffer */
     rowbuf =(unsigned char *) malloc(bytes_per_row * width);
     lastrow =(unsigned char *) malloc(bytes_per_row * width);
     for(i = 0, palm_ptr = imagedatastart, x_ptr = imagedata; i < height;
         ++i) {
-      
+
       /* first, uncompress the Palm image */
       if((flags & PALM_IS_COMPRESSED_FLAG)
          &&(compression_type == PALM_COMPRESSION_RLE)) {
@@ -483,7 +483,7 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
         memcpy(rowbuf, palm_ptr, bytes_per_row);
         palm_ptr += bytes_per_row;
       }
-      
+
       /* next, write it to the GDK bitmap */
       if(colormap) {
         mask =(1 << bits_per_pixel) - 1;
@@ -520,17 +520,18 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
           inbyte += 2;
         }
       }
-      
+           /*****/NSLog(@"11j");   
       (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+           /*****/NSLog(@"11k");   
     }
-    
+      /*****/NSLog(@"12");
     free(rowbuf);
     free(lastrow);
     free(jpeg_row);
     
     jpeg_finish_compress(&cinfo);
     jpeg_destroy_compress(&cinfo);
-    
+   /*****/NSLog(@"13");   
     return YES;
 }
 
@@ -1503,7 +1504,6 @@ NSMutableString* HTMLFromPluckerFile(FILE *docHandle, NSString *basePath) {
   int nLastRec = -1;
   i = GetNextRecordNumber();
   while(i > 0) {
-    NSLog(@"About to transcribe record at index %d", i);
     TranscribeRecord(doc, i, basePath, returnHTML);
     nLastRec = i;
     i = GetNextRecordNumber();

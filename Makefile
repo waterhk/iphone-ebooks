@@ -59,7 +59,7 @@ bundle: Books.app
 
 Books: obj/Books
 
-obj/Books:  $(OBJECTS) lib/libjpeg.a
+obj/Books:  $(OBJECTS) jpeg-6b/.libs/libjpeg.a
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
 # more complicated dependency computation, so all prereqs listed
@@ -133,6 +133,7 @@ obj/%.o:    source/AGRegex/%.c
 
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
+	cd jpeg-6b ; make distclean
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."
@@ -185,3 +186,11 @@ nightly: package repo.xml
 	chmod g+w $(NIGHTLY_PICKUP)/*
 	rm $(NIGHTLY_PICKUP)/lock-file
 	
+jpeg-6b/.libs/libjpeg.a:	jpeg-6b/*.c jpeg-6b/*.h
+	cd jpeg-6b ; \
+		AR=arm-apple-darwin-ar AR2=arm-apple-darwin-ranlib CC=arm-apple-darwin-gcc \
+		./configure --prefix=$(HEAVENLY)/usr/local \
+		--build=i386-apple-darwin --host=arm-apple-darwin --enable-static --enable-shared ; \
+		make AR="arm-apple-darwin-ar rc" AR2="arm-apple-darwin-ranlib" libjpeg.la
+	
+.PHONY: nightly deploy-repo package deploy-app deploy clean bundle test all

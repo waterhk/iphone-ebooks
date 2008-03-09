@@ -1,0 +1,11 @@
+--- configure-orig	2008-03-09 03:45:44.000000000 -0400
++++ configure	2008-03-09 03:45:47.000000000 -0400
+@@ -1559,7 +1559,7 @@
+   if test "x$LTSTATIC" = xno; then
+     disable_static="--disable-static"
+   fi
+-  $srcdir/ltconfig $disable_shared $disable_static $srcdir/ltmain.sh
++  $srcdir/ltconfig --no-verify $disable_shared $disable_static $srcdir/ltmain.sh arm-apple-darwin
+ fi
+ 
+ # Select memory manager depending on user input.

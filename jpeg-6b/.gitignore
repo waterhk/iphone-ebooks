@@ -1,0 +1,9 @@
+*.lo
+*.o
+.libs
+Makefile
+config.log
+config.status
+*.la
+libtool
+jconfig.h
