@@ -39,6 +39,7 @@ RecordNode*  records = NULL;
 NSStringEncoding GetNSStringEncodingForIanaMib(int p_mib) {
   /* Note that these are listed more or less in the order of expected likelyhood of finding them. */
   switch(p_mib) {
+    case 0:     return NSUTF8StringEncoding; // We'll default to UTF-8 if it's really not set.
     case 3:     return NSUTF8StringEncoding; // NSASCIIStringEncoding; // We're cheating here...
     case 106:   return NSUTF8StringEncoding;
     case 4:     return NSISOLatin1StringEncoding;
@@ -520,18 +521,18 @@ static boolean TranscribePalmImageToJPEG(unsigned char *image_bytes_in, int byte
           inbyte += 2;
         }
       }
-           /*****/NSLog(@"11j");   
+//           /*****/NSLog(@"11j");   
       (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
-           /*****/NSLog(@"11k");   
+//           /*****/NSLog(@"11k");   
     }
-      /*****/NSLog(@"12");
+//      /*****/NSLog(@"12");
     free(rowbuf);
     free(lastrow);
     free(jpeg_row);
     
     jpeg_finish_compress(&cinfo);
     jpeg_destroy_compress(&cinfo);
-   /*****/NSLog(@"13");   
+
     return YES;
 }
 
@@ -1452,15 +1453,15 @@ static void TranscribeRecord(plkr_Document *doc, int record_index, NSString *bas
   
   if(type == PLKR_DRTYPE_TEXT_COMPRESSED || type == PLKR_DRTYPE_TEXT) {
     TranscribeTextRecord(doc, record_index, data, data_len, type, returnHTML);
-  } else if(type == PLKR_DRTYPE_IMAGE_COMPRESSED || type == PLKR_DRTYPE_IMAGE) {
-    NSLog(@"Dumping image data for record_index: %d", record_index);
+  } else if(type == PLKR_DRTYPE_IMAGE_COMPRESSED || type == PLKR_DRTYPE_IMAGE) {    
     NSString *imgName = [basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"r%d.jpg", record_index]];
+    NSLog(@"Dumping image data for record_index: %d to %@", record_index, imgName);
     FILE *fp = fopen([imgName fileSystemRepresentation], "wb");
     TranscribeImageRecord(doc, record_index, fp, data, data_len, type);
     fclose(fp);
-  } else if(type == PLKR_DRTYPE_MULTIIMAGE) {
-    NSLog(@"Dumping image data for record_index: %d", record_index);
+  } else if(type == PLKR_DRTYPE_MULTIIMAGE) {    
     NSString *imgName = [basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"r%d.jpg", record_index]];
+    NSLog(@"Dumping image data for record_index: %d to %@", record_index, imgName);
     FILE *fp = fopen([imgName fileSystemRepresentation], "wb");
     TranscribeMultiImageRecord(doc, record_index, fp, data, data_len, type);
     fclose(fp);
