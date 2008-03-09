@@ -167,9 +167,7 @@
 	int transitionType = reversed ? 2 : 1;
 	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
 					toView:view];
-	GSLog(@"transitioned");
 	[super pushNavigationItem:item];
-	GSLog(@"called super");
 }
 
 - (FileBrowser *)topBrowser
@@ -239,9 +237,7 @@
 	return hidden;
 }
 
-- (void)showTopNavBar:(BOOL)withAnimation
-{
-	GSLog(@"showTopNavBar");
+- (void)showTopNavBar:(BOOL)withAnimation {
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
 	// the top nav bar shows under the status bar.
@@ -259,9 +255,7 @@
 
 }
 
-- (void)hideTopNavBar
-{
-	GSLog(@"hideTopNavBar");
+- (void)hideTopNavBar {
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
@@ -272,9 +266,7 @@
 	hidden = YES;
 }
 
-- (void)showBotNavBar
-{
-	GSLog(@"showBotNavBar");
+- (void)showBotNavBar {
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
@@ -284,9 +276,7 @@
 
 }
 
-- (void)hideBotNavBar
-{
-	GSLog(@"hideBotNavBar");
+- (void)hideBotNavBar {
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);

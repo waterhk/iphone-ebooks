@@ -23,6 +23,9 @@
 #import "palm/palmconvert.h"
 #import "ChapteredHTML.h"
 
+#define ENCODING_LIST {[defaults defaultTextEncoding], NSUTF8StringEncoding, NSISOLatin1StringEncoding, \
+  NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
+
 @interface NSObject (HeartbeatDelegate)
 	- (void)heartbeatCallback:(id)ignored;
 @end
@@ -55,7 +58,7 @@
 	[self setBottomBufferHeight:0.0f];
 
 	[self scrollToMakeCaretVisible:NO];
-
+  
 	[self setScrollDecelerationFactor:0.996f];
 	//  GSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
 	[self setTapDelegate:self];
@@ -147,7 +150,7 @@
 	{
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
-		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
 		size += 2.0f;
@@ -160,7 +163,7 @@
     totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
 	}
 }
@@ -175,7 +178,7 @@
 	{
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
-		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
 		size -= 2.0f;
@@ -188,7 +191,7 @@
     totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
 	}
 }
@@ -222,7 +225,7 @@
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
-	GSLog(@"zone height %d", lZoneHeight);
+	//GSLog(@"zone height %d", lZoneHeight);
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 	if ([self isScrolling]) {
@@ -373,16 +376,24 @@
 	}	else if ([pathExt isEqualToString:@"pdb"]) { 
 		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
 		NSString *retType = nil;
-		NSMutableString *ret;
+    NSString *retObject = nil;
+		NSObject *ret;
     
-		ret = ReadPDBFile(thePath, &retType);
+		ret = ReadPDBFile(thePath, &retType, &retObject);
     
-		if([@"txt" isEqualToString:retType]) {
-      bIsHtml = NO;
-      theHTML = ret;
-		} else {
+    // Check the returned object and convert to string if necessary.
+    if([@"DATA" isEqualToString:retObject]) {
+      // Need to convert to string
+      theHTML = [self convertPalmDoc:(NSData*)ret];
+    } else {
+      theHTML = (NSMutableString*)ret;
+    }
+    
+    // Plain text types don't need to go through all the HTML conversion leg work.
+		if([@"htm" isEqualToString:retType]) {
       bIsHtml = YES;
-			theHTML = ret;
+		} else {
+      bIsHtml = NO;
 		}
 	}
   
@@ -430,37 +441,61 @@
    */
 }
 
+/**
+ * Convert Palm data to string using proper text encoding.
+ */
+- (NSMutableString *)convertPalmDoc:(NSData*)p_data {
+  NSMutableString *originalText;
+  
+  int i=0;
+  NSStringEncoding encList[] = ENCODING_LIST;
+  NSStringEncoding curEnc = encList[i];
+  while(curEnc != -1) {
+    GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+    originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
+    
+    if(originalText != nil) {
+      GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+      break;
+    }
+    
+    curEnc = encList[++i];
+  }
+  
+  if(originalText == nil) {
+    originalText = [[NSMutableString alloc] initWithString:
+                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+  }
+  
+	return [originalText autorelease];  
+}
 
 /**
  * Read a text file, attempting to determine its encoding using defaults, automatically,
  * or with a list of common encodings, convert to HTML and return.
  */
 - (NSMutableString *)readTextFile:(NSString *)file {  
-	NSStringEncoding defaultEncoding = [defaults defaultTextEncoding];
-  NSStringEncoding encList[] = {
-    defaultEncoding, NSUTF8StringEncoding, NSISOLatin1StringEncoding, 
-    NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,
-    NSASCIIStringEncoding
-  };
-  int nEncCount = 6;
-  int i;
-  
   NSMutableString *originalText;
-  for(i=0; i<nEncCount; i++) {
-    NSStringEncoding curEnc = encList[i];
+  
+  int i=0;
+  NSStringEncoding encList[] = ENCODING_LIST;
+  NSStringEncoding curEnc = encList[i];
+  while(curEnc != -1) {
     
     if(curEnc == AUTOMATIC_ENCODING) {
       GSLog(@"Trying automatic encoding");
-      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&defaultEncoding error:NULL];
+      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
     } else {
-      GSLog(@"Trying encoding: %d", curEnc);
+      GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
       originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
     }
     
     if(originalText != nil) {
-      GSLog(@"Successfully opened with encoding: %d", curEnc);
+      GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
       break;
     }
+    
+    curEnc = encList[++i];
   }
   
   if(originalText == nil) {

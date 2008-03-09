@@ -1,1 +1,1 @@
-NSMutableString*		decodePalmDoc( FILE *fin );
+NSData*		decodePalmDoc( FILE *fin );

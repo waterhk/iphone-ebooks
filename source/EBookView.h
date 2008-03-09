@@ -48,7 +48,7 @@
   
 	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
 	int _orient;
-	CGAffineTransform _matrixprev;
+	CGAffineTransform _matrixprev;  
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
@@ -59,6 +59,7 @@
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath;
 - (NSMutableString *)readHtmlFile:(NSString *)thePath;
 - (NSMutableString *)readTextFile:(NSString *)file;
+- (NSMutableString *)convertPalmDoc:(NSData*)p_data;
 
 - (NSString *)currentPath;
 - (void)embiggenText;

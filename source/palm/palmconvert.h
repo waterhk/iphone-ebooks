@@ -1,2 +1,2 @@
 
-NSMutableString *ReadPDBFile(NSString *filename, NSString **retType);
+id ReadPDBFile(NSString *filename, NSString **retType, NSString **retObject);

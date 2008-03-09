@@ -1417,15 +1417,14 @@ static void FinishDoc(plkr_Document*  doc) {
   plkr_CloseDoc(doc);
 }
 
-
-NSMutableString* HTMLFromPluckerFile(FILE *docHandle)
-{
+/**
+ * Read the contents of a plucker file and convert it to HTML.
+ */
+NSMutableString* HTMLFromPluckerFile(FILE *docHandle) {
   NSMutableString *returnHTML = [[[NSMutableString alloc] init] autorelease];
   plkr_Document*  doc;
   int             i;
   boolean         verbose = 1;
-  
-  [returnHTML autorelease];
   
   doc = plkr_OpenDBFileHandle(docHandle);
   if(!doc) {

@@ -215,9 +215,10 @@
   
 }
 
-
+/**
+ * Hide the navigation bars.
+ */
 - (void)hideNavbars {
-	GSLog(@"hideNavbars");
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 	[textView setFrame:rect];
 	[navBar hide:NO];
@@ -225,20 +226,23 @@
 	[self hideSlider];
 }
 
-- (void)toggleNavbars
-{
-	GSLog(@"toggleNavbars");
+/**
+ * Toggle visibility of the navigation bars.
+ */
+- (void)toggleNavbars {
 	[navBar toggle];
 	[bottomNavBar toggle];
-	if (nil == scrollerSlider)
+	if (nil == scrollerSlider) {
 		[self showSlider:true];
-	else
+	} else {
 		[self hideSlider];
+  }
 }
 
-- (void)showSlider:(BOOL)withAnimation
-{
-	GSLog(@"showSlider");
+/**
+ * Show the scroll slider.
+ */
+- (void)showSlider:(BOOL)withAnimation {
 	CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
 	CGRect lDefRect = [defaults fullScreenApplicationContentRect];
 	if (nil != scrollerSlider)
@@ -929,9 +933,10 @@
 	}	
 }
 
-- (void)rotateApp
-{
-	GSLog(@"rotateApp");
+/**
+ * Toggle rotation status.
+ */
+- (void)rotateApp {
 	CGSize lContentSize = [textView contentSize];	
 	//GSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
 	//GSLog(@"rotateApp");
@@ -939,8 +944,7 @@
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
 	//UIAnimator *anim = [[UIAnimator alloc] init];
 	[self toggleStatusBarColor];
-	if ([defaults isRotate90])
-	{
+	if ([defaults isRotate90]) {
 		int degree = 90;
 		CGAffineTransform lTransform2  = CGAffineTransformMake(0, 1, -1, 0, 0, 0);
 		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
@@ -952,33 +956,25 @@
 		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
 		//BCC: translate back so the top left corner of the view is at the top right of the phone
 		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
-	} else
-	{
-	}
+	} 
+  
 	struct CGAffineTransform lMatrixprev = [window transform];
 	//GSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
 	//GSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
 	//GSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
-	if (! CGAffineTransformEqualToTransform(lTransform,lMatrixprev))
-	{
+	if(!CGAffineTransformEqualToTransform(lTransform,lMatrixprev)) {
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
 		//GSLog(@"overall height: %f", overallRect.size.height);
 		struct CGRect visRect = [textView visibleRect];
 		float scrollPercentage = visRect.origin.y / overallRect.size.height;
-		if ([defaults isRotate90])
-		{
+		if ([defaults isRotate90]) {
 			[window setFrame: rect];
 			[window setBounds: rect];
 			[mainView setFrame: rect];
 			[mainView setBounds: rect];
 		}
-
-
-
-
-
 
 		[transitionView setFrame: rect];
 		[textView setFrame: rect];
