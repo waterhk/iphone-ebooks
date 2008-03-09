@@ -45,7 +45,6 @@
 
 	size = 16.0f;
 
-	fullHTML      = nil;
 	chapteredHTML = [[ChapteredHTML alloc] init];
 	subchapter    = 0;
 	defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
@@ -134,196 +133,19 @@
 	}
 }
 
-- (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter
-{
-	BOOL junk;
-	return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk subchapter:theSubchapter];
-}
-
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int)theSubchapter
-{
-	BOOL junk;
-	return [self loadBookWithPath:thePath numCharacters:numChars
-					   didLoadAll:&junk subchapter:theSubchapter];
-}
-
-- (void)setCurrentPathWithoutLoading:(NSString *)thePath
-//USE WITH CAUTION!!!!
-{
-  [thePath retain];
-  [path release];
-	path = thePath;
-}
-
 /**
- * Master method to load book - all others delegate here.
- *
- * @param thePath full file/path of book to load
- * @param numChars number of characters if known, -1 if not
- * @param didLoadAll pointer to bool which will return YES if the entire file was loaded into memory
- * @param theSubchapter subchapter number for chaptered HTML
+ * Return the current path.
  */
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
-			  didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
-{
-	NSString *theHTML = nil;
-	GSLog(@"path: %@", thePath);
-
-  [thePath retain];
-  [path release];
-	path = thePath;
-  
-  if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"txt"])
-	{
-		theHTML = [self HTMLFromTextFile:thePath];
-	}
-	else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"html"] ||
-			 [[[thePath pathExtension] lowercaseString] isEqualToString:@"htm"])
-	{
-		theHTML = [self HTMLFileWithoutImages:thePath];
-	}
-	else if ([[[thePath pathExtension] lowercaseString] isEqualToString:@"pdb"]) 
-	{ 
-		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
-		NSString *retType = nil;
-		NSMutableString *ret;
-		ret = ReadPDBFile(thePath, &retType);
-		if([@"txt" isEqualToString:retType]) {
-      theHTML = [self HTMLFromTextString:ret];
-		} else {
-			theHTML = ret;
-		}
-	}
-
-	if ((-1 == numChars) || (numChars >= [theHTML length]))
-	{
-		*didLoadAll = YES;
-
-		[fullHTML release];
-		fullHTML = [theHTML retain];
-
-		if ([defaults subchapteringEnabled] == NO)
-		{
-			[self setHTML:fullHTML];
-			subchapter = 0;
-		}
-		else
-		{
-			[chapteredHTML setHTML:theHTML];
-
-			if (theSubchapter < [chapteredHTML chapterCount])
-				subchapter = theSubchapter;
-			else
-				subchapter = 0;
-
-			[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-		}
-	}
-	else
-	{
-		NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
-							 [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
-		[self setHTML:tempyString];
-	}
-	/* This code doesn't work.  Sorry, charlie.
-	   if (1) //replace with a defaults check
-	   { 
-	   NSMutableString *ebookPath = [NSString  stringWithString:[BooksDefaultsController defaultEBookPath]];
-	   NSString *styleSheetPath = [ebookPath stringByAppendingString:@"/style.css"];
-	   if ([[NSFileManager defaultManager] fileExistsAtPath:styleSheetPath])
-	   {
-	   [[self _webView] setUserStyleSheetLocation:[NSURL fileURLWithPath:ebookPath]];
-	   }
-	//[ebookPath release];
-	}
-	*/
-}
-
-- (NSString *)HTMLFileWithoutImages:(NSString *)thePath
-{
-	// The name of this method is in fact misleading--in Books.app < 1.2,
-	// it did in fact strip images.  Not anymore, though.
-
-	NSStringEncoding encoding = [defaults defaultTextEncoding];
-	NSMutableString *originalText;
-	NSString *outputHTML;
-	GSLog(@"Checking encoding...");
-	if (AUTOMATIC_ENCODING == encoding)
-	{
-		originalText = [[NSMutableString alloc]
-			initWithContentsOfFile:thePath
-					  usedEncoding:&encoding
-							 error:NULL];
-		GSLog(@"Encoding: %d",encoding);
-		if (nil == originalText)
-		{
-			GSLog(@"Trying UTF-8 encoding...");
-			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:thePath
-							  encoding: NSUTF8StringEncoding
-								 error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying ISO Latin-1 encoding...");
-			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:thePath
-							  encoding: NSISOLatin1StringEncoding
-								 error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying Mac OS Roman encoding...");
-			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:thePath
-							  encoding: NSMacOSRomanStringEncoding
-								 error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying ASCII encoding...");
-			originalText = [[NSMutableString alloc] 
-				initWithContentsOfFile:thePath
-							  encoding: NSASCIIStringEncoding
-								 error:NULL];
-		}
-		if (nil == originalText)
-		{
-			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Could not determine text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
-		}
-	}
-	else // if encoding is specified
-	{
-		originalText = [[NSMutableString alloc]
-			initWithContentsOfFile:thePath
-						  encoding: encoding
-							 error:NULL];
-		if (nil == originalText)
-		{
-			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Incorrect text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
-		}
-	} //else
-
-	NSRange fullRange = NSMakeRange(0, [originalText length]);
-
-	unsigned int i;
-	int extraHeight = 0;
-	//Make all image src URLs into absolute file URLs.
-	outputHTML = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
-
-	//  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
-	//  GSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
-	return outputHTML;
-}
-
-- (NSString *)currentPath;
-{
+- (NSString *)currentPath; {
 	return path;
 }
 
-- (void)embiggenText
-// "A noble spirit embiggens the smallest man." -- Jebediah Springfield
-{
+/**
+ * Increase on-screen text size.
+ *
+ * "A noble spirit embiggens the smallest man." -- Jebediah Springfield
+ */
+- (void)embiggenText {
 	if (size < 36.0f)
 	{
 		struct CGRect oldRect = [self visibleRect];
@@ -333,27 +155,25 @@
 		float scrollFactor = middleRect / totalRect.size.height;
 		size += 2.0f;
 		[self setTextSize:size];
-
-		if ([defaults subchapteringEnabled] &&
-				(subchapter < [chapteredHTML chapterCount]))
-		{
-			[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-		}
-		else
-			[self setHTML:fullHTML];
-
-		totalRect = [[self _webView] frame];
+           
+    [self recalculateStyle];
+    [self webViewDidChange:self];
+		[self setNeedsDisplay];
+    
+    totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
-		[self setNeedsDisplay];
 	}
 }
 
-- (void)ensmallenText
-// "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
-{
+/**
+ * Shrink on-screen text size.
+ *
+ * "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
+ */
+- (void)ensmallenText {
 	if (size > 10.0f)
 	{
 		struct CGRect oldRect = [self visibleRect];
@@ -364,32 +184,26 @@
 		size -= 2.0f;
 		[self setTextSize:size];
 
-		if ([defaults subchapteringEnabled] &&
-				(subchapter < [chapteredHTML chapterCount]))
-		{
-			[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-		}
-		else
-			[self setHTML:fullHTML];
-
-		totalRect = [[self _webView] frame];
+    [self recalculateStyle];
+    [self webViewDidChange:self];
+		[self setNeedsDisplay];
+    
+    totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
-		[self setNeedsDisplay];
 	}
 }
-// None of these tap methods work yet.  They may never work.
 
-- (void)handleDoubleTapEvent:(struct __GSEvent *)event
-{
+
+// None of these tap methods work yet.  They may never work.
+- (void)handleDoubleTapEvent:(struct __GSEvent *)event {
 	[self embiggenText];
 	//[super handleDoubleTapEvent:event];
 }
 
-- (void)handleSingleTapEvent:(struct __GSEvent *)event
-{
+- (void)handleSingleTapEvent:(struct __GSEvent *)event {
 	[self ensmallenText];
 	//[super handleDoubleTapEvent:event];
 }
@@ -399,8 +213,8 @@
    return NO;
    }
    */
-- (void)mouseUp:(struct __GSEvent *)event
-{
+
+- (void)mouseUp:(struct __GSEvent *)event {
 	/*************
 	 * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
 	 * WILL NOT COMPILE UNLESS YOU HAVE PATCHED GRAPHICSSERVICES.H TO ALLOW IT!
@@ -525,74 +339,228 @@
 	}
 }
 
-- (NSString *)HTMLFromTextFile:(NSString *)file
+#pragma mark File Reading Methods START
+
+- (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
+	BOOL junk;
+	return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk subchapter:theSubchapter];
+}
+
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int)theSubchapter {
+	BOOL junk;
+	return [self loadBookWithPath:thePath numCharacters:numChars didLoadAll:&junk subchapter:theSubchapter];
+}
+
+//USE WITH CAUTION!!!!
+- (void)setCurrentPathWithoutLoading:(NSString *)thePath {
+  [thePath retain];
+  [path release];
+	path = thePath;
+}
+
+/**
+ * Master method to load book - all others delegate here.
+ *
+ * @param thePath full file/path of book to load
+ * @param numChars number of characters if known, -1 if not
+ * @param didLoadAll pointer to bool which will return YES if the entire file was loaded into memory
+ * @param theSubchapter subchapter number for chaptered HTML
+ */
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars 
+              didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter {
+  
+	NSString *theHTML = nil;
+	//GSLog(@"path: %@", thePath);
+  
+  [thePath retain];
+  [path release];
+	path = thePath;
+  
+  NSString *pathExt = [[thePath pathExtension] lowercaseString];
+  
+  BOOL bIsHtml;
+  
+  if ([pathExt isEqualToString:@"txt"]) {
+    bIsHtml = NO;
+		theHTML = [self readTextFile:thePath];
+	} else if ([pathExt isEqualToString:@"html"] || [pathExt isEqualToString:@"htm"]) {
+    bIsHtml = YES;
+		theHTML = [self HTMLFileWithoutImages:thePath];
+	}	else if ([pathExt isEqualToString:@"pdb"]) { 
+		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
+		NSString *retType = nil;
+		NSMutableString *ret;
+    
+		ret = ReadPDBFile(thePath, &retType);
+    
+		if([@"txt" isEqualToString:retType]) {
+      bIsHtml = NO;
+      theHTML = ret;
+		} else {
+      bIsHtml = YES;
+			theHTML = ret;
+		}
+	}
+  
+	if ((-1 == numChars) || (numChars >= [theHTML length])) {
+		*didLoadAll = YES;
+  
+    if(bIsHtml) {
+      if ([defaults subchapteringEnabled] == NO) {
+        [self setHTML:theHTML];
+        subchapter = 0;
+      } else {
+        [chapteredHTML setHTML:theHTML];
+        
+        if (theSubchapter < [chapteredHTML chapterCount])
+          subchapter = theSubchapter;
+        else
+          subchapter = 0;
+        
+        [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+      }
+    } else {
+      [self setText:theHTML];
+    }
+	} else {
+    if(bIsHtml) {
+      NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
+                               [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
+      [self setHTML:tempyString];
+    } else {
+      [self setText:theHTML];
+    }
+	}
+  
+	/* This code doesn't work.  Sorry, charlie.
+   if (1) //replace with a defaults check
+   { 
+   NSMutableString *ebookPath = [NSString  stringWithString:[BooksDefaultsController defaultEBookPath]];
+   NSString *styleSheetPath = [ebookPath stringByAppendingString:@"/style.css"];
+   if ([[NSFileManager defaultManager] fileExistsAtPath:styleSheetPath])
+   {
+   [[self _webView] setUserStyleSheetLocation:[NSURL fileURLWithPath:ebookPath]];
+   }
+   //[ebookPath release];
+   }
+   */
+}
+
+
+/**
+ * Read a text file, attempting to determine its encoding using defaults, automatically,
+ * or with a list of common encodings, convert to HTML and return.
+ */
+- (NSString *)readTextFile:(NSString *)file {  
+	NSStringEncoding defaultEncoding = [defaults defaultTextEncoding];
+  NSStringEncoding encList[] = {
+    defaultEncoding, NSUTF8StringEncoding, NSISOLatin1StringEncoding, 
+    NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,
+    NSASCIIStringEncoding
+  };
+  int nEncCount = 6;
+  int i;
+  
+  NSMutableString *originalText;
+  for(i=0; i<nEncCount; i++) {
+    NSStringEncoding curEnc = encList[i];
+    
+    if(curEnc == AUTOMATIC_ENCODING) {
+      GSLog(@"Trying automatic encoding");
+      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&defaultEncoding error:NULL];
+    } else {
+      GSLog(@"Trying encoding: %d", curEnc);
+      originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
+    }
+    
+    if(originalText != nil) {
+      GSLog(@"Successfully opened with encoding: %d", curEnc);
+      break;
+    }
+  }
+  
+  if(originalText == nil) {
+    originalText = [[NSMutableString alloc] initWithString:
+                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+  }
+  
+	return [originalText autorelease];  
+}
+
+- (NSString *)HTMLFileWithoutImages:(NSString *)thePath
 {
+	// The name of this method is in fact misleading--in Books.app < 1.2,
+	// it did in fact strip images.  Not anymore, though.
+  
 	NSStringEncoding encoding = [defaults defaultTextEncoding];
-	NSString *outputHTML;
 	NSMutableString *originalText;
+	NSString *outputHTML;
+	GSLog(@"Checking encoding...");
 	if (AUTOMATIC_ENCODING == encoding)
 	{
-		//GSLog(@"Trying to determine encoding...");
-		originalText = [[NSMutableString alloc] 
-			initWithContentsOfFile:file
-					  usedEncoding:&encoding
-							 error:NULL];
-		//GSLog(@"Found encoding: %d", encoding);
-
+		originalText = [[NSMutableString alloc]
+                    initWithContentsOfFile:thePath
+                    usedEncoding:&encoding
+                    error:NULL];
+		GSLog(@"Encoding: %d",encoding);
 		if (nil == originalText)
 		{
-			//GSLog(@"Checking UTF-8 encoding...");
+			GSLog(@"Trying UTF-8 encoding...");
 			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:file
-							  encoding:NSUTF8StringEncoding error:NULL];
+                      initWithContentsOfFile:thePath
+                      encoding: NSUTF8StringEncoding
+                      error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//GSLog(@"Checking ISO Latin-1 encoding...");
+			GSLog(@"Trying ISO Latin-1 encoding...");
 			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:file
-							  encoding:NSISOLatin1StringEncoding error:NULL];
+                      initWithContentsOfFile:thePath
+                      encoding: NSISOLatin1StringEncoding
+                      error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//GSLog(@"Checking Windows Latin-1 encoding...");
+			GSLog(@"Trying Mac OS Roman encoding...");
 			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:file
-							  encoding:NSWindowsCP1252StringEncoding error:NULL];
+                      initWithContentsOfFile:thePath
+                      encoding: NSMacOSRomanStringEncoding
+                      error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//GSLog(@"Checking Mac OS Roman encoding...");
-			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:file
-							  encoding:NSMacOSRomanStringEncoding error:NULL];
+			GSLog(@"Trying ASCII encoding...");
+			originalText = [[NSMutableString alloc] 
+                      initWithContentsOfFile:thePath
+                      encoding: NSASCIIStringEncoding
+                      error:NULL];
 		}
 		if (nil == originalText)
 		{
-			//GSLog(@"Checking ASCII encoding...");
-			originalText = [[NSMutableString alloc]
-				initWithContentsOfFile:file
-							  encoding:NSASCIIStringEncoding error:NULL];
-		}
-		if (nil == originalText)
-		{
-			originalText = [[NSMutableString alloc] initWithString:@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Could not determine text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
 		}
 	}
-	else //encoding is user-specified
+	else // if encoding is specified
 	{
 		originalText = [[NSMutableString alloc]
-			initWithContentsOfFile:file
-						  encoding:encoding error:NULL];
+                    initWithContentsOfFile:thePath
+                    encoding: encoding
+                    error:NULL];
 		if (nil == originalText)
 		{
-			originalText = [[NSMutableString alloc] initWithString:@"Incorrect text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Incorrect text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
 		}
-	}
-
-	outputHTML = [self HTMLFromTextString:originalText];
-
-	[originalText release];
+	} //else
+  
+	NSRange fullRange = NSMakeRange(0, [originalText length]);
+  
+	unsigned int i;
+	int extraHeight = 0;
+	//Make all image src URLs into absolute file URLs.
+	outputHTML = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
+  
+	//  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
+	//  GSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
 	return outputHTML;
 }
 
@@ -682,11 +650,11 @@
 	return outputHTML;  
 }
 
+#pragma mark File Reading Methods END
 
 - (void)invertText:(BOOL)b
 {
-	if (b)
-	{
+	if (b) {
 		// makes the the view white text on black
 		float backParts[4] = {0, 0, 0, 1};
 		float textParts[4] = {1, 1, 1, 1};
@@ -705,17 +673,18 @@
 	// This "setHTML" invocation is a kludge;
 	// for some reason the display doesn't update correctly
 	// without it, and we can't yet figure out how to fix it.
+  /* FIXME: ZSB: See if invertText works without redrawing the HTML yet.
 	struct CGRect oldRect = [self visibleRect];
 
-	if ([defaults subchapteringEnabled] &&
-			(subchapter < [chapteredHTML chapterCount]))
-	{
+	if ([defaults subchapteringEnabled] && (subchapter < [chapteredHTML chapterCount])) {
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-	}
-	else
-		[self setHTML:fullHTML];
+	}	else {
+    [self setHTML:fullHTML];
+  }
 
 	[self scrollPointVisibleAtTopLeft:oldRect.origin];
+   */
+  
 	[self setNeedsDisplay];
 }
 
@@ -726,7 +695,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[path release];
 	[chapteredHTML release];
-	[fullHTML release];
+//	[fullHTML release];
 	[defaults release];
 	[super dealloc];
 }
@@ -755,10 +724,13 @@
 	{
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
 	}
+  /*
 	else
 		[self setHTML:fullHTML];
-
+*/
 	[self scrollPointVisibleAtTopLeft:origin];
+  [self recalculateStyle];
+  [self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
 
@@ -809,6 +781,7 @@
 
 -(void) redraw
 {
+  /*
 	if ([defaults subchapteringEnabled] &&
 			(subchapter < [chapteredHTML chapterCount]))
 	{
@@ -816,11 +789,14 @@
 	}
 	else
 		[self setHTML:fullHTML];
+   */
 	CGRect lWebViewFrame = [[self _webView] frame];
 	CGRect lFrame = [self frame];
 	GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
 	GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
 	[[self _webView]setFrame: [self frame]];
+  [self recalculateStyle];
+  [self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
 

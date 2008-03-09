@@ -42,19 +42,25 @@
   ChapteredHTML	          *chapteredHTML;
   int                      subchapter;
   BooksDefaultsController *defaults;
-
-  NSString                *fullHTML;
+ 
+  /** Contains memory mapped file contents. */
+  NSData                  *m_memMappedData;
+  
 	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
 	int _orient;
 	CGAffineTransform _matrixprev;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
+
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int) theSubchapter;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int) theSubchapter;
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath;
 - (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
+- (NSString *)readTextFile:(NSString *)file;
+- (NSString *)HTMLFromTextString:(NSMutableString *)originalText;
+
 - (NSString *)currentPath;
 - (void)embiggenText;
 - (void)ensmallenText;
@@ -68,8 +74,6 @@
 - (void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar;
 - (int)textSize;
 - (void)setTextSize:(int)newSize;
-- (NSString *)HTMLFromTextFile:(NSString *)file;
-- (NSString*)HTMLFromTextString:(NSMutableString *)originalText;
 - (void)invertText:(BOOL)b;
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification;
 
