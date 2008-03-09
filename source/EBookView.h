@@ -57,9 +57,8 @@
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int) theSubchapter;
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int) theSubchapter;
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath;
-- (NSString *)HTMLFileWithoutImages:(NSString *)thePath;
-- (NSString *)readTextFile:(NSString *)file;
-- (NSString *)HTMLFromTextString:(NSMutableString *)originalText;
+- (NSMutableString *)readHtmlFile:(NSString *)thePath;
+- (NSMutableString *)readTextFile:(NSString *)file;
 
 - (NSString *)currentPath;
 - (void)embiggenText;

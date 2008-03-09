@@ -51,13 +51,9 @@
 	struct CGRect rect = 	[defaults fullScreenApplicationContentRect];
 
 	doneLaunching = NO;
-
 	transitionHasBeenCalled = NO;
-
 	navbarsAreOn = YES;
-
 	textViewNeedsFullText = NO;
-	imageSplashed = NO;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
@@ -66,82 +62,70 @@
 
 	window = [[UIWindow alloc] initWithContentRect: rect];
 
-	[window orderFront: self];
-	[window makeKey: self];
-	[window _setHidden: NO];
-	struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+
+//	struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+  
 	//Bcc: this positioning should be relative to the screen rect not to some arbitrary value
 	//based on the size of the current gen iphone
-	progressIndicator = [[UIProgressIndicator alloc] 
+	/*
+  progressIndicator = [[UIProgressIndicator alloc] 
 		initWithFrame:CGRectMake((rect.size.width-progsize.width)/2,
 				(rect.size.height-progsize.height)/2,
 				progsize.width, 
 				progsize.height)];
 	[progressIndicator setStyle:0];
+   */
+  
 	mainView = [[UIView alloc] initWithFrame: rect];
 
 	[self setupNavbar];
 	[self setupToolbar];
 
-	textView = [[EBookView alloc] 
-		initWithFrame:
-		CGRectMake(0, 0, rect.size.width, rect.size.height)];
+	textView = [[EBookView alloc] initWithFrame:CGRectMake(0, 0, rect.size.width, rect.size.height)];
 
 	[self refreshTextViewFromDefaults];
-
 
 	recentFile = [defaults fileBeingRead];
 	readingText = [defaults readingText];
 
-
-	transitionView = [[UITransitionView alloc] initWithFrame:
-		CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
+	transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, rect.size.width, rect.size.height)];
 
 	[window setContentView: mainView];
 	//bcc rotation
 	[self rotateApp];
+  
 	[mainView addSubview:transitionView];
 	[mainView addSubview:navBar];
 	[mainView addSubview:bottomNavBar];
-	if (!readingText) 
-		[bottomNavBar hide:YES];
+	if (!readingText) {
+    [bottomNavBar hide:YES];
+  }
 
-	[textView setHeartbeatDelegate:self];
+	//[textView setHeartbeatDelegate:self];
 
 	[navBar setTransitionView:transitionView];
 	[transitionView setDelegate:self];
 
 	NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
-	imageSplashed = !(nil == coverart);
-	/*
-  if (!imageSplashed)
-	{
-		coverart = [[NSBundle mainBundle] pathForResource:@"Default"
-												   ofType:@"png"];
-		[progressIndicator setStyle:![defaults inverted]];
-	}
-	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
-	[mainView addSubview:imageView];
-   */
-  
-  if(imageSplashed) {
+  if(coverart != nil) {
     imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
     [mainView addSubview:imageView];  
   }
   
-	[mainView addSubview:progressIndicator];
-	[progressIndicator startAnimation];
-
-	/// FIXME just a test.
-	/*
-	   NSStringEncoding *enclist = malloc(500*sizeof(NSStringEncoding));
-	   enclist = [NSString availableStringEncodings];
-	   while (*enclist != 0)
-	   {
-	   GSLog(@"%u, %@",*enclist, [NSString localizedNameOfStringEncoding:*(enclist++)]);
-	   }
-	   free(enclist);
-	   */
+//  [self heartbeatCallback:self];
+//	[mainView addSubview:progressIndicator];
+//	[progressIndicator startAnimation];
+  
+  [self finishUpLaunch];
+  doneLaunching = YES;
+  
+  [textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
+  [textView setHeartbeatDelegate:self];
+  textViewNeedsFullText = NO;
+  
+  [window orderFront: self];
+	[window makeKey: self];
+	[window _setHidden: NO];
 }
 
 
@@ -151,31 +135,6 @@
  */
 - (void)finishUpLaunch {
 	NSString *recentFile = [defaults fileBeingRead];
-	
-  /*
-   * If we got a splash image from the book's cover.jpg, them take a screenshot of the book and
-   * save it out where the default is symlinked.
-   *
-   * Why do it with a screenshot?  Why not just link the or copy the cover art into place?
-   * Seems like doing it with a screen shot *must* slow down the launch.
-   *
-   * (Disabled for now due to problems with the new version of Installer.)
-   */
-  /*
-	if (imageSplashed)
-	{
-		[self _dumpScreenContents:nil];
-	//	NSString *defaultPath = [[NSBundle mainBundle] pathForResource:@"Default"
-	//															ofType:@"png"];
-		NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
-		if (![[NSFileManager defaultManager] fileExistsAtPath: lPath])
-			[[NSFileManager defaultManager] createDirectoryAtPath:lPath attributes:nil];
-		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
-		NSData *nsdat = [NSData dataWithContentsOfFile:@"/tmp/foo_0.png"];
-		[nsdat writeToFile:defaultPath atomically:YES];
-		imageSplashed = NO;
-	}
-   */
   
   // Create navigation bar
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
@@ -234,44 +193,30 @@
 		}
 	}
 
-	imageSplashed = NO;
 	transitionHasBeenCalled = YES;
 
 	[arPathComponents release];
 
 	[navBar enableAnimation];
-	[progressIndicator stopAnimation];
-	[progressIndicator removeFromSuperview];
+	//[progressIndicator stopAnimation];
+	//[progressIndicator removeFromSuperview];
   if(imageView != nil) {
     [imageView removeFromSuperview];
     [imageView release];
     imageView = nil;
-  }
+  }  
 }
 
-- (void)heartbeatCallback:(id)unused
-{
-	if (!doneLaunching)
-	{
-		[self finishUpLaunch];
-		doneLaunching = YES;
-	}
-	if ((textViewNeedsFullText) && ![transitionView isTransitioning])
-	{
-		[textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
-		textViewNeedsFullText = NO;
-	}
-	if ((!transitionHasBeenCalled)/* && ![transitionView isTransitioning]*/)
-	{
-		if ((textView != nil) && (defaults != nil))
-		{
-			//[self refreshTextViewFromDefaults];
-		}
-	}
+/**
+ * Heartbeat isn't needed in main app at this point, but we need to init
+ * a delegate or the navbar toggle won't work.
+ */
+- (void)heartbeatCallback:(id)ignored {
+  
 }
 
-- (void)hideNavbars
-{
+
+- (void)hideNavbars {
 	GSLog(@"hideNavbars");
 	struct CGRect rect = [defaults fullScreenApplicationContentRect];
 	[textView setFrame:rect];
@@ -470,8 +415,8 @@
 
 - (void)cleanUpBeforeQuit
 {
-	if (!readingText ||
-			(nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
+  /*
+	if (!readingText || (nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
 	{
 		NSData *defaultData;
 		NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
@@ -492,6 +437,8 @@
 		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
 		[defaultData writeToFile:defaultPath atomically:YES];
 	}
+  */
+  
 	struct CGRect  selectionRect;
 	int            subchapter = [textView getSubchapter];
 	NSString      *filename   = [textView currentPath];
@@ -954,7 +901,7 @@
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];
-	[progressIndicator release];
+//	[progressIndicator release];
 	[textView release];
 	if (nil != imageView)
 		[imageView release];

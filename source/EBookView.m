@@ -24,16 +24,13 @@
 #import "ChapteredHTML.h"
 
 @interface NSObject (HeartbeatDelegate)
-
 	- (void)heartbeatCallback:(id)ignored;
+@end
 
-	@end
 
+@implementation EBookView
 
-	@implementation EBookView
-
-	- (id)initWithFrame:(struct CGRect)rect
-{
+- (id)initWithFrame:(struct CGRect)rect {
 	CGRect lFrame = rect;
 	if (rect.size.width < rect.size.height)
 	{
@@ -73,10 +70,11 @@
 	return self;
 }
 
-- (void)heartbeatCallback:(id)unused
-{
-	if ((![self isScrolling]) && (![self isDecelerating]))
+- (void)heartbeatCallback:(id)unused {
+	if ((![self isScrolling]) && (![self isDecelerating])) {
 		lastVisibleRect = [self visibleRect];
+  }
+  
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(heartbeatCallback:)]) {
 			 [_heartbeatDelegate heartbeatCallback:self];
@@ -87,14 +85,12 @@
 	}
 }
 
-- (void)setHeartbeatDelegate:(id)delegate
-{
+- (void)setHeartbeatDelegate:(id)delegate {
 	_heartbeatDelegate = delegate;
 	[self startHeartbeat:@selector(heartbeatCallback:) inRunLoopMode:nil];
 }
 
-- (void)hideNavbars
-{
+- (void)hideNavbars {
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(hideNavbars)]) {
 			[_heartbeatDelegate hideNavbars];
@@ -104,6 +100,7 @@
 		}
 	}
 }
+
 /*
    - (void)drawRect:(struct CGRect)rect
    {
@@ -121,8 +118,8 @@
    [super drawRect:rect];
    }
    */
-- (void)toggleNavbars
-{
+
+- (void)toggleNavbars {
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(toggleNavbars)]) {
 			[_heartbeatDelegate toggleNavbars];
@@ -228,38 +225,25 @@
 	GSLog(@"zone height %d", lZoneHeight);
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
-	if ([self isScrolling])
-	{
-		if (CGRectEqualToRect(lastVisibleRect, newRect))
-		{
-			if (CGRectContainsPoint(topTapRect, clicked))
-			{
-				if ([defaults inverseNavZone])
-				{
+	if ([self isScrolling]) {
+		if (CGRectEqualToRect(lastVisibleRect, newRect)) {
+			if (CGRectContainsPoint(topTapRect, clicked)) {
+				if ([defaults inverseNavZone]) {
 					//scroll forward one screen...
 					[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-				}
-				else
-				{
+				} else {
 					//scroll back one screen...
 					[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
 				}
-			}
-			else if (CGRectContainsPoint(botTapRect,clicked))
-			{
-				if ([defaults inverseNavZone])
-				{
+			} else if (CGRectContainsPoint(botTapRect,clicked)) {
+				if ([defaults inverseNavZone]) {
 					//scroll back one screen...
 					[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-				}
-				else
-				{
+				} else {
 					//scroll forward one screen...
 					[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
 				}
-			}
-			else 
-			{  // If the old rect equals the new, then we must not be scrolling
+			} else {  // If the old rect equals the new, then we must not be scrolling
 				[self toggleNavbars];
 			}
 		}
@@ -385,7 +369,7 @@
 		theHTML = [self readTextFile:thePath];
 	} else if ([pathExt isEqualToString:@"html"] || [pathExt isEqualToString:@"htm"]) {
     bIsHtml = YES;
-		theHTML = [self HTMLFileWithoutImages:thePath];
+		theHTML = [self readHtmlFile:thePath];
 	}	else if ([pathExt isEqualToString:@"pdb"]) { 
 		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
 		NSString *retType = nil;
@@ -451,7 +435,7 @@
  * Read a text file, attempting to determine its encoding using defaults, automatically,
  * or with a list of common encodings, convert to HTML and return.
  */
-- (NSString *)readTextFile:(NSString *)file {  
+- (NSMutableString *)readTextFile:(NSString *)file {  
 	NSStringEncoding defaultEncoding = [defaults defaultTextEncoding];
   NSStringEncoding encList[] = {
     defaultEncoding, NSUTF8StringEncoding, NSISOLatin1StringEncoding, 
@@ -487,173 +471,33 @@
 	return [originalText autorelease];  
 }
 
-- (NSString *)HTMLFileWithoutImages:(NSString *)thePath
-{
-	// The name of this method is in fact misleading--in Books.app < 1.2,
-	// it did in fact strip images.  Not anymore, though.
-  
+/**
+ * Reads and pre-processes an HTML file.
+ *
+ * This method reads the HTML as a text file (since that's what it is) to re-use the encoding
+ * logic from readTextFile:.
+ */
+- (NSMutableString *)readHtmlFile:(NSString *)thePath {
 	NSStringEncoding encoding = [defaults defaultTextEncoding];
-	NSMutableString *originalText;
-	NSString *outputHTML;
-	GSLog(@"Checking encoding...");
-	if (AUTOMATIC_ENCODING == encoding)
-	{
-		originalText = [[NSMutableString alloc]
-                    initWithContentsOfFile:thePath
-                    usedEncoding:&encoding
-                    error:NULL];
-		GSLog(@"Encoding: %d",encoding);
-		if (nil == originalText)
-		{
-			GSLog(@"Trying UTF-8 encoding...");
-			originalText = [[NSMutableString alloc]
-                      initWithContentsOfFile:thePath
-                      encoding: NSUTF8StringEncoding
-                      error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying ISO Latin-1 encoding...");
-			originalText = [[NSMutableString alloc]
-                      initWithContentsOfFile:thePath
-                      encoding: NSISOLatin1StringEncoding
-                      error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying Mac OS Roman encoding...");
-			originalText = [[NSMutableString alloc]
-                      initWithContentsOfFile:thePath
-                      encoding: NSMacOSRomanStringEncoding
-                      error:NULL];
-		}
-		if (nil == originalText)
-		{
-			GSLog(@"Trying ASCII encoding...");
-			originalText = [[NSMutableString alloc] 
-                      initWithContentsOfFile:thePath
-                      encoding: NSASCIIStringEncoding
-                      error:NULL];
-		}
-		if (nil == originalText)
-		{
-			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Could not determine text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
-		}
-	}
-	else // if encoding is specified
-	{
-		originalText = [[NSMutableString alloc]
-                    initWithContentsOfFile:thePath
-                    encoding: encoding
-                    error:NULL];
-		if (nil == originalText)
-		{
-			originalText = [[NSMutableString alloc] initWithString:@"<html><body><p>Incorrect text encoding.  Try changing the default encoding in Preferences.</p></body></html>\n"];
-		}
-	} //else
-  
+	NSMutableString *originalText = [[[self readTextFile:thePath] mutableCopy] autorelease]; // FIXME: Shouldn't need to copy!
+	  
 	NSRange fullRange = NSMakeRange(0, [originalText length]);
   
 	unsigned int i;
 	int extraHeight = 0;
+
 	//Make all image src URLs into absolute file URLs.
-	outputHTML = [HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
-  
-	//  struct CGSize asize = [outputHTML sizeWithStyle:nil forWidth:320.0];
-	//  GSLog(@"Size for text: width: %f height: %f", asize.width, asize.height);
-	return outputHTML;
-}
+	[HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
 
-- (NSString*)HTMLFromTextString:(NSMutableString *)originalText 
-{
-	NSString *header = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<html>\n\n<head>\n<title></title>\n</head>\n\n<body>\n<p>\n";
-	NSString *outputHTML;
-	NSRange fullRange = NSMakeRange(0, [originalText length]);
-
-	unsigned int i,j;
-	j=0;
-	i = [originalText replaceOccurrencesOfString:@"&" withString:@"&amp;"
-		options:NSLiteralSearch range:fullRange];
-	//GSLog(@"replaced %d &s\n", i);
-	j += i;
-	fullRange = NSMakeRange(0, [originalText length]);
-	i = [originalText replaceOccurrencesOfString:@"<" withString:@"&lt;"
-		options:NSLiteralSearch range:fullRange];
-	//GSLog(@"replaced %d <s\n", i);
-	j += i;
-	fullRange = NSMakeRange(0, [originalText length]);
-	i = [originalText replaceOccurrencesOfString:@">" withString:@"&gt;"
-		options:NSLiteralSearch range:fullRange];
-	//GSLog(@"replaced %d >s\n", i);
-	j += i;
-	fullRange = NSMakeRange(0, [originalText length]);
-
-	// Argh, bloody MS line breaks!  Change them to UNIX, then...
-	i = [originalText replaceOccurrencesOfString:@"\r\n" withString:@"\n"
-										 options:NSLiteralSearch range:fullRange];
-	//GSLog(@"replaced %d carriage return/newlines\n", i);
-	j += i;
-	fullRange = NSMakeRange(0, [originalText length]);
-
-	if ([defaults smartConversion])
-	{
-		//Change double-newlines to </p><p>.
-		i = [originalText replaceOccurrencesOfString:@"\n\n" withString:@"</p>\n<p>"
-											 options:NSLiteralSearch range:fullRange];
-		//GSLog(@"replaced %d double-newlines\n", i);
-		j += i;
-		fullRange = NSMakeRange(0, [originalText length]);
-
-		// And just in case someone has a Classic MacOS textfile...
-		i = [originalText replaceOccurrencesOfString:@"\r\r" withString:@"</p>\n<p>"
-											 options:NSLiteralSearch range:fullRange];
-		//GSLog(@"replaced %d double-carriage-returns\n", i);
-		j += i;
-
-		// Lots of text files start new paragraphs with newline-space-space or newline-tab
-		i = [originalText replaceOccurrencesOfString:@"\n  " withString:@"</p>\n<p>"
-											 options:NSLiteralSearch range:fullRange];
-		//GSLog(@"replaced %d double-spaces\n", i);
-		j += i;
-		fullRange = NSMakeRange(0, [originalText length]);
-
-		i = [originalText replaceOccurrencesOfString:@"\n\t" withString:@"</p>\n<p>"
-											 options:NSLiteralSearch range:fullRange];
-		//GSLog(@"replaced %d double-spaces\n", i);
-		j += i;
-	}
-	else
-	{
-		fullRange = NSMakeRange(0, [originalText length]);
-		i = [originalText replaceOccurrencesOfString:@"\n" withString:@"<br />\n"
-											 options:NSLiteralSearch range:fullRange];
-		fullRange = NSMakeRange(0, [originalText length]);
-
-		// And just in case someone has a Classic MacOS textfile...
-		i = [originalText replaceOccurrencesOfString:@"\r" withString:@"<br />\n"
-											 options:NSLiteralSearch range:fullRange];
-		//GSLog(@"replaced %d double-carriage-returns\n", i);
-		j += i;
-
-	}
-	fullRange = NSMakeRange(0, [originalText length]);
-
-	i = [originalText replaceOccurrencesOfString:@"  " withString:@"&nbsp; "
-		options:NSLiteralSearch range:fullRange];
-	//GSLog(@"replaced %d double-spaces\n", i);
-	j += i;
-	fullRange = NSMakeRange(0, [originalText length]);
-
-
-	outputHTML = [NSString stringWithFormat:@"%@%@\n</p><br /><br />\n</body>\n</html>\n", header, originalText];
-
-	return outputHTML;  
+	return originalText;
 }
 
 #pragma mark File Reading Methods END
 
-- (void)invertText:(BOOL)b
-{
+/**
+ * Toggle between white-on-black and black-on-white.
+ */
+- (void)invertText:(BOOL)b {
 	if (b) {
 		// makes the the view white text on black
 		float backParts[4] = {0, 0, 0, 1};
@@ -670,43 +514,32 @@
 		[self setTextColor: CGColorCreate( colorSpace, textParts)];
 		[self setScrollerIndicatorStyle:0];
 	}
-	// This "setHTML" invocation is a kludge;
-	// for some reason the display doesn't update correctly
-	// without it, and we can't yet figure out how to fix it.
-  /* FIXME: ZSB: See if invertText works without redrawing the HTML yet.
-	struct CGRect oldRect = [self visibleRect];
-
-	if ([defaults subchapteringEnabled] && (subchapter < [chapteredHTML chapterCount])) {
-		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-	}	else {
-    [self setHTML:fullHTML];
-  }
-
-	[self scrollPointVisibleAtTopLeft:oldRect.origin];
-   */
-  
+    
 	[self setNeedsDisplay];
 }
 
-
-- (void)dealloc
-{
-	//[tapinfo release];
+/**
+ * Cleanup.
+ */
+- (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[path release];
 	[chapteredHTML release];
-//	[fullHTML release];
 	[defaults release];
 	[super dealloc];
 }
 
-- (int) getSubchapter
-{
+/**
+ * Get the currently displayed html chapter.
+ */
+- (int) getSubchapter {
 	return subchapter;
 }
 
-- (int) getMaxSubchapter
-{
+/**
+ * Get the count of html chapters.
+ */
+- (int) getMaxSubchapter {
 	int maxSubchapter = 1;
 
 	if ([defaults subchapteringEnabled] == YES)
@@ -715,27 +548,26 @@
 	return maxSubchapter;
 }
 
-- (void) setSubchapter: (int) chapter
-{
+/**
+ * Go to an explicit HTML chapter.
+ */
+- (void) setSubchapter: (int) chapter {
 	CGPoint origin = { 0, 0 };
 
-	if ([defaults subchapteringEnabled] &&
-			(subchapter < [chapteredHTML chapterCount]))
-	{
+	if ([defaults subchapteringEnabled] && (subchapter < [chapteredHTML chapterCount])) {
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
 	}
-  /*
-	else
-		[self setHTML:fullHTML];
-*/
+  
 	[self scrollPointVisibleAtTopLeft:origin];
   [self recalculateStyle];
   [self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
 
-- (BOOL) gotoNextSubchapter
-{
+/**
+ * Go to the next HTML chapter.
+ */
+- (BOOL) gotoNextSubchapter {
 	CGPoint origin = { 0, 0 };
 
 	if ([defaults subchapteringEnabled] == NO)
@@ -756,8 +588,10 @@
 	return YES;
 }
 
-- (BOOL) gotoPreviousSubchapter
-{
+/**
+ * Change to the previous HTML chapter.
+ */
+- (BOOL) gotoPreviousSubchapter {
 	CGPoint origin = { 0, 0 };
 
 	if ([defaults subchapteringEnabled] == NO)
@@ -775,25 +609,18 @@
 	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
 	[self scrollPointVisibleAtTopLeft:origin];
 	[self setNeedsDisplay];
+  
 	return YES;
 }
 
-
--(void) redraw
-{
-  /*
-	if ([defaults subchapteringEnabled] &&
-			(subchapter < [chapteredHTML chapterCount]))
-	{
-		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-	}
-	else
-		[self setHTML:fullHTML];
-   */
+/**
+ * Redraw the screen.
+ */
+-(void) redraw {
 	CGRect lWebViewFrame = [[self _webView] frame];
 	CGRect lFrame = [self frame];
-	GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
-	GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
+	//GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
+	//GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
 	[[self _webView]setFrame: [self frame]];
   [self recalculateStyle];
   [self updateWebViewObjects];

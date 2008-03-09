@@ -62,7 +62,7 @@ enum PreferenceAnimationType;
 	BOOL        textViewNeedsFullText;
 	BOOL        navbarsAreOn;
 	BOOL		textInverted;
-	BOOL        imageSplashed;
+
 	BOOL        rotate90;
 	float       size;
 	BooksDefaultsController *defaults;
@@ -76,7 +76,7 @@ enum PreferenceAnimationType;
 	UINavBarButton *rightButton;
 	UINavBarButton *leftButton;
 	
-	UIProgressIndicator *progressIndicator;
+	//UIProgressIndicator *progressIndicator;
 
 	UIImage *buttonImg;
 	NSString *imgPath;
@@ -86,8 +86,7 @@ enum PreferenceAnimationType;
 }
 - (void)textViewDidGoAway:(id)sender;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
-
-- (void)heartbeatCallback:(id)unused;
+- (void)heartbeatCallback:(id)ignored;
 - (void)hideNavbars;
 - (void)toggleNavbars;
 - (void)showSlider:(BOOL)withAnimation;
@@ -114,5 +113,6 @@ enum PreferenceAnimationType;
 - (void)rotateApp;
 - (void)rotateButtonCallback:(UINavBarButton*) button;
 - (void) applicationDidFinishLaunching: (id) unused;
+- (void)finishUpLaunch;
 - (void) preferenceAnimationDidFinish;
 @end

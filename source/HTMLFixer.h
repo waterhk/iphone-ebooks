@@ -6,14 +6,13 @@
 #import "NSString-BooksAppAdditions.h"
 #import "BooksDefaultsController.h"
 
-@interface HTMLFixer : NSObject
+@class AGRegex;
 
-{
+@interface HTMLFixer : NSObject {
+  
 }
 
-+(BOOL)fileHasBeenFixedAtPath:(NSString *)path;
-+(BOOL)writeFixedFileAtPath:(NSString *)thePath;
-+(NSString *)fixedImageTagForString:(NSString *)aStr basePath:(NSString *)path returnImageHeight:(int *)height;
-+(NSString *)fixedHTMLStringForString:(NSString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size;
-
++ (NSString *)fixedImageTagForString:(NSString *)str basePath:(NSString *)path returnImageHeight:(int *)height;
++ (void)fixedHTMLStringForString:(NSMutableString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size;
++ (void)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut;
 @end
