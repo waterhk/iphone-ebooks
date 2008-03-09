@@ -14,5 +14,5 @@
 
 + (NSString *)fixedImageTagForString:(NSString *)str basePath:(NSString *)path returnImageHeight:(int *)height;
 + (void)fixedHTMLStringForString:(NSMutableString *)theOldHTML filePath:(NSString *)thePath textSize:(int)size;
-+ (void)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut;
++ (int)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut;
 @end

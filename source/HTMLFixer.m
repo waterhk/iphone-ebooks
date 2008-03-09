@@ -73,12 +73,10 @@ AGRegex *STYLE_REGEX;
   AGRegexMatch *srcMatch = [SRC_REGEX findInString:aStr];
   if(srcMatch == nil || [srcMatch count] != 2) {
     // We didn't find a match, or we found MULTIPLE matches.  Just bail...
-    GSLog(@"No src regex match found in %@", aStr);
     return @"";
   } else {
     srcString = [srcMatch groupAtIndex:1];
     if([srcString length] == 0) {
-      GSLog(@"No src regex match found in %@", aStr);
       return @"";
     }
   }
@@ -90,7 +88,7 @@ AGRegex *STYLE_REGEX;
   NSURL *pathURL = [NSURL fileURLWithPath:imgPath];
   NSString *absoluteURLString = [pathURL absoluteString];
   
-  GSLog(@"absoluteURLString: %@", absoluteURLString);
+  //GSLog(@"absoluteURLString: %@", absoluteURLString);
   
   NSString *finalImgTag;
   
@@ -100,7 +98,7 @@ AGRegex *STYLE_REGEX;
     CGImageRef imgRef = [img imageRef];
     height = CGImageGetHeight(imgRef);
     width = CGImageGetWidth(imgRef);
-    //NSLog(@"image's width: %d height: %d", width, height);
+    //GSLog(@"image's width: %d height: %d", width, height);
     if (width <= 300) {
       *returnHeight = (int)height;
     } else {
@@ -118,7 +116,7 @@ AGRegex *STYLE_REGEX;
     *returnHeight = 0;
   }
   
-  NSLog(@"returning str: %@", finalImgTag);
+  //GSLog(@"returning str: %@", finalImgTag);
   return finalImgTag;
 }
 
@@ -126,13 +124,13 @@ AGRegex *STYLE_REGEX;
  * Fixes all img tags within a given string.
  */
 +(void)fixedHTMLStringForString:(NSMutableString *)theHTML filePath:(NSString *)thePath textSize:(int)size {
-  BooksDefaultsController *defaults = [BooksDefaultsController sharedBooksDefaultsController];
+  BOOL bRenderTables = [[BooksDefaultsController sharedBooksDefaultsController] renderTables];
   int thisImageHeight = 0;
   int height = 0;
   int i;
  
   NSString *basePath = [thePath stringByDeletingLastPathComponent];
-
+  
   // Regex to find all img tags
   NSArray *imgTagMatches = [IMGTAG_REGEX findAllInString:theHTML];
   int imgCount = [imgTagMatches count];  
@@ -148,33 +146,38 @@ AGRegex *STYLE_REGEX;
     [theHTML replaceCharactersInRange:origRange withString:fixedImgTag];
     height += thisImageHeight;
   }
-  
     
   //
   // There...  Image tags dealt with...
   //
   
   // Kill any styles or other difficult block elements (do this instead of just the @imports)
-  [HTMLFixer replaceRegex:STYLE_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
+  i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
+  // GSLog(@"Done-Replacing block tags (%d tags)", i);
 
   // Adjust tables if desired.
-  if(![defaults renderTables]) {
+  if(!bRenderTables) {
     // Use regex's to replace all table related tags with reasonably small-screen equivalents.
     // (Tip o' the hat to the Plucker folks for showing how to do it!)
-    [HTMLFixer replaceRegex:TABLE_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:TR_REGEX withString:@"" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:TD_REGEX withString:@"" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:TH_REGEX withString:@"<b>" inMutableString:theHTML];
+    i=0;
+    i += [HTMLFixer replaceRegex:TABLE_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TR_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TD_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TH_REGEX withString:@"<b>" inMutableString:theHTML];
     
-    [HTMLFixer replaceRegex:TABLECL_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:TRCL_REGEX withString:@"<hr style=\"height: 1px;\"/>" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:TDCL_REGEX withString:@"<br/>" inMutableString:theHTML];
-    [HTMLFixer replaceRegex:THCL_REGEX withString:@"</b><br/><br/>" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TABLECL_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TRCL_REGEX withString:@"<hr style=\"height: 1px;\"/>" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:TDCL_REGEX withString:@"<br/>" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:THCL_REGEX withString:@"</b><br/><br/>" inMutableString:theHTML];
+    // GSLog(@"Done-Replacing table tags. (%d tags)", i);
   }
+  
+  
   
   // Add a DIV object with a set height to make up for the images' height.
   // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
   if(height > 0) {
+    // GSLog(@"Inserting %d of filler height for images.", height);
     [theHTML appendFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
   }
 }
@@ -182,7 +185,7 @@ AGRegex *STYLE_REGEX;
 /**
  * Replace all occurences of a regex with a static string in a mutable string.
  */
-+ (void)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut {
++ (int)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut {
   // Do this in its own pool as the regex will likely alloc a lot of temporary memory.
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   int i;
@@ -200,6 +203,8 @@ AGRegex *STYLE_REGEX;
   }
   
   [pool release];
+  
+  return matchCount;
 }
 
 @end
