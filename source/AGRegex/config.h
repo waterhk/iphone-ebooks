@@ -31,6 +31,8 @@ found. */
 #define HAVE_STRERROR 1
 #define HAVE_MEMMOVE 1
 
+#define SUPPORT_UTF8 1
+
 /* There are some non-Unix systems that don't even have bcopy(). If this macro
 is false, an emulation is used. If HAVE_MEMMOVE is set to 1, the value of
 HAVE_BCOPY is not relevant. */

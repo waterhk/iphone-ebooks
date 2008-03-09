@@ -43,9 +43,6 @@
   int                      subchapter;
   BooksDefaultsController *defaults;
  
-  /** Contains memory mapped file contents. */
-  NSData                  *m_memMappedData;
-  
 	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
 	int _orient;
 	CGAffineTransform _matrixprev;  

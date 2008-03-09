@@ -12,6 +12,8 @@
 
 #include "unpluck.h"
 
+#import "../HTMLFixer.h"
+
 #define GET_FUNCTION_CODE_TYPE(x)   (((x)>>3) & 0x1F)
 #define GET_FUNCTION_CODE_DATALEN(x)((x) & 0x7)
 
@@ -25,6 +27,42 @@ typedef struct RecordNode_s {
 } RecordNode;
 
 RecordNode*  records = NULL;
+
+
+/**
+ * Returns the NSStringEncoding which most closely matches
+ * the given IANA MIB enum value.
+ *
+ * Only MIB values handled by NSString are dealt with.  All
+ * others return NSUTF8StringEncoding and log a warning.
+ */
+NSStringEncoding GetNSStringEncodingForIanaMib(int p_mib) {
+  /* Note that these are listed more or less in the order of expected likelyhood of finding them. */
+  switch(p_mib) {
+    case 3:     return NSUTF8StringEncoding; // NSASCIIStringEncoding; // We're cheating here...
+    case 106:   return NSUTF8StringEncoding;
+    case 4:     return NSISOLatin1StringEncoding;
+    case 17:    return NSShiftJISStringEncoding;
+    case 5:     return NSISOLatin2StringEncoding;
+    case 1015:  return NSUnicodeStringEncoding;
+    case 2251:  return NSWindowsCP1251StringEncoding;
+    case 2252:  return NSWindowsCP1252StringEncoding;
+    case 2253:  return NSWindowsCP1253StringEncoding;
+    case 2254:  return NSWindowsCP1254StringEncoding;
+    case 2250:  return NSWindowsCP1250StringEncoding;
+    case 18:    return NSJapaneseEUCStringEncoding;
+    case 39:    return NSISO2022JPStringEncoding;
+    case 2027:  return NSMacOSRomanStringEncoding;
+    case 1013:  return 0x90000100; // NSUTF16BigEndianStringEncoding;
+    case 1014:  return 0x94000100; // NSUTF16LittleEndianStringEncoding;
+    case 1017:  return 0x8c000100; // NSUTF32StringEncoding;
+    case 1018:  return 0x98000100; // NSUTF32BigEndianStringEncoding;
+    case 1019:  return 0x9c000100; // NSUTF32LittleEndianStringEncoding;
+    default:    
+      NSLog(@"Unsupported IANA character encoding found: %d", p_mib);
+      return NSUTF8StringEncoding;
+  }
+}
 
 static int GetNextRecordNumber() {
   RecordNode*  ptr;
@@ -697,10 +735,10 @@ static void DoStyle(NSMutableString *returnHTML, int style, boolean  start) {
 }
 
 static boolean TranscribeTableRecord(plkr_Document* doc, int record_id, NSMutableString *returnHTML,
- unsigned char* bytes, int len, plkr_DataRecordType type);
+ unsigned char* bytes, int len, plkr_DataRecordType type, NSStringEncoding enc);
 
 static void ParseText(plkr_Document* doc, unsigned char* ptr, int text_len, int* font, long* text_color,
- int* style, NSMutableString *returnHTML) {
+ int* style, NSMutableString *returnHTML, NSStringEncoding enc) {
   unsigned char*  end;
   int             fctype;
   int             fclen;
@@ -708,7 +746,9 @@ static void ParseText(plkr_Document* doc, unsigned char* ptr, int text_len, int*
   end = ptr + text_len;
   while(ptr < end) {
     if(ptr[0]) {
-      [returnHTML appendFormat:@"%s", ptr];
+      NSString *ts = [[NSString alloc] initWithCString:(char*)ptr encoding:enc];
+      [returnHTML appendFormat:@"%@", ts];
+      [ts release];
       ptr += strlen((char*)ptr);
     }
     else {
@@ -793,7 +833,7 @@ static void ParseText(plkr_Document* doc, unsigned char* ptr, int text_len, int*
               (doc, record_id, &datalen, &type);
             TranscribeTableRecord(doc,
                                   record_id,
-                                  returnHTML, bytes, datalen, type);
+                                  returnHTML, bytes, datalen, type, enc);
           }
           ptr += fclen;
           break;
@@ -806,7 +846,7 @@ static void ParseText(plkr_Document* doc, unsigned char* ptr, int text_len, int*
 
 
 static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString *returnHTML,
- unsigned char* bytes, int len, plkr_DataRecordType type) {
+ unsigned char* bytes, int len, plkr_DataRecordType type, NSStringEncoding enc) {
   unsigned char*  ptr = &bytes[24];
   unsigned char*  end;
   char*           align_names[] = { "left", "right", "center" };
@@ -837,7 +877,11 @@ static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString
   
   end = ptr + size - 1;
   
-  [returnHTML appendFormat:@"<table border=\"%d\" bordercolor=\"#%06X\" linkcolor=\"#%06X\">\n", border, border_color, link_color];
+  if([HTMLFixer isRenderTables]) {
+    [returnHTML appendFormat:@"<table border=\"%d\" bordercolor=\"#%06X\" linkcolor=\"#%06X\">\n", border, border_color, link_color];
+  } else {
+    [returnHTML appendString:[HTMLFixer tableStartReplacement]];
+  }
   
   while(ptr < end) {
     if(ptr[0] == '\0') {
@@ -847,10 +891,18 @@ static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString
         case PLKR_TFC_TABLE:
           switch(fclen) {
             case 2:        /* NEW_ROW */
-              if(in_row) {              
-                [returnHTML appendString:@"</tr>\n"];
+              if(in_row) {
+                if([HTMLFixer isRenderTables]) {
+                  [returnHTML appendString:@"</tr>\n"];
+                } else {
+                  [returnHTML appendString:[HTMLFixer trEndReplacement]];
+                }
               }
-              [returnHTML appendString:@"<tr>\n"];
+              if([HTMLFixer isRenderTables]) {
+                [returnHTML appendString:@"<tr>\n"];
+              } else {
+                [returnHTML appendString:[HTMLFixer trStartReplacement]];
+              }
               in_row = YES;
               ptr += fclen;
               break;
@@ -858,9 +910,13 @@ static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString
               align = ptr[2];
               colspan = ptr[5];
               rowspan = ptr[6];
-              [returnHTML appendFormat:@"<td align=\"%s\" colspan=\"%d\" rowspan=\"%d\" bordercolor=\"#%06X\">",
-                align_names[align], colspan, rowspan,
-                border_color ];
+              if([HTMLFixer isRenderTables]) {
+                [returnHTML appendFormat:@"<td align=\"%s\" colspan=\"%d\" rowspan=\"%d\" bordercolor=\"#%06X\">",
+                  align_names[align], colspan, rowspan,
+                  border_color ];
+              } else {
+                [returnHTML appendString:[HTMLFixer tdStartReplacement]];
+              }
               
               if(record_id = READ_BIGENDIAN_SHORT(&ptr[3])) {
                 [returnHTML appendFormat:@"<img src=\"r%d.jpg\" />",
@@ -871,10 +927,14 @@ static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString
               text_len = READ_BIGENDIAN_SHORT(&ptr[7]);
               ptr += fclen;
               ParseText(doc, ptr, text_len, &font,
-                        &text_color, &style, returnHTML);
+                        &text_color, &style, returnHTML, enc);
               ptr += text_len;
               DoStyle(returnHTML, style, NO);
-              [returnHTML appendString:@"</td>\n"];
+              if([HTMLFixer isRenderTables]) {
+                [returnHTML appendString:@"</td>\n"];
+              } else {
+                [returnHTML appendString:[HTMLFixer tdEndReplacement]];
+              }
               break;
             default:
               ptr += fclen;
@@ -885,12 +945,19 @@ static boolean TranscribeTableRecord(plkr_Document* doc, int id, NSMutableString
       }
     }
     else {
-      [returnHTML appendString:@"</table>\n"];
+      if([HTMLFixer isRenderTables]) {
+        [returnHTML appendString:@"</table>\n"];
+      } else {
+        [returnHTML appendString:[HTMLFixer tableEndReplacement]];
+      }
       return NO;
     }
   }
-  
-  [returnHTML appendString:@"</table>\n"];
+  if([HTMLFixer isRenderTables]) {
+    [returnHTML appendString:@"</table>\n"];
+  } else {
+    [returnHTML appendString:[HTMLFixer tableEndReplacement]];
+  }
   return YES;
 }
 
@@ -916,12 +983,8 @@ static ParagraphInfo *ParseParagraphInfo(unsigned char* bytes, int len, int* npa
   return paragraph_info;
 }
 
-static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
-                                      unsigned char *bytes, int len, plkr_DataRecordType type) {
-  
-  // We're guessing on the initial capacity, of course.  Plucker is much more brief than HTML
-  // for it's formatting commands.  Maybe double is a good start?
-  NSMutableString *returnHTML = [[[NSMutableString alloc] initWithCapacity:len*2] autorelease];
+static void TranscribeTextRecord(plkr_Document *doc, int record_id,
+                                      unsigned char *bytes, int len, plkr_DataRecordType type, NSMutableString *returnHTML) {
   unsigned char*  ptr;
   unsigned char*  run;
   unsigned char*  para_start;
@@ -947,11 +1010,17 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
   int             current_right_margin;
   int             nparagraphs;
   long            current_color;
-  
-  
+  int             charset;
+    
   record_index = record_id;
   
-  [returnHTML appendFormat:@"<html>\n<head>\n\t<title>%s", plkr_GetName(doc)];
+  // Get the character set for this record (automatically falls back to document charset if record has none of its own).
+  charset = plkr_GetRecordCharset(doc, record_index);
+  NSStringEncoding enc = GetNSStringEncodingForIanaMib(charset);
+
+  NSString *ts = [[NSString alloc] initWithCString:plkr_GetName(doc) encoding:enc];
+  [returnHTML appendFormat:@"<html>\n<head>\n\t<title>%@", ts];
+  [ts release];
   if(record_id != home_id) {
     [returnHTML appendFormat:@":  %d\n", record_id];
   }
@@ -959,7 +1028,9 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
   if(home_id == record_id) {
     const char *url = plkr_GetRecordURL(doc, record_id);
     if(url) {
-      [returnHTML appendFormat:@"\t<!-- original URL %s -->\n", url];
+      ts = [[NSString alloc] initWithCString:url encoding:enc];
+      [returnHTML appendFormat:@"\t<!-- original URL %@ -->\n", ts];
+      [ts release];
     }
   }
   [returnHTML appendString:@"</head>\n<body>\n"];
@@ -968,14 +1039,13 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
   char *tmpStr = (char*)malloc(curAlloc);
   if(tmpStr == NULL) {
     [returnHTML appendString:@"Out of memory!"];
-    return returnHTML;
+    return;
   }
-  
+
   paragraphs = ParseParagraphInfo(bytes, len, &nparagraphs);
   start = bytes + 8 +((bytes[2] << 8) + bytes[3]) * 4;
   
   for(para_index = 0, ptr = start, run = start; para_index < nparagraphs; para_index++) {
-    
     para_len = paragraphs[para_index].size;
     
     /* If the paragraph is the last in the record, and it consists
@@ -989,9 +1059,11 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
       
       record_index =(ptr[2] << 8) + ptr[3];
       if((data = plkr_GetRecordBytes(doc, record_index, &data_len, &type)) == NULL) {
-        return nil;
+        //return nil;
+        continue;
       } else if(!(type == PLKR_DRTYPE_TEXT_COMPRESSED || type == PLKR_DRTYPE_TEXT)) {
-        return nil;
+        //return nil;
+        continue;
       }
       
       first_record_of_page = NO;
@@ -1013,7 +1085,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
       run = ptr;
       continue;
     }
-    
+
     [returnHTML appendFormat:@"\n<p style=\"margin-top: %dpx\"><a name=\"r%dpara%d\" />", (paragraphs[para_index].attributes & 0x7) * 2, record_index, para_index];
     
     current_link = NO;
@@ -1041,13 +1113,15 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
             if(tmpPtr == NULL) {
               free(tmpStr);
               printf("Out of memory!\n");
-              return nil;
+              return;
             }
             tmpStr = tmpPtr;
           }
           strncpy(tmpStr, (char*)run, (ptr-run));
           tmpStr[(ptr-run)] = (char)0;
-          [returnHTML appendString:[NSString stringWithCString:tmpStr]];
+          NSString *ts = [[NSString alloc] initWithCString:tmpStr encoding:enc];
+          [returnHTML appendString:ts];
+          [ts release];
           //                    fwrite(run, 1,(ptr - run), fp);
           textlen +=(ptr - run);
         }
@@ -1057,7 +1131,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
         fctype = GET_FUNCTION_CODE_TYPE(*ptr);
         fclen = GET_FUNCTION_CODE_DATALEN(*ptr);
         ptr++;
-        
+
         if(fctype == PLKR_TFC_NEWLINE) {
           [returnHTML appendString:@"<br />\n"];
         } else if(fctype == PLKR_TFC_LINK) {
@@ -1081,11 +1155,15 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
             
             if(bytes &&(type == PLKR_DRTYPE_MAILTO)) {
               url = MailtoURLFromBytes(bytes, datalen);
-              [returnHTML appendFormat:@"<a href=\"%s\">", url];
+              ts = [[NSString alloc] initWithCString:url encoding:enc];
+              [returnHTML appendFormat:@"<a href=\"%@\">", ts];
+              [ts release];
               free(url);
               current_link = YES;
             } else if(!bytes && url) {
-              [returnHTML appendFormat:@"<a href=\"%s\">", url];
+              ts = [[NSString alloc] initWithCString:url encoding:enc];
+              [returnHTML appendFormat:@"<a href=\"%@\">", ts];
+              [ts release];
               current_link = YES;
             } else if(bytes &&(fclen == 2)) {
               AddRecord(record_id);
@@ -1107,6 +1185,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
               ShowWarning("odd link found:  record_id=%d, bytes=0x%p, type=%d, url=%s", record_id, bytes, type, (url ? url : "0x0"));
             }*/
           }
+
         } else if(fctype == PLKR_TFC_FONT) {          
           [returnHTML appendFormat:@"<!-- font change: from %d to %d -->", current_font, *ptr ];
           
@@ -1263,7 +1342,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
           trecord_idx = (ptr[0] << 8) + ptr[1];
           bytes = plkr_GetRecordBytes(doc, trecord_idx, &datalen, &type);
           if(bytes) {
-            TranscribeTableRecord(doc, record_id, returnHTML, bytes, datalen, type);            
+            TranscribeTableRecord(doc, record_id, returnHTML, bytes, datalen, type, enc);            
           } /*else {
             ShowWarning("Corrupt table found:  record_id=%d", trecord_idx);
           }*/
@@ -1285,7 +1364,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
         ptr++;
       }
     }
-    
+
     if((ptr - run) > 0) {
       /* output any pending text at the end of the paragraph */
       //        fwrite(run, 1,(ptr - run), fp);
@@ -1295,17 +1374,19 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
         if(tmpPtr == NULL) {
           free(tmpStr);
           printf("Out of memory!\n");
-          return nil;
+          return;
         }
         tmpStr = tmpPtr;
       }
       strncpy(tmpStr, (char*)run, (ptr-run));
       tmpStr[(ptr-run)] = (char)0;
-      [returnHTML appendString:[NSString stringWithCString:tmpStr]];
+      ts = [[NSString alloc] initWithCString:tmpStr encoding:enc];
+      [returnHTML appendString:ts];
+      [ts release];
       textlen +=(ptr - run);
       run = ptr;
     }
-    
+
     if(current_link) {
       [returnHTML appendString:@"</a>"];
     }
@@ -1329,7 +1410,7 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
     } else if(current_font == 8) {
       [returnHTML appendString:@"</tt>"];
     }
-    
+
     if(current_italic) {
       [returnHTML appendString:@"</i>"];
     }
@@ -1350,58 +1431,43 @@ static NSString *TranscribeTextRecord(plkr_Document *doc, int record_id,
       [returnHTML appendString:@"</td></tr></table>"];
     }
 #endif
-    
+
     /* end the paragraph */
     [returnHTML appendString:@"</p>\n"];
   }
   free(tmpStr);
   free(paragraphs);
   [returnHTML appendString:@"</body></html>\n"];
-  
-  return returnHTML;
 }
 
-static NSString *TranscribeRecord(plkr_Document *doc, int record_index) {
-  NSString *returnHTML;
+static void TranscribeRecord(plkr_Document *doc, int record_index, NSString *basePath, NSMutableString *returnHTML) {
   plkr_DataRecordType  type;
   unsigned char*       data;
   int                  data_len;
   
   if((data = plkr_GetRecordBytes(doc, record_index, &data_len, &type)) == NULL) {
-    return nil;
+    return;
   }
   
-  /*
-   if((type == PLKR_DRTYPE_TEXT_COMPRESSED) || (type == PLKR_DRTYPE_TEXT)) {
-     sprintf(filename, "%s/r%d.html", dir, record_index);
-   }
-   else if((type == PLKR_DRTYPE_IMAGE_COMPRESSED) || (type == PLKR_DRTYPE_IMAGE)) {
-     sprintf(filename, "%s/r%d.jpg", dir, record_index);
-   }
-   else if((type == PLKR_DRTYPE_MULTIIMAGE) || (type == PLKR_DRTYPE_IMAGE)) {
-     sprintf(filename, "%s/r%d.jpg", dir, record_index);
-   }
-   */
   if(type == PLKR_DRTYPE_TEXT_COMPRESSED || type == PLKR_DRTYPE_TEXT) {
-    returnHTML = TranscribeTextRecord(doc, record_index, data, data_len, type);
+    TranscribeTextRecord(doc, record_index, data, data_len, type, returnHTML);
   } else if(type == PLKR_DRTYPE_IMAGE_COMPRESSED || type == PLKR_DRTYPE_IMAGE) {
-//    ShowWarning("Dumping image data for record_index: %d", record_index);
-    FILE *fp = fopen("/dev/null", "wb");
+    NSLog(@"Dumping image data for record_index: %d", record_index);
+    NSString *imgName = [basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"r%d.jpg", record_index]];
+    FILE *fp = fopen([imgName fileSystemRepresentation], "wb");
     TranscribeImageRecord(doc, record_index, fp, data, data_len, type);
     fclose(fp);
-  }
-  else if(type == PLKR_DRTYPE_MULTIIMAGE) {
-//    ShowWarning("Dumping image data for record_index: %d", record_index);
-    FILE *fp = fopen("/dev/null", "wb");
+  } else if(type == PLKR_DRTYPE_MULTIIMAGE) {
+    NSLog(@"Dumping image data for record_index: %d", record_index);
+    NSString *imgName = [basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"r%d.jpg", record_index]];
+    FILE *fp = fopen([imgName fileSystemRepresentation], "wb");
     TranscribeMultiImageRecord(doc, record_index, fp, data, data_len, type);
     fclose(fp);
   } else {
-    fprintf(stderr, "Invalid record type %d for record %d\n", type, record_index);
+    NSLog(@"Invalid record type %d for record %d", type, record_index);
   }
   
   MarkRecordDone(record_index);
-  
-  return returnHTML;
 }
 
 
@@ -1420,7 +1486,7 @@ static void FinishDoc(plkr_Document*  doc) {
 /**
  * Read the contents of a plucker file and convert it to HTML.
  */
-NSMutableString* HTMLFromPluckerFile(FILE *docHandle) {
+NSMutableString* HTMLFromPluckerFile(FILE *docHandle, NSString *basePath) {
   NSMutableString *returnHTML = [[[NSMutableString alloc] init] autorelease];
   plkr_Document*  doc;
   int             i;
@@ -1437,12 +1503,8 @@ NSMutableString* HTMLFromPluckerFile(FILE *docHandle) {
   int nLastRec = -1;
   i = GetNextRecordNumber();
   while(i > 0) {
-    NSString *recHTML = TranscribeRecord(doc, i);
-    if(recHTML) {
-      [returnHTML appendString:recHTML];
-    } /*else {
-      ShowWarning("Found record with no contents:  record_id=%d", i);
-    }*/
+    NSLog(@"About to transcribe record at index %d", i);
+    TranscribeRecord(doc, i, basePath, returnHTML);
     nLastRec = i;
     i = GetNextRecordNumber();
     if(nLastRec == i) {
@@ -1451,7 +1513,7 @@ NSMutableString* HTMLFromPluckerFile(FILE *docHandle) {
     }
   }
   //LinkRecords(directory);
-  
+
   FinishDoc(doc);
   
   return returnHTML;

@@ -41,7 +41,7 @@ id ReadPDBFile(NSString *filename, NSString **retType, NSString **retObject) {
   
   if(!strncmp("DataPlkr", sMagic, 8)) {
     // It's a plucker file
-    ret = HTMLFromPluckerFile(src);
+    ret = HTMLFromPluckerFile(src, [filename stringByDeletingLastPathComponent]);
     *retType = @"htm";
     *retObject = @"STRING";
   } else if(!strncmp("TEXt", sMagic, 4)) { 
@@ -61,6 +61,6 @@ id ReadPDBFile(NSString *filename, NSString **retType, NSString **retObject) {
   }
   
   fclose(src);
-  
+
   return ret;
 }

@@ -122,19 +122,23 @@ AGRegex *STYLE_REGEX;
 
 /**
  * Fixes all img tags within a given string.
+ *
+ * @param theHTML NSMutableString containing HTML to be fixed.  HTML is fixed in place (param is modified)
+ * @param thePath path of file (used for calculating base URL for images)
+ * @param p_imgOnly YES skips most of the block-level fixing code.  Useful for Plucker or other formats which
+ *    were synthesized using simplified HTML which only need image height/width fixing.
  */
-+(void)fixedHTMLStringForString:(NSMutableString *)theHTML filePath:(NSString *)thePath textSize:(int)size {
-  BOOL bRenderTables = [[BooksDefaultsController sharedBooksDefaultsController] renderTables];
++(void)fixHTMLString:(NSMutableString *)theHTML filePath:(NSString *)thePath imageOnly:(BOOL)p_imgOnly {
   int thisImageHeight = 0;
   int height = 0;
   int i;
- 
+
   NSString *basePath = [thePath stringByDeletingLastPathComponent];
   
   // Regex to find all img tags
   NSArray *imgTagMatches = [IMGTAG_REGEX findAllInString:theHTML];
   int imgCount = [imgTagMatches count];  
-  
+
   // Loop over all the matches, and replace with the fixed version.
   for(i=0; i<imgCount; i++) {
     thisImageHeight = 0;
@@ -146,33 +150,34 @@ AGRegex *STYLE_REGEX;
     [theHTML replaceCharactersInRange:origRange withString:fixedImgTag];
     height += thisImageHeight;
   }
-    
+
   //
   // There...  Image tags dealt with...
   //
   
-  // Kill any styles or other difficult block elements (do this instead of just the @imports)
-  i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
-  // GSLog(@"Done-Replacing block tags (%d tags)", i);
+  // If we came from a simplified HTML format (Plucker), we don't need to do most of this stuff.
+  if(!p_imgOnly) {
+    // Kill any styles or other difficult block elements (do this instead of just the @imports)
+    i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
+    // GSLog(@"Done-Replacing block tags (%d tags)", i);
 
-  // Adjust tables if desired.
-  if(!bRenderTables) {
-    // Use regex's to replace all table related tags with reasonably small-screen equivalents.
-    // (Tip o' the hat to the Plucker folks for showing how to do it!)
-    i=0;
-    i += [HTMLFixer replaceRegex:TABLE_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:TR_REGEX withString:@"" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:TD_REGEX withString:@"" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:TH_REGEX withString:@"<b>" inMutableString:theHTML];
-    
-    i += [HTMLFixer replaceRegex:TABLECL_REGEX withString:@"<hr style=\"height: 3px;\"/>" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:TRCL_REGEX withString:@"<hr style=\"height: 1px;\"/>" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:TDCL_REGEX withString:@"<br/>" inMutableString:theHTML];
-    i += [HTMLFixer replaceRegex:THCL_REGEX withString:@"</b><br/><br/>" inMutableString:theHTML];
-    // GSLog(@"Done-Replacing table tags. (%d tags)", i);
-  }
-  
-  
+    // Adjust tables if desired.
+    if(![HTMLFixer isRenderTables]) {
+      // Use regex's to replace all table related tags with reasonably small-screen equivalents.
+      // (Tip o' the hat to the Plucker folks for showing how to do it!)
+      i=0;
+      i += [HTMLFixer replaceRegex:TABLE_REGEX withString:[HTMLFixer tableStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TR_REGEX withString:[HTMLFixer trStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TD_REGEX withString:[HTMLFixer tdStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TH_REGEX withString:[HTMLFixer thStartReplacement] inMutableString:theHTML];
+      
+      i += [HTMLFixer replaceRegex:TABLECL_REGEX withString:[HTMLFixer tableEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TRCL_REGEX withString:[HTMLFixer trEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TDCL_REGEX withString:[HTMLFixer tdEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:THCL_REGEX withString:[HTMLFixer thEndReplacement] inMutableString:theHTML];
+      // GSLog(@"Done-Replacing table tags. (%d tags)", i);
+    }
+  }  
   
   // Add a DIV object with a set height to make up for the images' height.
   // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
@@ -205,6 +210,45 @@ AGRegex *STYLE_REGEX;
   [pool release];
   
   return matchCount;
+}
+
+/**
+ * Return NO if we need special table handling.
+ */
++ (BOOL)isRenderTables {
+  return [[BooksDefaultsController sharedBooksDefaultsController] renderTables];
+}
+
++ (NSString*)tableStartReplacement {
+  return @"<hr style=\"height: 3px;\"/>";
+}
+
++ (NSString*)tdStartReplacement {
+  return @"";
+}
+
++ (NSString*)trStartReplacement {
+  return @"";
+}
+
++ (NSString*)thStartReplacement {
+  return @"<b>";
+}
+
++ (NSString*)tableEndReplacement {
+  return @"<hr style=\"height: 3px;\"/>";
+}
+
++ (NSString*)tdEndReplacement {
+  return @"<br/>";
+}
+
++ (NSString*)trEndReplacement {
+  return @"<hr style=\"height: 1px;\"/>";
+}
+
++ (NSString*)thEndReplacement {
+  return @"</b><br/><br/>";
 }
 
 @end

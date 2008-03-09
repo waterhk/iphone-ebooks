@@ -356,7 +356,7 @@
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars 
               didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter {
   
-	NSString *theHTML = nil;
+	NSMutableString *theHTML = nil;
 	//GSLog(@"path: %@", thePath);
   
   [thePath retain];
@@ -391,12 +391,13 @@
     
     // Plain text types don't need to go through all the HTML conversion leg work.
 		if([@"htm" isEqualToString:retType]) {
+      [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
       bIsHtml = YES;
 		} else {
       bIsHtml = NO;
 		}
 	}
-  
+
 	if ((-1 == numChars) || (numChars >= [theHTML length])) {
 		*didLoadAll = YES;
   
@@ -426,7 +427,7 @@
       [self setText:theHTML];
     }
 	}
-  
+
 	/* This code doesn't work.  Sorry, charlie.
    if (1) //replace with a defaults check
    { 
@@ -513,17 +514,8 @@
  * logic from readTextFile:.
  */
 - (NSMutableString *)readHtmlFile:(NSString *)thePath {
-	NSStringEncoding encoding = [defaults defaultTextEncoding];
-	NSMutableString *originalText = [[[self readTextFile:thePath] mutableCopy] autorelease]; // FIXME: Shouldn't need to copy!
-	  
-	NSRange fullRange = NSMakeRange(0, [originalText length]);
-  
-	unsigned int i;
-	int extraHeight = 0;
-
-	//Make all image src URLs into absolute file URLs.
-	[HTMLFixer fixedHTMLStringForString:originalText filePath:thePath textSize:(int)size];
-
+	NSMutableString *originalText = [self readTextFile:thePath];
+	[HTMLFixer fixHTMLString:originalText filePath:thePath imageOnly:NO];
 	return originalText;
 }
 
