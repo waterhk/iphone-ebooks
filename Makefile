@@ -133,7 +133,7 @@ obj/%.o:    source/AGRegex/%.c
 
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
-	cd jpeg-6b ; make distclean
+	cd jpeg-6b ; if [ -f Makefile ] ; then make distclean ; fi
 	
 obj/Info.plist: Info.plist.tmpl
 	@echo "Building Info.plist for version $(VERSION)."
