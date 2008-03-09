@@ -113,6 +113,16 @@
 		F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIViewHeartbeat.h; path = source/UIViewHeartbeat.h; sourceTree = "<group>"; };
 		F83E51C90D8304A0007EAEEF /* Dummy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dummy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83E51CB0D8304A0007EAEEF /* Dummy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Dummy-Info.plist"; sourceTree = "<group>"; };
+		F8AFA2050D831EBF007DC91F /* AGRegex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AGRegex.h; path = source/AGRegex/AGRegex.h; sourceTree = "<group>"; };
+		F8AFA2060D831EBF007DC91F /* AGRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AGRegex.m; path = source/AGRegex/AGRegex.m; sourceTree = "<group>"; };
+		F8AFA2070D831EBF007DC91F /* chartables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chartables.c; path = source/AGRegex/chartables.c; sourceTree = "<group>"; };
+		F8AFA2080D831EBF007DC91F /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = source/AGRegex/config.h; sourceTree = "<group>"; };
+		F8AFA2090D831EBF007DC91F /* get.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = get.c; path = source/AGRegex/get.c; sourceTree = "<group>"; };
+		F8AFA20A0D831EBF007DC91F /* internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = internal.h; path = source/AGRegex/internal.h; sourceTree = "<group>"; };
+		F8AFA20B0D831EBF007DC91F /* maketables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = maketables.c; path = source/AGRegex/maketables.c; sourceTree = "<group>"; };
+		F8AFA20C0D831EBF007DC91F /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = source/AGRegex/pcre.c; sourceTree = "<group>"; };
+		F8AFA20D0D831EBF007DC91F /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = source/AGRegex/pcre.h; sourceTree = "<group>"; };
+		F8AFA20E0D831EBF007DC91F /* study.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = study.c; path = source/AGRegex/study.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +139,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				F8AFA2040D831EAC007DC91F /* AGRegex */,
 				F8214B860D7A0B05006A195D /* BooksApp.h */,
 				F8214B870D7A0B05006A195D /* BooksApp.m */,
 				F8214B880D7A0B05006A195D /* BooksDefaultsController.h */,
@@ -236,6 +247,23 @@
 			);
 			name = palm;
 			path = source/palm;
+			sourceTree = "<group>";
+		};
+		F8AFA2040D831EAC007DC91F /* AGRegex */ = {
+			isa = PBXGroup;
+			children = (
+				F8AFA2050D831EBF007DC91F /* AGRegex.h */,
+				F8AFA2060D831EBF007DC91F /* AGRegex.m */,
+				F8AFA2070D831EBF007DC91F /* chartables.c */,
+				F8AFA2080D831EBF007DC91F /* config.h */,
+				F8AFA2090D831EBF007DC91F /* get.c */,
+				F8AFA20A0D831EBF007DC91F /* internal.h */,
+				F8AFA20B0D831EBF007DC91F /* maketables.c */,
+				F8AFA20C0D831EBF007DC91F /* pcre.c */,
+				F8AFA20D0D831EBF007DC91F /* pcre.h */,
+				F8AFA20E0D831EBF007DC91F /* study.c */,
+			);
+			name = AGRegex;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -13,11 +13,11 @@ LDFLAGS=-L$(HEAVENLY)/usr/lib -L/usr/local/lib/gcc/arm-apple-darwin/4.0.1 \
 
 VERSION=$(shell ./getversion.sh)
 
-SOURCES=$(wildcard source/palm/*.c source/palm/*.m source/*.c source/*.m)
-OBJECTS=$(patsubst source/%,obj/%,$(patsubst source/palm/%,obj/%, \
+SOURCES=$(wildcard source/AGRegex/*.c source/AGRegex/*.m source/palm/*.c source/palm/*.m source/*.c source/*.m)
+OBJECTS=$(patsubst source/%,obj/%,$(patsubst source/palm/%,obj/%,$(patsubst source/AGRegex/%,obj/%, \
 	$(patsubst %.c,%.o,$(filter %.c,$(SOURCES))) \
 	$(patsubst %.m,%.o,$(filter %.m,$(SOURCES))) \
-	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SOURCES))) \
+	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SOURCES)))) \
 ))
 
 # Override this on the command line for nightly builds.
@@ -31,7 +31,7 @@ BASEURL=http://www.thebedells.org/books/
 SCP_BASE=www:~/wwwroot/books/
 NIGHTLY_PICKUP=/tmp/Books-nightly
 
-QUIET=false
+QUIET=true
 
 ifeq ($(QUIET),true)
 	QC	= @echo "Compiling [$@]";
@@ -109,6 +109,27 @@ obj/%.o:    source/palm/%.c
 	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
 	@rm -f obj/$*.d.tmp
+	
+obj/%.o:    source/AGRegex/%.m 
+	@mkdir -p obj
+	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $< > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
+
+obj/%.o:    source/AGRegex/%.c
+	@mkdir -p obj
+	$(QC)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(QD)$(CC) -MM -c $(CFLAGS) $(CPPFLAGS) $< > obj/$*.d
+	@cp -f obj/$*.d obj/$*.d.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
+	@rm -f obj/$*.d.tmp
+
 
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
