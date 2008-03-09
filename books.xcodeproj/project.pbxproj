@@ -6,6 +6,56 @@
 	objectVersion = 42;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F83E51CF0D8304E0007EAEEF /* BooksApp.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B860D7A0B05006A195D /* BooksApp.h */; };
+		F83E51D00D8304E0007EAEEF /* BooksApp.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B870D7A0B05006A195D /* BooksApp.m */; };
+		F83E51D10D8304E0007EAEEF /* BooksDefaultsController.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B880D7A0B05006A195D /* BooksDefaultsController.h */; };
+		F83E51D20D8304E0007EAEEF /* BooksDefaultsController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B890D7A0B05006A195D /* BooksDefaultsController.m */; };
+		F83E51D30D8304E0007EAEEF /* ChapteredHTML.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8A0D7A0B05006A195D /* ChapteredHTML.h */; };
+		F83E51D40D8304E0007EAEEF /* ChapteredHTML.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8B0D7A0B05006A195D /* ChapteredHTML.m */; };
+		F83E51D50D8304E0007EAEEF /* common.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8C0D7A0B05006A195D /* common.h */; };
+		F83E51D60D8304E0007EAEEF /* dolog.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8D0D7A0B05006A195D /* dolog.h */; };
+		F83E51D70D8304E0007EAEEF /* dolog.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8E0D7A0B05006A195D /* dolog.m */; };
+		F83E51D80D8304E0007EAEEF /* EBookImageView.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B8F0D7A0B05006A195D /* EBookImageView.h */; };
+		F83E51D90D8304E0007EAEEF /* EBookImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B900D7A0B05006A195D /* EBookImageView.m */; };
+		F83E51DA0D8304E0007EAEEF /* EBookView.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B910D7A0B05006A195D /* EBookView.h */; };
+		F83E51DB0D8304E0007EAEEF /* EBookView.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B920D7A0B05006A195D /* EBookView.m */; };
+		F83E51DC0D8304E0007EAEEF /* EncodingPrefsController.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B930D7A0B05006A195D /* EncodingPrefsController.h */; };
+		F83E51DD0D8304E0007EAEEF /* EncodingPrefsController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B940D7A0B05006A195D /* EncodingPrefsController.m */; };
+		F83E51DE0D8304E0007EAEEF /* FileBrowser.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B950D7A0B05006A195D /* FileBrowser.h */; };
+		F83E51DF0D8304E0007EAEEF /* FileBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B960D7A0B05006A195D /* FileBrowser.m */; };
+		F83E51E00D8304E0007EAEEF /* FileTable.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B970D7A0B05006A195D /* FileTable.h */; };
+		F83E51E10D8304E0007EAEEF /* FileTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B980D7A0B05006A195D /* FileTable.m */; };
+		F83E51E20D8304E0007EAEEF /* FontChoiceController.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B990D7A0B05006A195D /* FontChoiceController.h */; };
+		F83E51E30D8304E0007EAEEF /* FontChoiceController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9A0D7A0B05006A195D /* FontChoiceController.m */; };
+		F83E51E40D8304E0007EAEEF /* HideableNavBar.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9B0D7A0B05006A195D /* HideableNavBar.h */; };
+		F83E51E50D8304E0007EAEEF /* HideableNavBar.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9C0D7A0B05006A195D /* HideableNavBar.m */; };
+		F83E51E60D8304E0007EAEEF /* HTMLFixer.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9D0D7A0B05006A195D /* HTMLFixer.h */; };
+		F83E51E70D8304E0007EAEEF /* HTMLFixer.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9E0D7A0B05006A195D /* HTMLFixer.m */; };
+		F83E51E80D8304E0007EAEEF /* mainapp.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9F0D7A0B05006A195D /* mainapp.m */; };
+		F83E51E90D8304E0007EAEEF /* NSString-BooksAppAdditions.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA00D7A0B05006A195D /* NSString-BooksAppAdditions.h */; };
+		F83E51EA0D8304E0007EAEEF /* NSString-BooksAppAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA10D7A0B05006A195D /* NSString-BooksAppAdditions.m */; };
+		F83E51EB0D8304E0007EAEEF /* PreferencesController.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB30D7A0B05006A195D /* PreferencesController.h */; };
+		F83E51EC0D8304E0007EAEEF /* PreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB40D7A0B05006A195D /* PreferencesController.m */; };
+		F83E51ED0D8304E0007EAEEF /* Regex.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB50D7A0B05006A195D /* Regex.h */; };
+		F83E51EE0D8304E0007EAEEF /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB60D7A0B05006A195D /* Regex.m */; };
+		F83E51EF0D8304E0007EAEEF /* UIViewHeartbeat.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */; };
+		F83E51F00D8304ED007EAEEF /* jconfig.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA30D7A0B05006A195D /* jconfig.h */; };
+		F83E51F10D8304ED007EAEEF /* jerror.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA40D7A0B05006A195D /* jerror.h */; };
+		F83E51F20D8304ED007EAEEF /* jmorecfg.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA50D7A0B05006A195D /* jmorecfg.h */; };
+		F83E51F30D8304ED007EAEEF /* jpeglib.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA60D7A0B05006A195D /* jpeglib.h */; };
+		F83E51F40D8304ED007EAEEF /* palmconvert.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA70D7A0B05006A195D /* palmconvert.h */; };
+		F83E51F50D8304ED007EAEEF /* palmconvert.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA80D7A0B05006A195D /* palmconvert.m */; };
+		F83E51F60D8304ED007EAEEF /* pluckhtml.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BAB0D7A0B05006A195D /* pluckhtml.h */; };
+		F83E51F70D8304ED007EAEEF /* pluckhtml.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BAC0D7A0B05006A195D /* pluckhtml.m */; };
+		F83E51F80D8304ED007EAEEF /* txt2pdbdoc.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BAD0D7A0B05006A195D /* txt2pdbdoc.h */; };
+		F83E51F90D8304ED007EAEEF /* txt2pdbdoc.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BAE0D7A0B05006A195D /* txt2pdbdoc.m */; };
+		F83E51FA0D8304ED007EAEEF /* unpluck.c in Sources */ = {isa = PBXBuildFile; fileRef = F8214BAF0D7A0B05006A195D /* unpluck.c */; };
+		F83E51FB0D8304ED007EAEEF /* unpluck.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB00D7A0B05006A195D /* unpluck.h */; };
+		F83E51FC0D8304ED007EAEEF /* unpluckint.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB10D7A0B05006A195D /* unpluckint.h */; };
+		F83E51FD0D8304ED007EAEEF /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB20D7A0B05006A195D /* util.c */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D90F56E20C671CD1007AE76B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /Developer/SDKs/iPhone.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -61,7 +111,19 @@
 		F8214BB50D7A0B05006A195D /* Regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Regex.h; path = source/Regex.h; sourceTree = "<group>"; };
 		F8214BB60D7A0B05006A195D /* Regex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Regex.m; path = source/Regex.m; sourceTree = "<group>"; };
 		F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIViewHeartbeat.h; path = source/UIViewHeartbeat.h; sourceTree = "<group>"; };
+		F83E51C90D8304A0007EAEEF /* Dummy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dummy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F83E51CB0D8304A0007EAEEF /* Dummy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Dummy-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F83E51C70D8304A0007EAEEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		080E96DDFE201D6D7F000001 /* Classes */ = {
@@ -95,12 +157,12 @@
 				F8214B9F0D7A0B05006A195D /* mainapp.m */,
 				F8214BA00D7A0B05006A195D /* NSString-BooksAppAdditions.h */,
 				F8214BA10D7A0B05006A195D /* NSString-BooksAppAdditions.m */,
-				F8214BA20D7A0B05006A195D /* palm */,
 				F8214BB30D7A0B05006A195D /* PreferencesController.h */,
 				F8214BB40D7A0B05006A195D /* PreferencesController.m */,
 				F8214BB50D7A0B05006A195D /* Regex.h */,
 				F8214BB60D7A0B05006A195D /* Regex.m */,
 				F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */,
+				F8214BA20D7A0B05006A195D /* palm */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -108,6 +170,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				F83E51C90D8304A0007EAEEF /* Dummy.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,6 +184,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				F83E51CB0D8304A0007EAEEF /* Dummy-Info.plist */,
 			);
 			name = books;
 			sourceTree = "<group>";
@@ -192,6 +256,26 @@
 		};
 /* End PBXLegacyTarget section */
 
+/* Begin PBXNativeTarget section */
+		F83E51C80D8304A0007EAEEF /* Dummy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F83E51CE0D8304A1007EAEEF /* Build configuration list for PBXNativeTarget "Dummy" */;
+			buildPhases = (
+				F83E51C50D8304A0007EAEEF /* Resources */,
+				F83E51C60D8304A0007EAEEF /* Sources */,
+				F83E51C70D8304A0007EAEEF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Dummy;
+			productName = Dummy;
+			productReference = F83E51C90D8304A0007EAEEF /* Dummy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
@@ -203,9 +287,77 @@
 			projectRoot = "";
 			targets = (
 				D92591D10C6B42C700BBDBBC /* books */,
+				F83E51C80D8304A0007EAEEF /* Dummy */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F83E51C50D8304A0007EAEEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F83E51C60D8304A0007EAEEF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F83E51F00D8304ED007EAEEF /* jconfig.h in Sources */,
+				F83E51F10D8304ED007EAEEF /* jerror.h in Sources */,
+				F83E51F20D8304ED007EAEEF /* jmorecfg.h in Sources */,
+				F83E51F30D8304ED007EAEEF /* jpeglib.h in Sources */,
+				F83E51F40D8304ED007EAEEF /* palmconvert.h in Sources */,
+				F83E51F50D8304ED007EAEEF /* palmconvert.m in Sources */,
+				F83E51F60D8304ED007EAEEF /* pluckhtml.h in Sources */,
+				F83E51F70D8304ED007EAEEF /* pluckhtml.m in Sources */,
+				F83E51F80D8304ED007EAEEF /* txt2pdbdoc.h in Sources */,
+				F83E51F90D8304ED007EAEEF /* txt2pdbdoc.m in Sources */,
+				F83E51FA0D8304ED007EAEEF /* unpluck.c in Sources */,
+				F83E51FB0D8304ED007EAEEF /* unpluck.h in Sources */,
+				F83E51FC0D8304ED007EAEEF /* unpluckint.h in Sources */,
+				F83E51FD0D8304ED007EAEEF /* util.c in Sources */,
+				F83E51CF0D8304E0007EAEEF /* BooksApp.h in Sources */,
+				F83E51D00D8304E0007EAEEF /* BooksApp.m in Sources */,
+				F83E51D10D8304E0007EAEEF /* BooksDefaultsController.h in Sources */,
+				F83E51D20D8304E0007EAEEF /* BooksDefaultsController.m in Sources */,
+				F83E51D30D8304E0007EAEEF /* ChapteredHTML.h in Sources */,
+				F83E51D40D8304E0007EAEEF /* ChapteredHTML.m in Sources */,
+				F83E51D50D8304E0007EAEEF /* common.h in Sources */,
+				F83E51D60D8304E0007EAEEF /* dolog.h in Sources */,
+				F83E51D70D8304E0007EAEEF /* dolog.m in Sources */,
+				F83E51D80D8304E0007EAEEF /* EBookImageView.h in Sources */,
+				F83E51D90D8304E0007EAEEF /* EBookImageView.m in Sources */,
+				F83E51DA0D8304E0007EAEEF /* EBookView.h in Sources */,
+				F83E51DB0D8304E0007EAEEF /* EBookView.m in Sources */,
+				F83E51DC0D8304E0007EAEEF /* EncodingPrefsController.h in Sources */,
+				F83E51DD0D8304E0007EAEEF /* EncodingPrefsController.m in Sources */,
+				F83E51DE0D8304E0007EAEEF /* FileBrowser.h in Sources */,
+				F83E51DF0D8304E0007EAEEF /* FileBrowser.m in Sources */,
+				F83E51E00D8304E0007EAEEF /* FileTable.h in Sources */,
+				F83E51E10D8304E0007EAEEF /* FileTable.m in Sources */,
+				F83E51E20D8304E0007EAEEF /* FontChoiceController.h in Sources */,
+				F83E51E30D8304E0007EAEEF /* FontChoiceController.m in Sources */,
+				F83E51E40D8304E0007EAEEF /* HideableNavBar.h in Sources */,
+				F83E51E50D8304E0007EAEEF /* HideableNavBar.m in Sources */,
+				F83E51E60D8304E0007EAEEF /* HTMLFixer.h in Sources */,
+				F83E51E70D8304E0007EAEEF /* HTMLFixer.m in Sources */,
+				F83E51E80D8304E0007EAEEF /* mainapp.m in Sources */,
+				F83E51E90D8304E0007EAEEF /* NSString-BooksAppAdditions.h in Sources */,
+				F83E51EA0D8304E0007EAEEF /* NSString-BooksAppAdditions.m in Sources */,
+				F83E51EB0D8304E0007EAEEF /* PreferencesController.h in Sources */,
+				F83E51EC0D8304E0007EAEEF /* PreferencesController.m in Sources */,
+				F83E51ED0D8304E0007EAEEF /* Regex.h in Sources */,
+				F83E51EE0D8304E0007EAEEF /* Regex.m in Sources */,
+				F83E51EF0D8304E0007EAEEF /* UIViewHeartbeat.h in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		C01FCF4F08A954540054247B /* Debug */ = {
@@ -260,6 +412,58 @@
 			};
 			name = Release;
 		};
+		F83E51CC0D8304A1007EAEEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Dummy-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Dummy;
+			};
+			name = Debug;
+		};
+		F83E51CD0D8304A1007EAEEF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "Dummy-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Dummy;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -277,6 +481,15 @@
 			buildConfigurations = (
 				D92591D50C6B42CE00BBDBBC /* Debug */,
 				D92591D60C6B42CE00BBDBBC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F83E51CE0D8304A1007EAEEF /* Build configuration list for PBXNativeTarget "Dummy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F83E51CC0D8304A1007EAEEF /* Debug */,
+				F83E51CD0D8304A1007EAEEF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
