@@ -155,6 +155,14 @@
 	path = thePath;
 }
 
+/**
+ * Master method to load book - all others delegate here.
+ *
+ * @param thePath full file/path of book to load
+ * @param numChars number of characters if known, -1 if not
+ * @param didLoadAll pointer to bool which will return YES if the entire file was loaded into memory
+ * @param theSubchapter subchapter number for chaptered HTML
+ */
 - (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars
 			  didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter
 {

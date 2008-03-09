@@ -113,7 +113,8 @@
 
 	NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
 	imageSplashed = !(nil == coverart);
-	if (!imageSplashed)
+	/*
+  if (!imageSplashed)
 	{
 		coverart = [[NSBundle mainBundle] pathForResource:@"Default"
 												   ofType:@"png"];
@@ -121,6 +122,13 @@
 	}
 	imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
 	[mainView addSubview:imageView];
+   */
+  
+  if(imageSplashed) {
+    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
+    [mainView addSubview:imageView];  
+  }
+  
 	[mainView addSubview:progressIndicator];
 	[progressIndicator startAnimation];
 
@@ -137,10 +145,23 @@
 }
 
 
-- (void)finishUpLaunch
-{
+/**
+ * Store screen shot (if enabled), setup navigation bar, and start displaying the 
+ * last read file.  Takes down splash image if it was present.
+ */
+- (void)finishUpLaunch {
 	NSString *recentFile = [defaults fileBeingRead];
 	
+  /*
+   * If we got a splash image from the book's cover.jpg, them take a screenshot of the book and
+   * save it out where the default is symlinked.
+   *
+   * Why do it with a screenshot?  Why not just link the or copy the cover art into place?
+   * Seems like doing it with a screen shot *must* slow down the launch.
+   *
+   * (Disabled for now due to problems with the new version of Installer.)
+   */
+  /*
 	if (imageSplashed)
 	{
 		[self _dumpScreenContents:nil];
@@ -154,41 +175,44 @@
 		[nsdat writeToFile:defaultPath atomically:YES];
 		imageSplashed = NO;
 	}
+   */
+  
+  // Create navigation bar
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
 	[navBar pushNavigationItem:tempItem withBrowserPath:[BooksDefaultsController defaultEBookPath]];
 
-	NSString *tempString = [defaults lastBrowserPath];
-	NSMutableArray *tempArray = [[NSMutableArray alloc] init]; 
+  // Get last browser path and start loading files
+	NSString *lastBrowserPath = [defaults lastBrowserPath];
+	NSMutableArray *arPathComponents = [[NSMutableArray alloc] init]; 
 
-	if (![tempString isEqualToString:[BooksDefaultsController defaultEBookPath]])
-	{
-		[tempArray addObject:[NSString stringWithString:tempString]];
-		while ((![(tempString = [tempString stringByDeletingLastPathComponent])
-					isEqualToString:[BooksDefaultsController defaultEBookPath]]) && 
-	  (![tempString isEqualToString:@"/"])) //sanity check
-		{
-			[tempArray addObject:[NSString stringWithString:tempString]];
+	if(![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) {
+    
+		[arPathComponents addObject:[NSString stringWithString:lastBrowserPath]];
+    lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
+    
+    // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
+    while((![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) 
+           && (![lastBrowserPath isEqualToString:@"/"])) {
+			[arPathComponents addObject:[NSString stringWithString:lastBrowserPath]];
+      lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
 		} // while
 	} // if
 
-	NSEnumerator *pathEnum = [tempArray reverseObjectEnumerator];
+	NSEnumerator *pathEnum = [arPathComponents reverseObjectEnumerator];
 	NSString *curPath;  
-	while (nil != (curPath = [pathEnum nextObject]))
-	{
-		UINavigationItem *tempItem = [[UINavigationItem alloc]
-			initWithTitle:[curPath lastPathComponent]];
+	while(nil != (curPath = [pathEnum nextObject])) {
+		UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:[curPath lastPathComponent]];
 		[navBar pushNavigationItem:tempItem withBrowserPath:curPath];
 		[tempItem release];
 	}
 
-	if (readingText)
-	{
-		if ([[NSFileManager defaultManager] fileExistsAtPath:recentFile])
-		{
+	if(readingText) {
+		if([[NSFileManager defaultManager] fileExistsAtPath:recentFile]) {
 
 			UINavigationItem *tempItem = [[UINavigationItem alloc]
 				initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
+      
 			int subchapter = [defaults lastSubchapterForFile:recentFile];
 			float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
 															inSubchapter:subchapter];
@@ -201,9 +225,7 @@
 			[tempItem release];
 			[navBar hide:NO];
 			[bottomNavBar hide:NO];
-		}
-		else
-		{  // Recent file has been deleted!  RESET!
+		} else {  // Recent file has been deleted!  RESET!
 			readingText = NO;
 			[defaults setReadingText:NO];
 			[defaults setFileBeingRead:@""];
@@ -215,15 +237,16 @@
 	imageSplashed = NO;
 	transitionHasBeenCalled = YES;
 
-
-	[tempArray release];
+	[arPathComponents release];
 
 	[navBar enableAnimation];
 	[progressIndicator stopAnimation];
 	[progressIndicator removeFromSuperview];
-	[imageView removeFromSuperview];
-	[imageView release];
-	imageView = nil;
+  if(imageView != nil) {
+    [imageView removeFromSuperview];
+    [imageView release];
+    imageView = nil;
+  }
 }
 
 - (void)heartbeatCallback:(id)unused
@@ -279,9 +302,7 @@
 		[scrollerSlider autorelease];
 		scrollerSlider = nil;
 	}
-	else
-	{
-	}
+	
 	scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
 	[mainView addSubview:scrollerSlider];
 	CGRect theWholeShebang = [[textView _webView] frame];
