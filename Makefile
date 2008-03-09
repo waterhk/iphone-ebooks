@@ -59,7 +59,7 @@ bundle: Books.app
 
 Books: obj/Books
 
-obj/Books:  $(OBJECTS) jpeg-6b/.libs/libjpeg.a
+obj/Books:  $(OBJECTS) lib/libjpeg.a
 	$(QL)$(LD) $(LDFLAGS) -v -o $@ $^ $(QN)
 
 # more complicated dependency computation, so all prereqs listed
