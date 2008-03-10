@@ -24,11 +24,8 @@
 #import "ChapteredHTML.h"
 
 #define ENCODING_LIST {[defaults defaultTextEncoding], NSUTF8StringEncoding, NSISOLatin1StringEncoding, \
-  NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
+	NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
 
-@interface NSObject (HeartbeatDelegate)
-	- (void)heartbeatCallback:(id)ignored;
-@end
 
 
 @implementation EBookView
@@ -58,7 +55,7 @@
 	[self setBottomBufferHeight:0.0f];
 
 	[self scrollToMakeCaretVisible:NO];
-  
+
 	[self setScrollDecelerationFactor:0.996f];
 	//  GSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
 	[self setTapDelegate:self];
@@ -76,8 +73,8 @@
 - (void)heartbeatCallback:(id)unused {
 	if ((![self isScrolling]) && (![self isDecelerating])) {
 		lastVisibleRect = [self visibleRect];
-  }
-  
+	}
+
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(heartbeatCallback:)]) {
 			 [_heartbeatDelegate heartbeatCallback:self];
@@ -136,7 +133,7 @@
 /**
  * Return the current path.
  */
-- (NSString *)currentPath; {
+- (NSString *)currentPath {
 	return path;
 }
 
@@ -155,12 +152,12 @@
 		float scrollFactor = middleRect / totalRect.size.height;
 		size += 2.0f;
 		[self setTextSize:size];
-           
-    [self recalculateStyle];
-    [self webViewDidChange:self];
+
+		[self recalculateStyle];
+		[self webViewDidChange:self];
 		[self setNeedsDisplay];
-    
-    totalRect = [[self _webView] frame];
+
+		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 //		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
@@ -184,11 +181,11 @@
 		size -= 2.0f;
 		[self setTextSize:size];
 
-    [self recalculateStyle];
-    [self webViewDidChange:self];
+		[self recalculateStyle];
+		[self webViewDidChange:self];
 		[self setNeedsDisplay];
-    
-    totalRect = [[self _webView] frame];
+
+		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 //		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
@@ -214,6 +211,13 @@
    }
    */
 
+- (void)mouseDown:(struct __GSEvent *)event {
+	CGPoint clicked = GSEventGetLocationInWindow(event);
+	_MouseDownX = clicked.x;
+	_MouseDownY = clicked.y;
+	GSLog(@"MouseDown");
+	[super mouseDown:event];
+}
 - (void)mouseUp:(struct __GSEvent *)event {
 	/*************
 	 * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
@@ -222,13 +226,31 @@
 	 *****************/
 
 	CGPoint clicked = GSEventGetLocationInWindow(event);
+//BCC: swipe detection
+	BOOL lChangeChapter = NO;
+	if (clicked.y - _MouseDownY < 20 && clicked.y - _MouseDownY > -20)
+	{
+		if (clicked.x - _MouseDownX > 100 )
+		{
+			if ([_heartbeatDelegate respondsToSelector:@selector(chapForward:)]) 
+					   [_heartbeatDelegate chapForward:(UINavBarButton*)nil];
+			lChangeChapter = YES;
+		}
+		else if (clicked.x - _MouseDownX < -100)
+		{
+			if ([_heartbeatDelegate respondsToSelector:@selector(chapBack:)]) 
+						  [_heartbeatDelegate chapBack:(UINavBarButton*)nil];
+			lChangeChapter = YES;
+		}
+	}
+
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
 	//GSLog(@"zone height %d", lZoneHeight);
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
-	if ([self isScrolling]) {
+	if (!lChangeChapter && [self isScrolling]) {
 		if (CGRectEqualToRect(lastVisibleRect, newRect)) {
 			if (CGRectContainsPoint(topTapRect, clicked)) {
 				if ([defaults inverseNavZone]) {
@@ -255,8 +277,10 @@
 			[self hideNavbars];
 		}
 	}
+
 	BOOL unused = [self releaseRubberBandIfNecessary];
 	lastVisibleRect = [self visibleRect];
+	GSLog(@"MouseUp");
 	[super mouseUp:event];
 }
 
@@ -340,8 +364,8 @@
 
 //USE WITH CAUTION!!!!
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath {
-  [thePath retain];
-  [path release];
+	[thePath retain];
+	[path release];
 	path = thePath;
 }
 
@@ -353,121 +377,120 @@
  * @param didLoadAll pointer to bool which will return YES if the entire file was loaded into memory
  * @param theSubchapter subchapter number for chaptered HTML
  */
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars 
-              didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter {
-  
+- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter {
+
 	NSMutableString *theHTML = nil;
 	//GSLog(@"path: %@", thePath);
-  
-  [thePath retain];
-  [path release];
+
+	[thePath retain];
+	[path release];
 	path = thePath;
-  
-  NSString *pathExt = [[thePath pathExtension] lowercaseString];
-  
-  BOOL bIsHtml;
-  
-  if ([pathExt isEqualToString:@"txt"]) {
-    bIsHtml = NO;
+
+	NSString *pathExt = [[thePath pathExtension] lowercaseString];
+
+	BOOL bIsHtml;
+
+	if ([pathExt isEqualToString:@"txt"]) {
+		bIsHtml = NO;
 		theHTML = [self readTextFile:thePath];
 	} else if ([pathExt isEqualToString:@"html"] || [pathExt isEqualToString:@"htm"]) {
-    bIsHtml = YES;
+		bIsHtml = YES;
 		theHTML = [self readHtmlFile:thePath];
 	}	else if ([pathExt isEqualToString:@"pdb"]) { 
 		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
 		NSString *retType = nil;
-    NSString *retObject = nil;
+		NSString *retObject = nil;
 		NSObject *ret;
-    
+
 		ret = ReadPDBFile(thePath, &retType, &retObject);
-    
-    // Check the returned object and convert to string if necessary.
-    if([@"DATA" isEqualToString:retObject]) {
-      // Need to convert to string
-      theHTML = [self convertPalmDoc:(NSData*)ret];
-    } else {
-      theHTML = (NSMutableString*)ret;
-    }
-    
-    // Plain text types don't need to go through all the HTML conversion leg work.
-		if([@"htm" isEqualToString:retType]) {
-      [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
-      bIsHtml = YES;
+
+		// Check the returned object and convert to string if necessary.
+		if([@"DATA" isEqualToString:retObject]) {
+			// Need to convert to string
+			theHTML = [self convertPalmDoc:(NSData*)ret];
 		} else {
-      bIsHtml = NO;
+			theHTML = (NSMutableString*)ret;
+		}
+
+		// Plain text types don't need to go through all the HTML conversion leg work.
+		if([@"htm" isEqualToString:retType]) {
+		  [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
+		  bIsHtml = YES;
+		} else {
+			bIsHtml = NO;
 		}
 	}
 
 	if ((-1 == numChars) || (numChars >= [theHTML length])) {
 		*didLoadAll = YES;
-  
-    if(bIsHtml) {
-      if ([defaults subchapteringEnabled] == NO) {
-        [self setHTML:theHTML];
-        subchapter = 0;
-      } else {
-        [chapteredHTML setHTML:theHTML];
-        
-        if (theSubchapter < [chapteredHTML chapterCount])
-          subchapter = theSubchapter;
-        else
-          subchapter = 0;
-        
-        [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-      }
-    } else {
-      [self setText:theHTML];
-    }
+
+		if(bIsHtml) {
+			if ([defaults subchapteringEnabled] == NO) {
+				[self setHTML:theHTML];
+				subchapter = 0;
+			} else {
+				[chapteredHTML setHTML:theHTML];
+
+				if (theSubchapter < [chapteredHTML chapterCount])
+					subchapter = theSubchapter;
+				else
+					subchapter = 0;
+
+				[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+			}
+		} else {
+			[self setText:theHTML];
+		}
 	} else {
-    if(bIsHtml) {
-      NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
-                               [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
-      [self setHTML:tempyString];
-    } else {
-      [self setText:theHTML];
-    }
+		if(bIsHtml) {
+			NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
+								 [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
+			[self setHTML:tempyString];
+		} else {
+			[self setText:theHTML];
+		}
 	}
 
 	/* This code doesn't work.  Sorry, charlie.
-   if (1) //replace with a defaults check
-   { 
-   NSMutableString *ebookPath = [NSString  stringWithString:[BooksDefaultsController defaultEBookPath]];
-   NSString *styleSheetPath = [ebookPath stringByAppendingString:@"/style.css"];
-   if ([[NSFileManager defaultManager] fileExistsAtPath:styleSheetPath])
-   {
-   [[self _webView] setUserStyleSheetLocation:[NSURL fileURLWithPath:ebookPath]];
-   }
-   //[ebookPath release];
-   }
-   */
+	   if (1) //replace with a defaults check
+	   { 
+	   NSMutableString *ebookPath = [NSString  stringWithString:[BooksDefaultsController defaultEBookPath]];
+	   NSString *styleSheetPath = [ebookPath stringByAppendingString:@"/style.css"];
+	   if ([[NSFileManager defaultManager] fileExistsAtPath:styleSheetPath])
+	   {
+	   [[self _webView] setUserStyleSheetLocation:[NSURL fileURLWithPath:ebookPath]];
+	   }
+	//[ebookPath release];
+	}
+	*/
 }
 
 /**
  * Convert Palm data to string using proper text encoding.
  */
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data {
-  NSMutableString *originalText;
-  
-  int i=0;
-  NSStringEncoding encList[] = ENCODING_LIST;
-  NSStringEncoding curEnc = encList[i];
-  while(curEnc != -1) {
-    GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-    originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
-    
-    if(originalText != nil) {
-      GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      break;
-    }
-    
-    curEnc = encList[++i];
-  }
-  
-  if(originalText == nil) {
-    originalText = [[NSMutableString alloc] initWithString:
-                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-  }
-  
+	NSMutableString *originalText;
+
+	int i=0;
+	NSStringEncoding encList[] = ENCODING_LIST;
+	NSStringEncoding curEnc = encList[i];
+	while(curEnc != -1) {
+		GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+		originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
+
+		if(originalText != nil) {
+			GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			break;
+		}
+
+		curEnc = encList[++i];
+	}
+
+	if(originalText == nil) {
+		originalText = [[NSMutableString alloc] initWithString:
+			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
+
 	return [originalText autorelease];  
 }
 
@@ -476,34 +499,34 @@
  * or with a list of common encodings, convert to HTML and return.
  */
 - (NSMutableString *)readTextFile:(NSString *)file {  
-  NSMutableString *originalText;
-  
-  int i=0;
-  NSStringEncoding encList[] = ENCODING_LIST;
-  NSStringEncoding curEnc = encList[i];
-  while(curEnc != -1) {
-    
-    if(curEnc == AUTOMATIC_ENCODING) {
-      GSLog(@"Trying automatic encoding");
-      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
-    } else {
-      GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
-    }
-    
-    if(originalText != nil) {
-      GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      break;
-    }
-    
-    curEnc = encList[++i];
-  }
-  
-  if(originalText == nil) {
-    originalText = [[NSMutableString alloc] initWithString:
-                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-  }
-  
+	NSMutableString *originalText;
+
+	int i=0;
+	NSStringEncoding encList[] = ENCODING_LIST;
+	NSStringEncoding curEnc = encList[i];
+	while(curEnc != -1) {
+
+		if(curEnc == AUTOMATIC_ENCODING) {
+			GSLog(@"Trying automatic encoding");
+			originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
+		} else {
+			GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
+		}
+
+		if(originalText != nil) {
+			GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			break;
+		}
+
+		curEnc = encList[++i];
+	}
+
+	if(originalText == nil) {
+		originalText = [[NSMutableString alloc] initWithString:
+			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
+
 	return [originalText autorelease];  
 }
 
@@ -541,7 +564,7 @@
 		[self setTextColor: CGColorCreate( colorSpace, textParts)];
 		[self setScrollerIndicatorStyle:0];
 	}
-    
+
 	[self setNeedsDisplay];
 }
 
@@ -584,10 +607,10 @@
 	if ([defaults subchapteringEnabled] && (subchapter < [chapteredHTML chapterCount])) {
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
 	}
-  
+
 	[self scrollPointVisibleAtTopLeft:origin];
-  [self recalculateStyle];
-  [self updateWebViewObjects];
+	[self recalculateStyle];
+	[self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
 
@@ -636,7 +659,7 @@
 	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
 	[self scrollPointVisibleAtTopLeft:origin];
 	[self setNeedsDisplay];
-  
+
 	return YES;
 }
 
@@ -649,9 +672,10 @@
 	//GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
 	//GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
 	[[self _webView]setFrame: [self frame]];
-  [self recalculateStyle];
-  [self updateWebViewObjects];
+	[self recalculateStyle];
+	[self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
+
 
 @end

@@ -46,6 +46,14 @@
 	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
 	int _orient;
 	CGAffineTransform _matrixprev;  
+	/**
+	 * stores the X coordinate of the last mouse down event for swipe detection
+	 */
+	float _MouseDownX;
+	/**
+	 * stores the Y coordinate of the last mouse down event for swipe detection
+	 */
+	float _MouseDownY;
 }
 
 - (id)initWithFrame:(struct CGRect)rect;
@@ -84,4 +92,13 @@
 //- (void) fitRect;
 //-(void) afterRotate: (NSTimer*) timer;
 
+- (void)  dumpEvent: ( struct __GSEvent *)  ev;
+@end
+//informal protocol declaration for _heartbeatDelegate
+@interface NSObject (EBookViewHeartbeatDelegate)
+- (void)heartbeatCallback:(id)ignored;
+- (void)hideNavbars ;
+- (void)toggleNavbars ;
+- (void)chapForward:(UINavBarButton *)button;
+- (void)chapBack:(UINavBarButton *)button;
 @end

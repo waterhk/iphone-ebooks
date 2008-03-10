@@ -164,8 +164,6 @@ deploy: obj/Books
 
 deploy-app: bundle
 	scp -r Books.app root@iphone:/Applications/
-	ln -f -s '~/Library/Books/Default.png' Books.app/Default.png
-	ssh root@iphone ln -f -s '/var/mobile/Library/Books/Default.png' /Applications/Books.app/Default.png
 
 package: bundle
 	zip -y -r9 $(ARCHIVE) Books.app
