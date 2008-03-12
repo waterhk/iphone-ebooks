@@ -19,6 +19,7 @@
 #import "BooksApp.h"
 #import "PreferencesController.h"
 #import <UIKit/UIView-Geometry.h>
+#import <UIKit/UIView-Animation.h>
 //#include "dolog.h"
 #include <stdio.h>
 
@@ -942,7 +943,6 @@
 	//GSLog(@"rotateApp");
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
-	//UIAnimator *anim = [[UIAnimator alloc] init];
 	[self toggleStatusBarColor];
 	if ([defaults isRotate90]) {
 		int degree = 90;
@@ -950,20 +950,17 @@
 		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
 		lTransform = CGAffineTransformTranslate(lTransform, -1*rect.size.width/2, -1*rect.size.height/2);
 		//BCC: perform the actual rotation
-		//lTransform = CGAffineTransformRotate(lTransform, M_PI/2);
 		lTransform = CGAffineTransformConcat(lTransform2, lTransform);
 		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
-		//lTransform = CGAffineTransformTranslate(lTransform, lCurrentRect.size.height - lCurrentRect.size.width/2, lCurrentRect.size.height/2 - lCurrentRect.size.width);
 		//BCC: translate back so the top left corner of the view is at the top right of the phone
 		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
 	} 
   
 	struct CGAffineTransform lMatrixprev = [window transform];
-	//GSLog(@"prev matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lMatrixprev.a, lMatrixprev.b, lMatrixprev.c, lMatrixprev.d, lMatrixprev.tx, lMatrixprev.ty);
-	//GSLog(@"new matrix: a=%f, b=%f, c=%f, d=%f, tx=%f, ty=%f", lTransform.a, lTransform.b, lTransform.c, lTransform.d, lTransform.tx, lTransform.ty);
-	//GSLog(@"rect: x=%f, y=%f, w=%f, h=%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 
 	if(!CGAffineTransformEqualToTransform(lTransform,lMatrixprev)) {
+		[UIView beginAnimations: @"rotate"];
+		[UIView setAnimationDuration:1.0];
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
 		//GSLog(@"overall height: %f", overallRect.size.height);
@@ -992,7 +989,6 @@
 		textViewNeedsFullText = NO;
 		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
 									 animated:NO];
-
 		[window setTransform: lTransform];
 
 		if (![defaults isRotate90])
@@ -1000,26 +996,15 @@
 			rect.origin.y+=20; //to take into account the status bar
 			[window setFrame: rect];
 		}
+		[UIView endAnimations];
 		[self updateToolbar: 0];
 		[self updateNavbar];
 
-		//[navBar showTopNavBar:NO];
-		//[navBar show];
 		[bottomNavBar hide:NO];
 	//	GSLog(@"showing the slider");
 		[self hideSlider];
 	}
 //	
-
-	//BCC: animate this
-	/*	
-		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
-		struct CGAffineTransform lMatrixprev = [window transform];
-		[scaleAnim setStartTransform: lMatrixprev];
-		[scaleAnim setEndTransform: lTransform];
-		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
-		[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
-		*/
 }
 - (void) preferenceAnimationDidFinish
 {
