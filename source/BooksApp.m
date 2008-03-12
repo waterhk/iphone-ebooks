@@ -959,8 +959,6 @@
 	struct CGAffineTransform lMatrixprev = [window transform];
 
 	if(!CGAffineTransformEqualToTransform(lTransform,lMatrixprev)) {
-		[UIView beginAnimations: @"rotate"];
-		[UIView setAnimationDuration:1.0];
 		//remember the previous position
 		struct CGRect overallRect = [[textView _webView] frame];
 		//GSLog(@"overall height: %f", overallRect.size.height);
@@ -986,6 +984,8 @@
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
+		[UIView beginAnimations: @"rotate"];
+		//[UIView setAnimationDuration:10.0];
 		textViewNeedsFullText = NO;
 		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
 									 animated:NO];
