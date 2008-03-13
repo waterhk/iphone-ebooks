@@ -24,6 +24,7 @@
 #import <Foundation/NSDictionary.h>
 #import "ChapteredHTML.h"
 #import "Regex.h"
+#import <Foundation/Foundation.h>
 
 #define ARRAY_SIZE(x)   (sizeof (x) / sizeof ((x)[0]))
 
@@ -65,8 +66,8 @@
 	SHA1 ((const unsigned char *) [_fullHTML UTF8String],
 	      (unsigned long) [_fullHTML length],
 	      _fullHTMLHash);
-
-	filename = [[NSMutableString alloc] initWithString:@"/var/root/Library/Caches/Books/"];
+	NSString *lDirName = [NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Caches/Books/"];
+	filename = [[NSMutableString alloc] initWithString:lDirName];
 	for (index = 0; index < sizeof (_fullHTMLHash); index++)
 		[filename appendFormat:@"%02x", _fullHTMLHash[index]];
 	[filename appendString:@".plist"];
