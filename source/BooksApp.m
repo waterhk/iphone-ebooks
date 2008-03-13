@@ -984,6 +984,8 @@
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
+		//BCC something like the line bellow should work but I can't find what
+	//	[textView reflowBook];
 		[UIView beginAnimations: @"rotate"];
 		//[UIView setAnimationDuration:10.0];
 		textViewNeedsFullText = NO;

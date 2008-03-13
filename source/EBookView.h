@@ -55,7 +55,16 @@
 	 */
 	float _MouseDownY;
 }
+typedef enum
+{
+	kUIViewSwipeUp = 1,
+	kUIViewSwipeDown = 2,
+	kUIViewSwipeLeft = 4,
+	kUIViewSwipeRight = 8
+} UIViewSwipeDirection;
 
+- (BOOL)canHandleSwipes;
+- (int)  swipe: ( int)num withEvent: ( struct __GSEvent *)event;
 - (id)initWithFrame:(struct CGRect)rect;
 
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
@@ -91,8 +100,8 @@
 //-(void) setOrientation: (int) orientation animate:(bool)anime;
 //- (void) fitRect;
 //-(void) afterRotate: (NSTimer*) timer;
+-(void)reflowBook;
 
-- (void)  dumpEvent: ( struct __GSEvent *)  ev;
 @end
 //informal protocol declaration for _heartbeatDelegate
 @interface NSObject (EBookViewHeartbeatDelegate)

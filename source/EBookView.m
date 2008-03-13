@@ -136,62 +136,63 @@
 - (NSString *)currentPath {
 	return path;
 }
-
+-(void)reflowBook
+{
+			[self recalculateStyle];
+			[self webViewDidChange:self];
+			[self setNeedsDisplay];
+}
 /**
  * Increase on-screen text size.
  *
  * "A noble spirit embiggens the smallest man." -- Jebediah Springfield
  */
-- (void)embiggenText {
-	if (size < 36.0f)
-	{
-		struct CGRect oldRect = [self visibleRect];
-		struct CGRect totalRect = [[self _webView] frame];
-//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-		float scrollFactor = middleRect / totalRect.size.height;
-		size += 2.0f;
-		[self setTextSize:size];
+	- (void)embiggenText {
+		if (size < 36.0f)
+		{
+			struct CGRect oldRect = [self visibleRect];
+			struct CGRect totalRect = [[self _webView] frame];
+			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+			float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
+			float scrollFactor = middleRect / totalRect.size.height;
+			size += 2.0f;
+			[self setTextSize:size];
+			[self reflowBook];
 
-		[self recalculateStyle];
-		[self webViewDidChange:self];
-		[self setNeedsDisplay];
 
-		totalRect = [[self _webView] frame];
-		middleRect = scrollFactor * totalRect.size.height;
-		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+			totalRect = [[self _webView] frame];
+			middleRect = scrollFactor * totalRect.size.height;
+			oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+			[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+		}
 	}
-}
 
 /**
  * Shrink on-screen text size.
  *
  * "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
  */
-- (void)ensmallenText {
-	if (size > 10.0f)
-	{
-		struct CGRect oldRect = [self visibleRect];
-		struct CGRect totalRect = [[self _webView] frame];
-//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-		float scrollFactor = middleRect / totalRect.size.height;
-		size -= 2.0f;
-		[self setTextSize:size];
+	- (void)ensmallenText {
+		if (size > 10.0f)
+		{
+			struct CGRect oldRect = [self visibleRect];
+			struct CGRect totalRect = [[self _webView] frame];
+			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+			float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
+			float scrollFactor = middleRect / totalRect.size.height;
+			size -= 2.0f;
+			[self setTextSize:size];
+			
+			[self reflowBook];
 
-		[self recalculateStyle];
-		[self webViewDidChange:self];
-		[self setNeedsDisplay];
-
-		totalRect = [[self _webView] frame];
-		middleRect = scrollFactor * totalRect.size.height;
-		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+			totalRect = [[self _webView] frame];
+			middleRect = scrollFactor * totalRect.size.height;
+			oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
+			[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+		}
 	}
-}
 
 
 // None of these tap methods work yet.  They may never work.
@@ -226,7 +227,7 @@
 	 *****************/
 
 	CGPoint clicked = GSEventGetLocationInWindow(event);
-//BCC: swipe detection
+	//BCC: swipe detection
 	BOOL lChangeChapter = NO;
 	if (clicked.y - _MouseDownY < 20 && clicked.y - _MouseDownY > -20)
 	{
@@ -677,5 +678,15 @@
 	[self setNeedsDisplay];
 }
 
-
+- (int)  swipe: ( int)num  withEvent: ( struct __GSEvent *)event
+{
+	if (num == kUIViewSwipeLeft)
+		GSLog(@"SwipeLeft");
+	if (num == kUIViewSwipeRight)
+		GSLog(@"SwipeRight");
+}
+- (BOOL)canHandleSwipes
+{
+	return YES;
+}
 @end
