@@ -38,12 +38,12 @@
    */
 - (void) applicationDidFinishLaunching: (id) unused
 {
-  // Only log if the log file already exists!
-  if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {    
-    freopen([OUT_FILE cString], "w", stdout);
-    freopen([ERR_FILE cString], "w", stderr);
-  }
-	
+	// Only log if the log file already exists!
+	if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {    
+		freopen([OUT_FILE cString], "w", stdout);
+		freopen([ERR_FILE cString], "w", stderr);
+	}
+
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	NSString *recentFile;
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
@@ -64,19 +64,19 @@
 	window = [[UIWindow alloc] initWithContentRect: rect];
 
 
-//	struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
-  
+	//	struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+
 	//Bcc: this positioning should be relative to the screen rect not to some arbitrary value
 	//based on the size of the current gen iphone
 	/*
-  progressIndicator = [[UIProgressIndicator alloc] 
-		initWithFrame:CGRectMake((rect.size.width-progsize.width)/2,
-				(rect.size.height-progsize.height)/2,
-				progsize.width, 
-				progsize.height)];
-	[progressIndicator setStyle:0];
-   */
-  
+	   progressIndicator = [[UIProgressIndicator alloc] 
+initWithFrame:CGRectMake((rect.size.width-progsize.width)/2,
+(rect.size.height-progsize.height)/2,
+progsize.width, 
+progsize.height)];
+[progressIndicator setStyle:0];
+*/
+
 	mainView = [[UIView alloc] initWithFrame: rect];
 
 	[self setupNavbar];
@@ -94,13 +94,13 @@
 	[window setContentView: mainView];
 	//bcc rotation
 	[self rotateApp];
-  
+
 	[mainView addSubview:transitionView];
 	[mainView addSubview:navBar];
 	[mainView addSubview:bottomNavBar];
 	if (!readingText) {
-    [bottomNavBar hide:YES];
-  }
+		[bottomNavBar hide:YES];
+	}
 
 	//[textView setHeartbeatDelegate:self];
 
@@ -108,23 +108,23 @@
 	[transitionView setDelegate:self];
 
 	NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
-  if(coverart != nil) {
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
-    [mainView addSubview:imageView];  
-  }
-  
-//  [self heartbeatCallback:self];
-//	[mainView addSubview:progressIndicator];
-//	[progressIndicator startAnimation];
-  
-  [self finishUpLaunch];
-  doneLaunching = YES;
-  
-  [textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
-  [textView setHeartbeatDelegate:self];
-  textViewNeedsFullText = NO;
-  
-  [window orderFront: self];
+	if(coverart != nil) {
+		imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withinSize:rect.size];
+		[mainView addSubview:imageView];  
+	}
+
+	//  [self heartbeatCallback:self];
+	//	[mainView addSubview:progressIndicator];
+	//	[progressIndicator startAnimation];
+
+	[self finishUpLaunch];
+	doneLaunching = YES;
+
+	[textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
+	[textView setHeartbeatDelegate:self];
+	textViewNeedsFullText = NO;
+
+	[window orderFront: self];
 	[window makeKey: self];
 	[window _setHidden: NO];
 }
@@ -136,26 +136,26 @@
  */
 - (void)finishUpLaunch {
 	NSString *recentFile = [defaults fileBeingRead];
-  
-  // Create navigation bar
+
+	// Create navigation bar
 	UINavigationItem *tempItem = [[UINavigationItem alloc] initWithTitle:@"Books"];
 	[navBar pushNavigationItem:tempItem withBrowserPath:[BooksDefaultsController defaultEBookPath]];
 
-  // Get last browser path and start loading files
+	// Get last browser path and start loading files
 	NSString *lastBrowserPath = [defaults lastBrowserPath];
 	NSMutableArray *arPathComponents = [[NSMutableArray alloc] init]; 
 
 	if(![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) {
-    
+
 		[arPathComponents addObject:[NSString stringWithString:lastBrowserPath]];
-    lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
-    
-    // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
-    while((![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) 
-           && (![lastBrowserPath isEqualToString:@"/"])) {
-			[arPathComponents addObject:[NSString stringWithString:lastBrowserPath]];
-      lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
-		} // while
+		lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
+
+		// FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
+	while((![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) 
+	   && (![lastBrowserPath isEqualToString:@"/"])) {
+				 [arPathComponents addObject:[NSString stringWithString:lastBrowserPath]];
+				 lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
+	} // while
 	} // if
 
 	NSEnumerator *pathEnum = [arPathComponents reverseObjectEnumerator];
@@ -172,7 +172,7 @@
 			UINavigationItem *tempItem = [[UINavigationItem alloc]
 				initWithTitle:[[recentFile lastPathComponent] 
 				stringByDeletingPathExtension]];
-      
+
 			int subchapter = [defaults lastSubchapterForFile:recentFile];
 			float scrollPoint = (float) [defaults lastScrollPointForFile:recentFile
 															inSubchapter:subchapter];
@@ -201,20 +201,26 @@
 	[navBar enableAnimation];
 	//[progressIndicator stopAnimation];
 	//[progressIndicator removeFromSuperview];
-  if(imageView != nil) {
-    [imageView removeFromSuperview];
-    [imageView release];
-    imageView = nil;
-  }  
+	if(imageView != nil) {
+		[imageView removeFromSuperview];
+		[imageView release];
+		imageView = nil;
+	}  
 }
 
 /**
- * Heartbeat isn't needed in main app at this point, but we need to init
- * a delegate or the navbar toggle won't work.
+ * Heartbeat is needed in main app at this point.
+ * It is used as a delegate for the navbar (without it hte toggle won't work) a delegate or the navbar toggle won't work.
+ * It is also used to complete the load of documents which were already partially loaded when opened from the file browser
  */
-- (void)heartbeatCallback:(id)ignored {
-  
-}
+	- (void)heartbeatCallback:(id)ignored {
+		if ((textViewNeedsFullText) && ![transitionView isTransitioning])
+		{
+			[textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
+			textViewNeedsFullText = NO;
+		}
+
+	}
 
 /**
  * Hide the navigation bars.
@@ -237,7 +243,7 @@
 		[self showSlider:true];
 	} else {
 		[self hideSlider];
-  }
+	}
 }
 
 /**
@@ -252,7 +258,7 @@
 		[scrollerSlider autorelease];
 		scrollerSlider = nil;
 	}
-	
+
 	scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
 	[mainView addSubview:scrollerSlider];
 	CGRect theWholeShebang = [[textView _webView] frame];
@@ -420,30 +426,30 @@
 
 - (void)cleanUpBeforeQuit
 {
-  /*
-	if (!readingText || (nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
-	{
-		NSData *defaultData;
-		NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
-		if (![[NSFileManager defaultManager] fileExistsAtPath: lPath])
-			[[NSFileManager defaultManager] createDirectoryAtPath:lPath attributes:nil];
-		if ([defaults inverted])
-		{
-			defaultData = [NSData dataWithContentsOfFile:
-				  [[NSBundle mainBundle] pathForResource:@"Default_dark"
-												  ofType:@"png"]];
-		}
-		else
-		{
-			defaultData = [NSData dataWithContentsOfFile:
-				  [[NSBundle mainBundle] pathForResource:@"Default_light"
-												  ofType:@"png"]];
-		}
-		NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
-		[defaultData writeToFile:defaultPath atomically:YES];
-	}
-  */
-  
+	/*
+	   if (!readingText || (nil == [EBookImageView coverArtForBookPath:[textView currentPath]]))
+	   {
+	   NSData *defaultData;
+	   NSString * lPath = [NSHomeDirectory() stringByAppendingPathComponent:LIBRARY_PATH];
+	   if (![[NSFileManager defaultManager] fileExistsAtPath: lPath])
+	   [[NSFileManager defaultManager] createDirectoryAtPath:lPath attributes:nil];
+	   if ([defaults inverted])
+	   {
+	   defaultData = [NSData dataWithContentsOfFile:
+			 [[NSBundle mainBundle] pathForResource:@"Default_dark"
+											 ofType:@"png"]];
+											 }
+											 else
+											 {
+											 defaultData = [NSData dataWithContentsOfFile:
+												   [[NSBundle mainBundle] pathForResource:@"Default_light"
+																				   ofType:@"png"]];
+																				   }
+																				   NSString *defaultPath = [NSHomeDirectory() stringByAppendingPathComponent:DEFAULT_REAL_PATH];
+																				   [defaultData writeToFile:defaultPath atomically:YES];
+																				   }
+																				   */
+
 	struct CGRect  selectionRect;
 	int            subchapter = [textView getSubchapter];
 	NSString      *filename   = [textView currentPath];
@@ -576,7 +582,7 @@
 
 				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
 																	object:[tempView currentPath]];
-//				[textView autorelease];
+				//				[textView autorelease];
 				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 				[textView setHeartbeatDelegate:self];
 
@@ -584,11 +590,14 @@
 					[[UINavigationItem alloc] initWithTitle:
 					[[nextFile lastPathComponent] 
 					stringByDeletingPathExtension]];
+
 				[navBar pushNavigationItem:tempItem withView:textView];
 				[self refreshTextViewFromDefaults];
 
 				subchapter = [defaults lastSubchapterForFile:nextFile];
-				int lastPt = [defaults lastScrollPointForFile:nextFile inSubchapter:subchapter]; BOOL didLoadAll = NO; 
+				int lastPt = [defaults lastScrollPointForFile:nextFile inSubchapter:subchapter]; 
+
+				BOOL didLoadAll = NO; 
 				CGRect rect = [defaults fullScreenApplicationContentRect];
 				int numScreens = (lastPt / rect.size.height) + 1;  // how many screens down are we?  
 				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));  //bcc I wonder what is 265000 but it has to be replaced
@@ -645,6 +654,7 @@
 																	object:[tempView currentPath]];
 				textView = [[EBookView alloc] initWithFrame:[tempView frame]];
 				[textView setHeartbeatDelegate:self];
+
 				UINavigationItem *tempItem = 
 					[[UINavigationItem alloc] initWithTitle:
 					[[prevFile lastPathComponent] 
@@ -657,9 +667,16 @@
 				subchapter = [defaults lastSubchapterForFile:prevFile];
 				int lastPt = [defaults lastScrollPointForFile:prevFile
 												 inSubchapter:subchapter];
-				[textView loadBookWithPath:prevFile subchapter:subchapter];
+				BOOL didLoadAll = NO; 
+
+				CGRect rect = [defaults fullScreenApplicationContentRect];
+				int numScreens = (lastPt / rect.size.height) + 1;  // how many screens down are we?  
+				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));  //bcc I wonder what is 265000 but it has to be replaced
+				[textView loadBookWithPath:prevFile numCharacters:numChars
+								didLoadAll:&didLoadAll subchapter:subchapter];
 				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
 											 animated:NO];
+				textViewNeedsFullText = !didLoadAll;
 				//[progressHUD show:NO];
 				[tempItem release];
 				[tempView autorelease];
@@ -906,7 +923,7 @@
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];
-//	[progressIndicator release];
+	//	[progressIndicator release];
 	[textView release];
 	if (nil != imageView)
 		[imageView release];
@@ -955,7 +972,7 @@
 		//BCC: translate back so the top left corner of the view is at the top right of the phone
 		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
 	} 
-  
+
 	struct CGAffineTransform lMatrixprev = [window transform];
 
 	if(!CGAffineTransformEqualToTransform(lTransform,lMatrixprev)) {
@@ -980,12 +997,12 @@
 
 
 		overallRect = [[textView _webView] frame];
-//		GSLog(@"new overall height: %f", overallRect.size.height);
+		//		GSLog(@"new overall height: %f", overallRect.size.height);
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
 		[textView loadBookWithPath:recentFile subchapter:subchapter];
 		//BCC something like the line bellow should work but I can't find what
-	//	[textView reflowBook];
+		//	[textView reflowBook];
 		[UIView beginAnimations: @"rotate"];
 		//[UIView setAnimationDuration:10.0];
 		textViewNeedsFullText = NO;
@@ -1003,10 +1020,10 @@
 		[self updateNavbar];
 
 		[bottomNavBar hide:NO];
-	//	GSLog(@"showing the slider");
+		//	GSLog(@"showing the slider");
 		[self hideSlider];
 	}
-//	
+	//	
 }
 - (void) preferenceAnimationDidFinish
 {
