@@ -51,7 +51,7 @@
 
 	doneLaunching = NO;
 	transitionHasBeenCalled = NO;
-	navbarsAreOn = YES;
+	navbarsAreOn = NO;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
@@ -141,7 +141,7 @@
 - (void)finishUpLaunch {
   GSLog(@"finishUpLaunch");
 	NSString *recentFile = [defaults fileBeingRead];
-  
+
   [mainView addSubview:navBar];
 	[mainView addSubview:bottomNavBar];
   
@@ -202,6 +202,7 @@
       
       
       [transitionView transition:6 fromView:imageView toView:textView];
+      [mainView addSubview:textView];
 		} else {  // Recent file has been deleted!  RESET!
       GSLog(@"File %@ doesn't exist anymore.", recentFile);
 			readingText = NO;
