@@ -146,26 +146,18 @@
     recentFile = [defaults lastBrowserPath];
   }
   
-  /*
-   * If the current path has cover art, transition to it.  If not, we have to redisplay
-   * the startup image, but this time in the real image view.  We'll move to it without
-   * transition.  It sucks to load the Default image twice (thrice if you count Springboard
-   * showing it), but we need to have it loaded into a DIFFERENT imageview in order for the
-   * transitions to work.  We can't show a transition by just setting the image path on
-   * a single imageview.
-   */
-  NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
-  if(coverart != nil) {
-    m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:coverart 
-                                                     withFrame:[window bounds] 
-                                                   scaleAspect:YES];
-    [m_transitionView transition:1 toView:m_startupImage];
-  } else {
-    m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
-                                                     withFrame:[window bounds] 
-                                                   scaleAspect:NO];
-    [m_transitionView transition:0 toView:m_startupImage];
+  NSString *defImage = [self _pathToDefaultImageNamed:[self nameOfDefaultImageToUpdateAtSuspension]];
+  
+  
+  if(![[NSFileManager defaultManager] fileExistsAtPath:defImage]) {
+    defImage = [[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"];
   }
+  
+  m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:defImage
+                                                   withFrame:[window bounds] 
+                                                 scaleAspect:NO];
+  [m_transitionView transition:0 toView:m_startupImage];
+
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
   [self toggleStatusBarColor];
@@ -932,6 +924,18 @@
   
   // Find the path to write it to:
   NSString *pathToDefault = [self _pathToDefaultImageNamed:[self nameOfDefaultImageToUpdateAtSuspension]];  
+  
+  // Need to create the directory tree.
+  NSString *destDirectory = [pathToDefault stringByDeletingLastPathComponent];
+  NSArray *pathComponents = [destDirectory pathComponents];
+  NSString *pathPart = @"/";
+
+  int i;
+  int n = [pathComponents count];
+  for(i=0; i < n; i++) {
+    pathPart = [pathPart stringByAppendingPathComponent:[pathComponents objectAtIndex:i]];
+    [[NSFileManager defaultManager] createDirectoryAtPath:pathPart attributes:nil];
+  } 
   
   // Dump a CGImage to file
   NSURL *urlToDefault = [NSURL fileURLWithPath:pathToDefault];
