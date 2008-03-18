@@ -28,6 +28,8 @@
   UIImageView *_imgView;
 }
 
--(EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect;
-+(NSString *)coverArtForBookPath:(NSString *)path;
+- (EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect;
+- (void)showImage:(NSString*)p_path inFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect;
+- (void)showImage:(NSString*)p_path;
++ (NSString *)coverArtForBookPath:(NSString *)path;
 @end

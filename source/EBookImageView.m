@@ -21,17 +21,31 @@
 #import "BooksDefaultsController.h"
 
 @implementation EBookImageView
--(EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect{
+/**
+ * Init with image to show and frame to draw in.
+ */
+- (EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect{
   struct CGSize size = p_frame.size;
   
-  self = [super initWithFrame:p_frame];
-  [self setAllowsFourWayRubberBanding:YES];
+  if(self = [super initWithFrame:p_frame]) {
+    [self setAllowsFourWayRubberBanding:YES];
+    
+    float components[4] = { 0.0, 0.0, 0.0, 0.0 };
+    CGColorRef transparent = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
+    [self setBackgroundColor:transparent];
+    
+    [self showImage:file inFrame:p_frame scaleAspect:p_aspect];
+  }
+  return self;
+}
+
+/**
+ * Set the image and frame.
+ */
+- (void)showImage:(NSString*)p_path inFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect {
+  struct CGSize size = p_frame.size;
   
-  float components[4] = { 0.0, 0.0, 0.0, 0.0 };
-  CGColorRef transparent = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
-  [self setBackgroundColor:transparent];
-  
-  UIImage *img = [UIImage imageAtPath:file];
+  UIImage *img = [UIImage imageAtPath:p_path];
   CGImageRef imgRef = [img imageRef];
   unsigned int width = CGImageGetWidth(imgRef);
   unsigned int height = CGImageGetHeight(imgRef);
@@ -69,7 +83,13 @@
     }
     [self addSubview:_imgView];
   }
-  return self;
+}
+
+/**
+ * Just show an image using the current frame.
+ */
+- (void)showImage:(NSString*)p_path {
+  [self showImage:p_path inFrame:[self frame] scaleAspect:YES];
 }
 
 /**

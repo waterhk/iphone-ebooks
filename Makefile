@@ -155,8 +155,6 @@ Books.app: obj/Books obj/Info.plist $(IMAGES)
 	@rm -fr Books.app
 	@mkdir -p Books.app
 	@cp $^ Books.app/
-#	@rm Books.app/Default.png
-#	@ln  -f -s '~/Library/Books/Default.png' Books.app/Default.png
 	
 deploy: obj/Books
 	scp obj/Books iphone:/Applications/Books.app/

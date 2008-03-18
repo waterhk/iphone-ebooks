@@ -70,9 +70,10 @@
   [mainView addSubview:transitionView];
 	[transitionView setDelegate:self];
   
-  
   /*
    * We need to fix up any prefs-weirdness relating to file path before we try to open a document.
+   * Figure out if we have a directory or a file and if it exists.  If it doesn't, jump back to the
+   * default root and let them start over.
    */
   NSString *recentFile = [defaults lastBrowserPath];
   BOOL isDir = NO;
@@ -90,24 +91,28 @@
     GSLog(@"Corrected recent file is %@", recentFile);
   }
   
+  /*
+   * If the current path has cover art, transition to it.  If not, we have to redisplay
+   * the startup image, but this time in the real image view.  We'll move to it without
+   * transition.  It sucks to load the Default image twice (thrice if you count Springboard
+   * showing it), but we need to have it loaded into a DIFFERENT imageview in order for the
+   * transitions to work.  We can't show a transition by just setting the image path on
+   * a single imageview.
+   */
   NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
   if(coverart != nil) {
-    UIImageView *tmpEBIV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Default.png"]];                            
-    [tmpEBIV setFrame:[window bounds]];
-    [mainView addSubview:tmpEBIV];
-    
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart withFrame:[window bounds] scaleAspect:YES];
-    [transitionView transition:6 fromView:tmpEBIV toView:imageView];
-    
-    [tmpEBIV removeFromSuperview];
-    [tmpEBIV release];
+    GSLog(@"Got cover art: %@", coverart);    
+    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart 
+                                                     withFrame:[window bounds] 
+                                                   scaleAspect:YES];
+    [transitionView transition:1 toView:imageView];
   } else {
-    imageView = [[EBookImageView alloc] 
-                 initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
-                 withFrame:[window bounds]
-                 scaleAspect:NO];
-    [mainView addSubview:imageView];  
-  }  
+    imageView = [[EBookImageView alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
+                                                     withFrame:[window bounds] 
+                                                   scaleAspect:NO];
+    [transitionView transition:0 toView:imageView];
+  }
+  // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
 	/*
   struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
@@ -145,6 +150,26 @@
   }
 }
 
+/**
+ * This needs to be called once at startup.
+ * Should be called at the point where the next toolbar or view change needs
+ * to trigger animation.  If readingText, call right before swtiching to the text view.
+ * If not reading text and at root, call before pushing the root entry.  If not reading
+ * text and NOT at the root, call right before the last path push.
+ *
+ * Clear as mud, right?
+ */
+- (void)transitionNavbarAnimation {
+  GSLog(@"Enabling navbar animation");
+  [self refreshTextViewFromDefaultsToolbarsOnly:NO];
+  
+  [navBar setOldView:imageView];
+  
+  [mainView addSubview:navBar];
+  [mainView addSubview:bottomNavBar];
+
+  [navBar enableAnimation];
+}
 
 /**
  * Store screen shot (if enabled), setup navigation bar, and start displaying the 
@@ -152,15 +177,14 @@
  */
 - (void)finishUpLaunch {
   GSLog(@"finishUpLaunch");
-	NSString *recentFile = [defaults lastBrowserPath];
   
+  NSString *recentFile = [defaults lastBrowserPath];
+
   [self setupNavbar];
 	[self setupToolbar];
-
-  // Create navigation bar
-	FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithTitle:@"Books" forPath:[BooksDefaultsController defaultEBookPath]];
-	[navBar pushNavigationItem:tempItem];
   
+  GSLog(@"TextView: %@, ImageView: %@", textView, imageView);
+
   // Get last browser path and start loading files
 	NSString *lastBrowserPath;
   if(readingText) {
@@ -179,48 +203,54 @@
     lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
     
     // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
-    while((![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) 
-          && (![lastBrowserPath isEqualToString:@"/"])) {
+    NSString *stopAtPath = [[BooksDefaultsController defaultEBookPath] stringByDeletingLastPathComponent];
+    while(![lastBrowserPath isEqualToString:stopAtPath] && ![lastBrowserPath isEqualToString:@"/"]) {
 			[arPathComponents addObject:lastBrowserPath];
       lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
 		} // while
 	} // if
   
-	NSEnumerator *pathEnum = [arPathComponents reverseObjectEnumerator];
-	NSString *curPath;  
-	while(nil != (curPath = [pathEnum nextObject])) {
-    GSLog(@"Pushing path component %@", [curPath lastPathComponent]);
+  // Loop over all the paths and add them to the nav bar.
+  int pathCount = [arPathComponents count];
+  for(pathCount = pathCount-1; pathCount >= 0 ; pathCount--) {    
+    if(!readingText && pathCount == 0) {
+      /*
+       * We're not reading a book and we're on the last item.  We want animation on so the 
+       * book image gets transitioned off.
+       */
+      [self transitionNavbarAnimation];
+    }
+    
+    NSString *curPath = [arPathComponents objectAtIndex:pathCount];
+    GSLog(@"Pushing path component %@", curPath);
+    // Add the current path to the toolbar
 		FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithPath:curPath];
 		[navBar pushNavigationItem:tempItem];
 		[tempItem release];
-	}
-  
-  [self refreshTextViewFromDefaultsToolbarsOnly:NO];
-  
-  [mainView addSubview:navBar];
-	[mainView addSubview:bottomNavBar];
-  
-  [navBar enableAnimation];
-  
-	if(readingText) {
-    GSLog(@"Reading text.");
+    
+    // Need to show the navbar after the last transition if we're not reading.
+    if(!readingText && pathCount == 0) {
+      [navBar show];
+    }
+  }
+      
+	if(readingText) {    
+    GSLog(@"Reading text."); 
+    /*
+     * If we are reading text, then we DIDN'T finish setting up the navbar during
+     * the path-push process.  So we'd better do it now!
+     */
+    [self transitionNavbarAnimation];
+    
     // Pushing the file onto the toolbar will trigger it being opened.
     FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile];
     [navBar pushNavigationItem:fni];
     [fni release];
-
-
     
     // If reading, hide the nav bars (but they need to be added to the view first)
     [navBar hide:YES];
     [bottomNavBar hide:YES];
     [self hideSlider];  
-  } else {
-    // Either we didn't have a file open, or it doesn't exist anymore.
-    // We need to transition to the file browser view.
-    GSLog(@"Transitioning to file browser.");
-
-    [navBar show];
   }
   
 	//bcc rotation
@@ -230,6 +260,8 @@
 
 	//[progressIndicator stopAnimation];
 	//[progressIndicator removeFromSuperview];
+  
+  [navBar setOldView:nil];
   
   GSLog(@"finishUpLaunch done.");
 }
@@ -373,9 +405,7 @@
   
   if (isPicture) {
     GSLog(@"Loading picture: %@", p_path);
-    [imageView autorelease];
-    // FIXME: imageView should have a setImage: method
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:p_path];
+    [imageView showImage:p_path];
     ret = imageView;
   } else { 
     //text or HTML file
@@ -474,9 +504,9 @@
 - (void)cleanUpBeforeQuit {
 	struct CGRect  selectionRect;
 	int            subchapter = [textView getSubchapter];
-	NSString      *filename   = [textView currentPath];
+  FileNavigationItem *topItem = [navBar topItem];
+	NSString      *filename   = [topItem path];
 
-  // FIXME: This probably won't pick up if we're on a file browers instead of a book
   GSLog(@"Saving last browser path at shutdown: %@", filename);
   [defaults setLastBrowserPath:filename];
 	selectionRect = [textView visibleRect];

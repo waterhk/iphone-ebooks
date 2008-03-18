@@ -46,6 +46,8 @@
   
   NSArray *m_browserList;
   int m_nCurrentBrowser;
+  
+  UIView *m_oldView;
 }
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
@@ -53,6 +55,8 @@
 - (void)showTopNavBar:(BOOL)withAnimation;
 - (void)hideBotNavBar;
 - (void)showBotNavBar;
+
+- (void)setOldView:(UIView*)p_view;
 
 - (void)hide:(BOOL)forced;
 - (void)show;

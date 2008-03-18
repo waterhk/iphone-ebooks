@@ -58,13 +58,18 @@
                                                object:nil];
     
     
-    FileBrowser *fb1 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
-    FileBrowser *fb2 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
+    FileBrowser *fb1 = [[FileBrowser alloc] initWithFrame:[p_tv bounds]];
+    FileBrowser *fb2 = [[FileBrowser alloc] initWithFrame:[p_tv bounds]];
     
     [fb1 setDelegate:p_del];
     [fb2 setDelegate:p_del];
     
-    m_browserList = [[NSArray alloc] initWithObjects:fb1, fb1, nil];
+    m_browserList = [[NSArray alloc] initWithObjects:fb1, fb2, nil];
+    
+    GSLog(@"FileBrowser1: %@, FileBrowser2: %@", fb1, fb2);
+    
+    [fb1 release];
+    [fb2 release];
   }
   
 	return self;
@@ -87,33 +92,29 @@
   FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
   FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
   
-  GSLog(@"POP: obidx %d nbidx %d, Anim? %d", m_nCurrentBrowser, !m_nCurrentBrowser, [self isAnimationEnabled]);
-  GSLog(@"POP: oldBrowserPath: %@ | newBrowserPath: %@", [oldBrowser path], [newBrowser path]);
-
   if([poppedFi isDocument]) {
     // We're currently going from text to file
-    GSLog(@"Transitioning from text back to file browser.");
     if([_browserDelegate respondsToSelector:@selector(closeCurrentDocument)]) {
-      GSLog(@"HideableNavBar-Closing Document");
       [_browserDelegate closeCurrentDocument];
-      GSLog(@"HideableNavBar-Done Closing Document");
-    } else {
-      GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
-    }
+    } 
     
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:nil toView:oldBrowser];  
-    [oldBrowser reloadData];
-    GSLog(@"Transition sent.");
+    if([self isAnimationEnabled]) {
+      if(![[oldBrowser path] isEqualToString:[topFi path]]) {
+        [oldBrowser setPath:[topFi path]];
+        [oldBrowser reloadData];  
+      }
+      [_transView transition:2 fromView:nil toView:oldBrowser];
+    }
   } else {
     // Going file to file
-    GSLog(@"Transitioning from file to file");
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];  
-    GSLog(@"Transition sent.");
-    
-    m_nCurrentBrowser = !m_nCurrentBrowser;
-    [newBrowser setPath:[topFi path]];
-    [newBrowser reloadData];
-    GSLog(@"Browser loaded files.");
+    if([self isAnimationEnabled]) {
+      m_nCurrentBrowser = !m_nCurrentBrowser;
+      if(![[newBrowser path] isEqualToString:[topFi path]]) {
+        [newBrowser setPath:[topFi path]];
+        [newBrowser reloadData];
+      }
+      [_transView transition:2 fromView:oldBrowser toView:newBrowser];
+    }
   }
 }
 
@@ -128,37 +129,48 @@
   FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
   FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
   
-  GSLog(@"PUSH: obidx %d nbidx %d, Anim? %d", m_nCurrentBrowser, !m_nCurrentBrowser, [self isAnimationEnabled]);
-  GSLog(@"PUSH: oldBrowserPath: %@ | newBrowserPath: %@", [oldBrowser path], [newBrowser path]);
-
+  // Hack old view: Either it's a file browser OR if we starting up, it's the image view.
+  // It's up to BooksApp to call setOldView: if it needs us to clean up after it.
+  UIView *oldView = oldBrowser;
+  if(m_oldView != nil) {
+    GSLog(@"Startup oldView hack triggered...");
+    oldView = m_oldView;
+  }
   
   if([pushedFi isDocument]) {
-    UIView *oldView = oldBrowser;
-    GSLog(@"Pushing document");
-    // EBookView or EBookImageView
     UIView *newView = nil;
     if([_browserDelegate respondsToSelector:@selector(showDocumentAtPath:)]) {
-      GSLog(@"HideableNavBar-Loading Document %@", [pushedFi path]);
       newView = [_browserDelegate showDocumentAtPath:[pushedFi path]];
-      GSLog(@"HideableNavBar-Done Loading Document");
-    } else {
-      GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
     }
     
-    [_transView transition:([self isAnimationEnabled]? 1 : 0) fromView:oldView toView:newView];
-    GSLog(@"Transition sent");
+    if([self isAnimationEnabled]) {
+       GSLog(@"Transitioning from %@ to %@", oldView, newView);
+      [_transView transition:1 fromView:oldView toView:newView];
+    }
   } else {
-    GSLog(@"Pushing directory");
     // FileBrowser
-    [_transView transition:([self isAnimationEnabled]? 1 : 0) fromView:oldBrowser toView:newBrowser];
-    GSLog(@"Transition sent.");
-    
-    m_nCurrentBrowser = !m_nCurrentBrowser;
-    [newBrowser setPath:[pushedFi path]];
-    [newBrowser reloadData];
-    
-    GSLog(@"Done cleaning up");
+    if([self isAnimationEnabled]) {      
+      GSLog(@"Transitioning from %@ to %@", oldView, newBrowser);
+      m_nCurrentBrowser = !m_nCurrentBrowser;
+      if(![[newBrowser path] isEqualToString:[pushedFi path]]) {        
+        [newBrowser setPath:[pushedFi path]];
+        [newBrowser reloadData];
+      }
+      [_transView transition:1 fromView:oldView toView:newBrowser];
+    }
   }
+  
+  [self setOldView:nil];
+}
+
+/**
+ * Before pushing a navigation item, set the old view to be transitioned off
+ * from.  Should only be necessary at startup to get the book image off.
+ */
+- (void)setOldView:(UIView*)p_view {
+  [p_view retain];
+  [m_oldView release];
+  m_oldView = p_view;
 }
 
 - (void)shouldReloadTopBrowser:(NSNotification *)notification {
@@ -271,6 +283,7 @@
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
+  [m_oldView release];
   [m_browserList release];
 	[animator release];
 	[translate release];
