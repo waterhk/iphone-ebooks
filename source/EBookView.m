@@ -51,8 +51,6 @@
 	if(self = [super initWithFrame:rect]) {
     //[super setFrame:rect];	
 
-    size = 16.0f;
-    
     m_pendingScrollPoint = -1.0f;
 
     chapteredHTML = [[ChapteredHTML alloc] init];
@@ -63,7 +61,7 @@
     [self setAdjustForContentSizeChange:YES];
     [self setEditable:NO];
 
-    [self setTextSize:size];
+    [self setTextSize:16.0f];
     [self setTextFont:@"TimesNewRoman"];
 
     [self setAllowsRubberBanding:YES];
@@ -207,13 +205,12 @@
  * "A noble spirit embiggens the smallest man." -- Jebediah Springfield
  */
 - (void)embiggenText {
-	if (size < 36.0f) {
+	if ([self textSize] < 36.0f) {
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
-		size += 2.0f;
-		[self setTextSize:size];
+		[self setTextSize:[self textSize] + 2.0f];
            
     [self recalculateStyle];
     [self webViewDidChange:nil];
@@ -224,13 +221,7 @@
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
     
-    if (m_scrollerSlider != nil) {
-			float maxval = totalRect.size.height;
-			float val = [m_scrollerSlider value];
-			float percentage = val / maxval;
-			[m_scrollerSlider setMaxValue:totalRect.size.height];
-			[m_scrollerSlider setValue:(totalRect.size.height * percentage)];
-		}
+    [self updateSliderPosition];
 	}
 
 /**
@@ -239,13 +230,12 @@
  * "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
  */
 - (void)ensmallenText {
-	if (size > 10.0f) {
+	if ([self textSize] > 10.0f) {
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
-		size -= 2.0f;
-		[self setTextSize:size];
+ 		[self setTextSize:[self textSize] - 2.0f];
 
     [self recalculateStyle];
     [self webViewDidChange:nil];
@@ -256,23 +246,16 @@
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
     
-    if(m_scrollerSlider != nil) {
-			float maxval = totalRect.size.height;
-			float val = [m_scrollerSlider value];
-			float percentage = val / maxval;
-			[m_scrollerSlider setMaxValue:totalRect.size.height];
-			[m_scrollerSlider setValue:(totalRect.size.height * percentage)];
-		}
+    [self updateSliderPosition];
 	}
 
-/*
-   - (BOOL)bodyAlwaysFillsFrame
-   {//experiment!
-   return NO;
-   }
-   */
-
-- (void)mouseDown:(struct __GSEvent *)event {
+/**
+ * Save the lastVisibleRect.
+ *
+ * This takes the place of a constant heartbeat, at least for purposes
+ * of getting scrolling and tapping to work.
+ */
+- (void)mouseDown:(struct __GSEvent*)event {
 	CGPoint clicked = GSEventGetLocationInWindow(event);
 	_MouseDownX = clicked.x;
 	_MouseDownY = clicked.y;
@@ -281,12 +264,10 @@
   lastVisibleRect = [self visibleRect];
 }
 
+/**
+ * React to a mouseUp event.
+ */
 - (void)mouseUp:(struct __GSEvent *)event {
-	/*************
-	 * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
-	 * WILL NOT COMPILE UNLESS YOU HAVE PATCHED GRAPHICSSERVICES.H TO ALLOW IT!
-	 * A patch is included in the svn.
-	 *****************/
 	CGPoint clicked = GSEventGetLocationInWindow(event);
 	//BCC: swipe detection
 	BOOL lChangeChapter = NO;
@@ -307,11 +288,12 @@
 	}
 
 	struct CGRect newRect = [self visibleRect];
-	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
+	struct CGRect contentRect = [self bounds];
 	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
 
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
+
 	if (!lChangeChapter && [self isScrolling]) {
 		if (CGRectEqualToRect(lastVisibleRect, newRect)) {
 			if (CGRectContainsPoint(topTapRect, clicked)) {
@@ -339,54 +321,50 @@
 		}
 	}
 
-	BOOL unused = [self releaseRubberBandIfNecessary];
+  [self releaseRubberBandIfNecessary];
 	lastVisibleRect = [self visibleRect];
 	[super mouseUp:event];
 }
 
-// These two are so the toolbar buttons work!
-// BUT: The the amount of the scroll needs to be adjusted based on the
-// the defaults for showing the NAVBAR and TOOLBAR.
-// Right now it scrolls based on full screen and thus, to far. Zach?
-// FIXED: I think.
- // TODO: Adjust the bottom and top buffers.  The scrolling works, but
- // the text can wind up behind the toolbars at the bottom & top
- // of the text.
+/**
+ * Scroll down one page of text.
+ */
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
-	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
-	float  scrollness = contentRect.size.height;
+	struct CGRect contentRect = [self bounds];
+	float scrollness = contentRect.size.height;
 	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
-	scrollness /= size;
+	scrollness /= [self textSize];
 	scrollness = floor(scrollness - 1.0f);
-	scrollness *= size;
+	scrollness *= [self textSize];
 	// That little dance above was so we only scroll in
 	// multiples of the text size.  And it doesn't even work!
 	[self scrollByDelta:CGSizeMake(0, scrollness)	animated:YES];
-	[self hideNavbars];
+  
+  [self updateSliderPosition];
+	//[self hideNavbars];
 }
 
+/**
+ * Scroll up one page of text.
+ */
 -(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
-	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
+	struct CGRect contentRect = [self bounds];
 	float  scrollness = contentRect.size.height;
 	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
-	scrollness /= size;
+	scrollness /= [self textSize];
 	scrollness = floor(scrollness - 1.0f);
-	scrollness *= size;
+	scrollness *= [self textSize];
 	// That little dance above was so we only scroll in
 	// multiples of the text size.  And it doesn't even work!
 	[self scrollByDelta:CGSizeMake(0, -scrollness) animated:YES];
-	[self hideNavbars];
+  
+  [self updateSliderPosition];
+	//[self hideNavbars];
 }
 
-- (int)textSize {
-	return (int)size;
-}
-
-- (void)setTextSize:(int)newSize {
-	size = (float)newSize;
-	[super setTextSize:size];
-}
-
+/**
+ * React to change in scrolling speed.
+ */
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification {
 	switch ([defaults scrollSpeedIndex]) {
   case 0:

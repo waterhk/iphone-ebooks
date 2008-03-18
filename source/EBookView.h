@@ -37,7 +37,6 @@
 @interface EBookView : UITextView {
   //  UIViewTapInfo *tapinfo;
   NSString                *path;
-  float                   size;
   struct CGRect           lastVisibleRect;
   ChapteredHTML	          *chapteredHTML;
   int                      subchapter;
@@ -84,8 +83,6 @@ typedef enum
 - (void)toggleNavbars;
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar;
 - (void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar;
-- (int)textSize;
-- (void)setTextSize:(int)newSize;
 - (void)invertText:(BOOL)b;
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification;
 

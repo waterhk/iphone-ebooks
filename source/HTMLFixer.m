@@ -185,6 +185,9 @@ AGRegex *STYLE_REGEX;
     // GSLog(@"Inserting %d of filler height for images.", height);
     [theHTML appendFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
   }
+  
+  // Fix for truncated files (usually caused by invalid HTML).
+  [theHTML appendString:@"<p>&nbsp;</p><p>&nbsp;</p>"];
 }
 
 /**
