@@ -370,12 +370,12 @@
   BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
   UIView *ret = nil;
   
+  GSLog(@"Releaseing imageView");
   // Always kill the image view.  We'll reuse the textView for now.
   [imageView autorelease];
-
-  // Make sure the "file read" dot is updated.
-  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE object:p_path];
-
+  imageView = nil;
+  GSLog(@"Released.");
+  
   if (isPicture) {
     GSLog(@"Loading picture: %@", p_path);
     
@@ -412,7 +412,11 @@
       [bottomNavBar hide:NO];
     }
   }
-
+  
+  GSLog(@"Sending file read notification.");
+  // Make sure the "file read" dot is updated.
+  [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE object:p_path];
+  GSLog(@"Done Sending file read notification.");
   return ret;
 }
 

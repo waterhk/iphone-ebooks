@@ -40,11 +40,7 @@
 	hidden = NO;
 	_transView = nil;
 	_extensions = nil;
-	_browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(shouldReloadTopBrowser:)
-												 name:RELOADTOPBROWSER
-											   object:nil];
+
   [self disableAnimation];
   
   m_nCurrentBrowser = 0;
@@ -53,14 +49,23 @@
   _browserDelegate = [p_del retain];
   
   _transView = [p_tv retain];
-  
-  FileBrowser *fb1 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
-  FileBrowser *fb2 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
-  
-  [fb1 setDelegate:p_del];
-  [fb2 setDelegate:p_del];
-  
-  m_browserList = [[NSArray alloc] initWithObjects:fb1, fb1, nil];
+
+  // Only need file handling stuff on the top nav bar
+  if(isTop) {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(shouldReloadTopBrowser:)
+                                                 name:RELOADTOPBROWSER
+                                               object:nil];
+    
+    
+    FileBrowser *fb1 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
+    FileBrowser *fb2 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
+    
+    [fb1 setDelegate:p_del];
+    [fb2 setDelegate:p_del];
+    
+    m_browserList = [[NSArray alloc] initWithObjects:fb1, fb1, nil];
+  }
   
 	return self;
 }
@@ -72,20 +77,7 @@
   return [m_browserList objectAtIndex:m_nCurrentBrowser];
 }
 
-- (void)popNavigationItem {
-  /*
-   * MOZART: We need two file views and a text view.  Use the file views to transition/slide
-   * left/right.
-   *
-   * Popping will always show a FileBrowser.
-   
-   Pushing should always be the result of the user clicking on a file view.
-   Popping should always be the result of clicking the back button in the navbar.
-   
-   Both popping and clicking the filebrowser may cause a new filebrowser to be shown.
-   
-   Only tapping on the filebrowser should show a new document view.
-   */  
+- (void)popNavigationItem { 
   FileNavigationItem *poppedFi = (FileNavigationItem*)[self topItem];
   [super popNavigationItem];
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
@@ -97,14 +89,28 @@
 
   if(m_topDocView != nil) {
     // We're currently going from text to file
+    GSLog(@"Transitioning from text back to file browser.");
+    if([_browserDelegate respondsToSelector:@selector(closeCurrentDocument)]) {
+      GSLog(@"HideableNavBar-Closing Document");
+      [_browserDelegate closeCurrentDocument];
+      GSLog(@"HideableNavBar-Done Closing Document");
+    } else {
+      GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
+    }
+    
     [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:m_topDocView toView:oldBrowser];  
+    GSLog(@"Transition sent.");
     [m_topDocView release];
     m_topDocView = nil;
+    GSLog(@"Done cleaning up.");
   } else {
     // Going file to file
+    GSLog(@"Transitioning from file to file");
     m_nCurrentBrowser = !m_nCurrentBrowser;
     [newBrowser setPath:[topFi path]];
+    GSLog(@"Browser loaded files.");
     [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];  
+    GSLog(@"Transition sent.");
   }
 }
 
@@ -119,24 +125,42 @@
   FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
   FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
   
+  
   if([pushedFi isDocument]) {
+    UIView *oldView = oldBrowser;
+    GSLog(@"Pushing document");
     // EBookView or EBookImageView
     UIView *newView = nil;
     if([_browserDelegate respondsToSelector:@selector(showDocumentAtPath:)]) {
+      GSLog(@"HideableNavBar-Loading Document %@", [pushedFi path]);
       newView = [_browserDelegate showDocumentAtPath:[pushedFi path]];
-    } 
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) 
-                  fromView:(m_topDocView == nil ? oldBrowser : m_topDocView) // Hack for startup cover image
-                    toView:newView];
+      GSLog(@"HideableNavBar-Done Loading Document");
+    } else {
+      GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
+    }
+    
+    if(m_topDocView != nil) {
+       // Hack for startup cover image
+      GSLog(@"Transitioning from old document");
+      oldView = m_topDocView;
+    } else {
+      GSLog(@"Transitioning from old file browser");
+    }
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldView toView:newView];
+    GSLog(@"Transition sent");
     [m_topDocView autorelease];
     m_topDocView = [newView retain];
+    GSLog(@"Done cleaning up");
   } else {
+    GSLog(@"Pushing directory");
     // FileBrowser
     m_nCurrentBrowser = !m_nCurrentBrowser;
     [newBrowser setPath:[pushedFi path]];
     [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];
+    GSLog(@"Transition sent.");
     [m_topDocView release];
     m_topDocView = nil;
+    GSLog(@"Done cleaning up");
   }
 }
 
@@ -144,14 +168,13 @@
  * This hack exists only to make the startup image->text transition work.
  */
 - (void)setTopDocumentView:(UIView*)p_view {
+  GSLog(@"Setting new top document view.");
   [m_topDocView autorelease];
   m_topDocView = [p_view retain];
 }
 
 - (void)shouldReloadTopBrowser:(NSNotification *)notification {
-	if (isTop) {
-		[[_browserArray lastObject] reloadData];
-	}
+	[[m_browserList objectAtIndex:m_nCurrentBrowser] reloadData];
 }
 
 - (void)hide:(BOOL)forced {
@@ -162,6 +185,7 @@
 			[self hideBotNavBar];
 		}
 
+    // FIXME: What's this forced thing do?
 		if (!forced) {
 			if (isTop) {
 				if ([defaults navbar]) {
@@ -201,6 +225,7 @@
 
 // FIXME: These four hide/show functions should all be a single function with a couple of parameters.
 - (void)showTopNavBar:(BOOL)withAnimation {
+  GSLog(@"Show Top Nav Bar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
 	// the top nav bar shows under the status bar.
@@ -218,6 +243,7 @@
 }
 
 - (void)hideTopNavBar {
+  GSLog(@"Hide Top Nav Bar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
 
@@ -229,6 +255,7 @@
 }
 
 - (void)showBotNavBar {
+  GSLog(@"Show Bottom Nav Bar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
@@ -239,6 +266,7 @@
 }
 
 - (void)hideBotNavBar {
+  GSLog(@"Hide Bottom Nav Bar");
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
@@ -262,7 +290,7 @@
   [_transView release];
   [_extensions release];
   [_browserDelegate release];
-	[_browserArray release];
+
 	[defaults release];
   
 	[super dealloc];
