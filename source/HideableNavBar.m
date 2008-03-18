@@ -21,6 +21,7 @@
 #import <UIKit/UIHardware.h>
 #import "HideableNavBar.h"
 #import "FileBrowser.h"
+#import "FileNavigationItem.h"
 
 //#include "dolog.h"
 @implementation HideableNavBar
@@ -48,38 +49,35 @@
 	return self;
 }
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top {
-	[super initWithFrame:rect];
-	defaults = [BooksDefaultsController sharedBooksDefaultsController];
-	// If we can't infer, use this method instead.
-	isTop = top;
-
-	translate =  [[UITransformAnimation alloc] initWithTarget: self];
-	animator = [[UIAnimator alloc] init];
-	hidden = NO;
-	_textIsOnTop = NO;
-	_transView = nil;
-	_extensions = nil;
-	_browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(shouldReloadTopBrowser:)
-												 name:RELOADTOPBROWSER
-											   object:nil];
-
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(shouldReloadAllBrowsers:)
-												 name:RELOADALLBROWSERS
-											   object:nil];
-	return self;
-}
-
 - (void)setBrowserDelegate:(id)bDelegate {
-	_browserDelegate = [bDelegate retain];
+  [bDelegate retain];
+  [_browserDelegate release];
+	_browserDelegate = bDelegate;
 }
 
 - (void)popNavigationItem {
+  FileNavigationItem *poppedFi = (FileNavigationItem*)[self topItem];
+  [super popNavigationItem];
+  FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
+  
+  GSLog(@"Popped item at %@, new top is %@", [poppedFi path], [topFi path]);
+  // FIXME: Add view wrangling here
+}
+
+- (void)pushNavigationItem:(UINavigationItem*)p_item {
+  FileNavigationItem *pushedFi = (FileNavigationItem*)p_item;
+  FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
+  
+  GSLog(@"Pushing item at %@, old top is %@", [pushedFi path], [topFi path]);
+  
+  [super pushNavigationItem:p_item];
+  // FIXME: Add view wrangling here
+}
+
+/*
+- (void)popNavigationItem {
+  GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
 	if (_textIsOnTop || _pixOnTop) 	{
-		GSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
 	} else {
 		[_browserArray removeLastObject];
@@ -113,12 +111,14 @@
 		GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
 	}
 }
-
+*/
 - (NSString *)topBrowserPath {
 	return [[_browserArray lastObject] path];
 }
-
+/*
 - (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath {
+  GSLog(@"Pushed %@", browserPath);
+  
 	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
 	FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
 	[newBrowser setExtensions:_extensions];
@@ -126,9 +126,8 @@
 	[newBrowser setDelegate:_browserDelegate];
   id oldBrowser = [_browserArray lastObject];
 	[_browserArray addObject:newBrowser];
-	[_transView transition:([self isAnimationEnabled] ? 1 : 0) fromView:oldBrowser toView:newBrowser];
+	[_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
 	[newBrowser release];  // we still have it in the array, don't worry!
-	GSLog(@"Pushed %@\n", browserPath);
 	[super pushNavigationItem:item];
 }
 
@@ -152,7 +151,7 @@
 	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) toView:view];
 	[super pushNavigationItem:item];
 }
-
+*/
 - (FileBrowser *)topBrowser {
 	return [_browserArray lastObject];
 }
@@ -183,9 +182,13 @@
 
 		if (!forced) {
 			if (isTop) {
-				if ([defaults navbar]) [self hideTopNavBar];
+				if ([defaults navbar]) {
+          [self hideTopNavBar];
+        }
 			} else {
-				if ([defaults toolbar]) [self hideBotNavBar];
+				if ([defaults toolbar]) {
+          [self hideBotNavBar];
+        }
 			}
 		}
 	}
@@ -193,25 +196,28 @@
 
 - (void)show {
 	if (hidden) {
-		if (isTop)
-			[self showTopNavBar:YES];
-		else
-			[self showBotNavBar];
+		if (isTop) {
+      [self showTopNavBar:YES];
+    } else {
+      [self showBotNavBar];
+    }
 		hidden = NO;
 	}
 }
 
 - (void)toggle {
-	if (hidden)
+	if (hidden) {
 		[self show];
-	else
-		[self hide:NO];
+	} else {
+    [self hide:NO];
+  }
 }
 
 - (BOOL)hidden; {
 	return hidden;
 }
 
+// FIXME: These four hide/show functions should all be a single function with a couple of parameters.
 - (void)showTopNavBar:(BOOL)withAnimation {
 	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
 	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
@@ -270,16 +276,15 @@
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+  
 	[animator release];
 	[translate release];
-	if (nil != _transView)
-		[_transView release];
-	if (nil != _extensions)
-		[_extensions release];
-	if (nil != _browserDelegate)
-		[_browserDelegate release];
+  [_transView release];
+  [_extensions release];
+  [_browserDelegate release];
 	[_browserArray release];
 	[defaults release];
+  
 	[super dealloc];
 }
 

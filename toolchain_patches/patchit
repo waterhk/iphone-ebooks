@@ -1,0 +1,4 @@
+#!/bin/bash
+
+patch /usr/local/lib/gcc/arm-apple-darwin/4.0.1/../../../../arm-apple-darwin/include/UIKit/UIWebView.h < UIWebView.h.diff 
+touch /usr/local/lib/gcc/arm-apple-darwin/4.0.1/../../../../arm-apple-darwin/include/UIKit/NSObject.h

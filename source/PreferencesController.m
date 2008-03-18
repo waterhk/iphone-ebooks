@@ -1,42 +1,42 @@
 // PreferencesView, for Books by Chris Born
 /*
-
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; version 2
-   of the License.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+ 
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; version 2
+ of the License.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
+ */
 
 #import "PreferencesController.h"
 #import "BooksDefaultsController.h"
 #import <UIKit/UIView-Animation.h>
 @implementation PreferencesController
 /*
-// Peekaboo. Uncomment to reveal selectors during runtime
-//use 
-//:'<,'>s/;/;\r GSLog(@"%s:%d", __FILE__, __LINE__);
-//to trace what happens line by line
-
--(BOOL) respondsToSelector:(SEL)aSelector {
-
-printf("SELECTOR: %s\n", 
-
-[NSStringFromSelector(aSelector) UTF8String]);
-
-return [super respondsToSelector:aSelector];
-
-}
-*/
+ // Peekaboo. Uncomment to reveal selectors during runtime
+ //use 
+ //:'<,'>s/;/;\r GSLog(@"%s:%d", __FILE__, __LINE__);
+ //to trace what happens line by line
+ 
+ -(BOOL) respondsToSelector:(SEL)aSelector {
+ 
+ printf("SELECTOR: %s\n", 
+ 
+ [NSStringFromSelector(aSelector) UTF8String]);
+ 
+ return [super respondsToSelector:aSelector];
+ 
+ }
+ */
 
 - (id)initWithAppController:(BooksApp *)appController 
 {
@@ -46,90 +46,90 @@ return [super respondsToSelector:aSelector];
 		contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
 		//contentRect.origin.x = 0.0f;
 		//contentRect.origin.y = 0.0f;
-
+    
 		needsInAnimation = needsOutAnimation = NO;
 		defaults = [BooksDefaultsController sharedBooksDefaultsController];
 		_curAnimation = none;
 		[self createPreferenceCells];
 		[self buildPreferenceView];
-
+    
 	}
 	return self;
 }
 
-	- (void)buildPreferenceView {
-		if (nil == preferencesView)
-		{
-			//Bcc the view is created bellow the screen so as to smoothly appear
-			struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
-					contentRect.size.height,
-					contentRect.size.width,
-					contentRect.size.height);
-			preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
-
-			navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
-			[navigationBar showLeftButton:@"About" withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
-			[navigationBar setBarStyle:0];
-			[navigationBar setDelegate:self]; 
-			[preferencesView addSubview:navigationBar];
-			UINavigationItem *title = [[UINavigationItem alloc] 
-				initWithTitle:@"Preferences"];
-			[navigationBar pushNavigationItem:[title autorelease]];
-			transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
-
-			preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
-			[preferencesTable setDataSource:self];
-			[preferencesTable setDelegate:self];
-			[preferencesView addSubview:transitionView];
-			[transitionView transition:0 toView:preferencesTable];
-			UIWindow	*mainWindow = [controller appsMainWindow];
-			appView = [[mainWindow contentView] retain];
-
-			//	[mainWindow setContentView:preferencesView];
-			[appView addSubview:preferencesView];
-			translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
-			animator = [[UIAnimator alloc] init];
-			[[NSNotificationCenter defaultCenter]
-				addObserver:self
-				   selector:@selector(checkForAnimation:)
-					   name:PREFS_NEEDS_ANIMATE
-					 object:nil];
-
-			[[NSNotificationCenter defaultCenter]
-				addObserver:self
-				   selector:@selector(shouldTransitionBackToPrefsView:)
-					   name:ENCODINGSELECTED
-					 object:nil];
-
-			[[NSNotificationCenter defaultCenter]
-				addObserver:self
-				   selector:@selector(shouldTransitionBackToPrefsView:)
-					   name:NEWFONTSELECTED
-					 object:nil];
-		} // if nil == preferencesView
-		else
-		{
-			struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
-					contentRect.size.height,
-					contentRect.size.width,
-					contentRect.size.height);
-			[preferencesView setFrame:offscreenRect];
-			[navigationBar setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
-			[navigationBar setBarStyle:0];
-			[navigationBar setDelegate:self]; 
-			[transitionView setFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
-			[preferencesTable setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
-		}
-
-		[preferencesTable reloadData];
-	}
+- (void)buildPreferenceView {
+  if (nil == preferencesView)
+  {
+    //Bcc the view is created bellow the screen so as to smoothly appear
+    struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
+                                             contentRect.size.height,
+                                             contentRect.size.width,
+                                             contentRect.size.height);
+    preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
+    
+    navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+    [navigationBar showLeftButton:@"About" withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
+    [navigationBar setBarStyle:0];
+    [navigationBar setDelegate:self]; 
+    [preferencesView addSubview:navigationBar];
+    UINavigationItem *title = [[UINavigationItem alloc] 
+                               initWithTitle:@"Preferences"];
+    [navigationBar pushNavigationItem:[title autorelease]];
+    transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+    
+    preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+    [preferencesTable setDataSource:self];
+    [preferencesTable setDelegate:self];
+    [preferencesView addSubview:transitionView];
+    [transitionView transition:0 toView:preferencesTable];
+    UIWindow	*mainWindow = [controller appsMainWindow];
+    appView = [[mainWindow contentView] retain];
+    
+    //	[mainWindow setContentView:preferencesView];
+    [appView addSubview:preferencesView];
+    translate = [[UITransformAnimation alloc] initWithTarget:preferencesView];
+    animator = [[UIAnimator alloc] init];
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(checkForAnimation:)
+     name:PREFS_NEEDS_ANIMATE
+     object:nil];
+    
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(shouldTransitionBackToPrefsView:)
+     name:ENCODINGSELECTED
+     object:nil];
+    
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(shouldTransitionBackToPrefsView:)
+     name:NEWFONTSELECTED
+     object:nil];
+  } // if nil == preferencesView
+  else
+  {
+    struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
+                                             contentRect.size.height,
+                                             contentRect.size.width,
+                                             contentRect.size.height);
+    [preferencesView setFrame:offscreenRect];
+    [navigationBar setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+    [navigationBar setBarStyle:0];
+    [navigationBar setDelegate:self]; 
+    [transitionView setFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
+    [preferencesTable setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
+  }
+  
+  [preferencesTable reloadData];
+}
 
 - (void)showPreferences {
 	needsInAnimation = YES;
 	[[NSNotificationCenter defaultCenter] 
-		postNotificationName:PREFS_NEEDS_ANIMATE
-					  object:self];
-
+   postNotificationName:PREFS_NEEDS_ANIMATE
+   object:self];
+  
 }
 
 - (void) animator:(UIAnimator *) animator stopAnimation:(UIAnimation *) animation
@@ -150,11 +150,11 @@ return [super respondsToSelector:aSelector];
 	{
 		//GSLog(@"prefs animation in");
 		struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
-				contentRect.size.height,
-				contentRect.size.width,
-				contentRect.size.height);
+                                             contentRect.size.height,
+                                             contentRect.size.width,
+                                             contentRect.size.height);
 		[preferencesView setFrame:offscreenRect];
-
+    
 		struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -contentRect.size.height);
 		[translate setStartTransform:CGAffineTransformMake(1,0,0,1,0,0)];
 		[translate setEndTransform:trans];
@@ -191,7 +191,7 @@ return [super respondsToSelector:aSelector];
 		if (![newValue isEqualToString:[defaultEncodingPreferenceCell value]])
 		{
 			[defaultEncodingPreferenceCell setValue:newValue];
-			[controller refreshTextViewFromDefaults];
+			[controller refreshTextViewFromDefaultsToolbarsOnly:NO];
 		}
 		[defaultEncodingPreferenceCell setSelected:NO];
 	}
@@ -200,7 +200,7 @@ return [super respondsToSelector:aSelector];
 		if (![newValue isEqualToString:[fontChoicePreferenceCell value]])
 		{
 			[fontChoicePreferenceCell setValue:newValue];
-			//[controller refreshTextViewFromDefaults];
+			//[controller refreshTextViewFromDefaultsToolbarsOnly:NO];
 		}
 		[fontChoicePreferenceCell setSelected:NO];
 	}
@@ -224,83 +224,83 @@ return [super respondsToSelector:aSelector];
 		[defaults setTextSize: proposedSize];
 		textNeedsRefresh = YES;
 	}
-
+  
 	BOOL proposedInverted = [[[invertPreferenceCell control] valueForKey:@"value"] boolValue];
 	if ([defaults inverted] != proposedInverted)
 	{
 		[defaults setInverted:proposedInverted];
 		textNeedsRefresh = YES;
 	}
-
+  
 	[defaults setToolbar:[[[showToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setNavbar:[[[showNavbarPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setChapternav:[[[chapterButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setPagenav:[[[pageButtonsPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setFlipped:[[[flippedToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setInverseNavZone:[[[invNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setEnlargeNavZone:[[[enlargeNavZonePreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	//FIXME: these three  should make the text refresh
 	[defaults setSmartConversion:[[[smartConversionPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setRenderTables:[[[renderTablesPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setSubchapteringEnabled:[[[subchapteringPreferenceCell control] valueForKey:@"value"] boolValue]];
-
+  
 	[defaults setScrollSpeedIndex:[scrollSpeedControl selectedSegment]];
-
-
+  
+  
 	if ([defaults synchronize]){
 		GSLog(@"Synced defaults from prefs pane.");
 	}
 	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
 	needsOutAnimation = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
-
+  
 }
 
 - (void)createPreferenceCells {
-
+  
 	// Font
 	/*	fontChoiceControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
-		[fontChoiceControl insertSegment:0 withTitle:@"Georgia" animated:NO];
-		[fontChoiceControl insertSegment:1 withTitle:@"Helvetica" animated:NO];
-		[fontChoiceControl insertSegment:2 withTitle:@"Times" animated:NO];
-		[fontChoiceControl selectSegment:[self currentFontIndex]];
-		fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
-		[fontChoicePreferenceCell setDrawsBackground:NO];
-		[fontChoicePreferenceCell addSubview:fontChoiceControl];
-		*/
+   [fontChoiceControl insertSegment:0 withTitle:@"Georgia" animated:NO];
+   [fontChoiceControl insertSegment:1 withTitle:@"Helvetica" animated:NO];
+   [fontChoiceControl insertSegment:2 withTitle:@"Times" animated:NO];
+   [fontChoiceControl selectSegment:[self currentFontIndex]];
+   fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+   [fontChoicePreferenceCell setDrawsBackground:NO];
+   [fontChoicePreferenceCell addSubview:fontChoiceControl];
+   */
 	fontChoicePreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
-
+  
 	NSString *fontString = [defaults textFont];
 	[fontChoicePreferenceCell setTitle:@"Font"];
 	[fontChoicePreferenceCell setValue:fontString];
 	[fontChoicePreferenceCell setShowDisclosure:YES];
-
+  
 	// Text Display
 	fontSizePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
 	NSString	*str = [NSString stringWithFormat:@"%d",[defaults textSize]];
 	[fontSizePreferenceCell setValue:str];
 	[fontSizePreferenceCell setTitle:@"Font Size"];
-
+  
 	//	fontSizePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
 	//	UIPopup *popup = [[UIPopup alloc] initWithFrame:CGRectMake(0,0,40,40)];
 	//	[fontSizePreferenceCell setControl:popup];
-
+  
 	invertPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL inverted = [defaults inverted];
 	[invertPreferenceCell setTitle:@"Invert Color"];
 	UISwitchControl *invertSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[invertSwitchControl setValue:inverted];
 	[invertPreferenceCell setControl:invertSwitchControl];
-
+  
 	// Auto-Hide
 	showNavbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL navbar = [defaults navbar];
@@ -308,14 +308,14 @@ return [super respondsToSelector:aSelector];
 	UISwitchControl *showNavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[showNavSitchControl setValue:navbar];
 	[showNavbarPreferenceCell setControl:showNavSitchControl];
-
+  
 	showToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL toolbar = [defaults toolbar];
 	[showToolbarPreferenceCell setTitle:@"Bottom Toolbar"];
 	UISwitchControl *showToolbarSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[showToolbarSitchControl setValue:toolbar];
 	[showToolbarPreferenceCell setControl:showToolbarSitchControl];
-
+  
 	// Toolbar Options
 	chapterButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL chapternav = [defaults chapternav];
@@ -324,7 +324,7 @@ return [super respondsToSelector:aSelector];
 	[showChapternavSitchControl setValue:chapternav];
 	[showChapternavSitchControl setAlternateColors:YES];
 	[chapterButtonsPreferenceCell setControl:showChapternavSitchControl];
-
+  
 	pageButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL pagenav = [defaults pagenav];
 	[pageButtonsPreferenceCell setTitle:@"Page Navigation"];
@@ -332,7 +332,7 @@ return [super respondsToSelector:aSelector];
 	[showPagenavSitchControl setValue:pagenav];
 	[showPagenavSitchControl setAlternateColors:YES];
 	[pageButtonsPreferenceCell setControl:showPagenavSitchControl];
-
+  
 	flippedToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL flipped = [defaults flipped];
 	[flippedToolbarPreferenceCell setTitle:@"Left Handed"];
@@ -340,7 +340,7 @@ return [super respondsToSelector:aSelector];
 	[flippedSitchControl setValue:flipped];
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
-
+  
 	invNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL invertedZones = [defaults inverseNavZone];
 	[invNavZonePreferenceCell setTitle:@"invert nav zone"];
@@ -348,7 +348,7 @@ return [super respondsToSelector:aSelector];
 	[invNavZoneSitchControl setValue:invertedZones];
 	[invNavZoneSitchControl setAlternateColors:YES];
 	[invNavZonePreferenceCell setControl:invNavZoneSitchControl];	
-
+  
 	enlargeNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	BOOL enlargedZones = [defaults enlargeNavZone];
 	[enlargeNavZonePreferenceCell setTitle:@"enlarge nav zone"];
@@ -356,72 +356,72 @@ return [super respondsToSelector:aSelector];
 	[enlargeNavZoneSwitchControl setValue:enlargedZones];
 	[enlargeNavZoneSwitchControl setAlternateColors:YES];
 	[enlargeNavZonePreferenceCell setControl:enlargeNavZoneSwitchControl];	
-
+  
 	//CHANGED: Zach's additions 9/6/07
-
+  
 	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
-
+  
 	NSString *encString;
 	/*	switch ([defaults defaultTextEncoding])
-		{
-		case AUTOMATIC_ENCODING:
-		encString = @"Automatic";
-		break;
-		case NSASCIIStringEncoding:
-		encString = @"ASCII";
-		break;
-		case NSUTF8StringEncoding:
-		encString = @"Unicode (UTF-8)";
-		break;
-		case NSISOLatin1StringEncoding:
-		encString = @"ISO Latin-1";
-		break;
-		case NSUnicodeStringEncoding:
-		encString = @"Unicode (UTF-16)";
-		break;
-		case NSWindowsCP1252StringEncoding:
-		encString = @"Windows Latin-1";
-		break;
-		case NSMacOSRomanStringEncoding:
-		encString = @"Mac OS Roman";
-		break;
-		case NSWindowsCP1251StringEncoding:
-		encString = @"Windows Cyrillic";
-		break;
-		default:
-		encString = @"Other";
-		break;
-		}
-		*/
+   {
+   case AUTOMATIC_ENCODING:
+   encString = @"Automatic";
+   break;
+   case NSASCIIStringEncoding:
+   encString = @"ASCII";
+   break;
+   case NSUTF8StringEncoding:
+   encString = @"Unicode (UTF-8)";
+   break;
+   case NSISOLatin1StringEncoding:
+   encString = @"ISO Latin-1";
+   break;
+   case NSUnicodeStringEncoding:
+   encString = @"Unicode (UTF-16)";
+   break;
+   case NSWindowsCP1252StringEncoding:
+   encString = @"Windows Latin-1";
+   break;
+   case NSMacOSRomanStringEncoding:
+   encString = @"Mac OS Roman";
+   break;
+   case NSWindowsCP1251StringEncoding:
+   encString = @"Windows Cyrillic";
+   break;
+   default:
+   encString = @"Other";
+   break;
+   }
+   */
 	NSStringEncoding enc = [defaults defaultTextEncoding];
 	if (AUTOMATIC_ENCODING == enc)
 		encString = @"Automatic";
 	else
 		encString = [NSString localizedNameOfStringEncoding:enc];
-
+  
 	[defaultEncodingPreferenceCell setTitle:@"Text Encoding"];
 	[defaultEncodingPreferenceCell setValue:encString];
 	[defaultEncodingPreferenceCell setShowDisclosure:YES];
-
+  
 	smartConversionPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	NSString *smartconvwithquotes = [NSString stringWithFormat:@"%CSmart%C conversion", 0x201C, 0x201D];  // because I love me some curly quotes
 	[smartConversionPreferenceCell setTitle:smartconvwithquotes];
 	UISwitchControl *smartConversionSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[smartConversionSitchControl setValue:[defaults smartConversion]];
 	[smartConversionPreferenceCell setControl:smartConversionSitchControl];
-
+  
 	renderTablesPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	[renderTablesPreferenceCell setTitle:@"Render HTML tables"];
 	UISwitchControl *renderTablesSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[renderTablesSitchControl setValue:[defaults renderTables]];
 	[renderTablesPreferenceCell setControl:renderTablesSitchControl];
-
+  
 	subchapteringPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	[subchapteringPreferenceCell setTitle:@"Subchapter HTML"];
 	UISwitchControl *subchapteringSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
 	[subchapteringSitchControl setValue:[defaults subchapteringEnabled]];
 	[subchapteringPreferenceCell setControl:subchapteringSitchControl];
-
+  
 	scrollSpeedControl = [[[UISegmentedControl alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)] autorelease];
 	[scrollSpeedControl insertSegment:0 withTitle:@"Slow" animated:NO];
 	[scrollSpeedControl insertSegment:1 withTitle:@"Fast" animated:NO];
@@ -430,17 +430,17 @@ return [super respondsToSelector:aSelector];
 	scrollSpeedPreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
 	[scrollSpeedPreferenceCell setDrawsBackground:NO];
 	[scrollSpeedPreferenceCell addSubview:scrollSpeedControl];
-
-
-
+  
+  
+  
 	markCurrentBookAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markCurrentBookAsNewCell setTitle:@"Mark Current Folder as New"];
 	[markCurrentBookAsNewCell setShowDisclosure:NO];
-
+  
 	markAllBooksAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
 	[markAllBooksAsNewCell setTitle:@"Mark All Books as New"];
 	[markAllBooksAsNewCell setShowDisclosure:NO];
-
+  
 	toBeAnnouncedCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,contentRect.size.width, 48)];
 	[toBeAnnouncedCell setTitle:@"Coming soon"];
 	[toBeAnnouncedCell setShowDisclosure:NO];
@@ -474,8 +474,8 @@ return [super respondsToSelector:aSelector];
 			[markAllBooksAsNewCell setSelected:NO withFade:YES];
 			break;
 		default:
-	  [[preferencesTable cellAtRow:i column:0] setSelected:NO];
-	  break;
+      [[preferencesTable cellAtRow:i column:0] setSelected:NO];
+      break;
 	}
 }
 
@@ -488,7 +488,7 @@ return [super respondsToSelector:aSelector];
 	[navigationBar pushNavigationItem:encodingItem];
 	//GSLog(@"attempting transition...");
 	[transitionView transition:1 toView:[encodingPrefs table]];
-
+  
 	//GSLog(@"attempted transition...");
 	[encodingPrefs reloadData];
 	[encodingItem release];
@@ -504,7 +504,7 @@ return [super respondsToSelector:aSelector];
 	[navigationBar pushNavigationItem:fontItem];
 	//GSLog(@"attempting transition...");
 	[transitionView transition:1 toView:[fontChoicePrefs table]];
-
+  
 	//GSLog(@"attempted transition...");
 	[fontChoicePrefs reloadData];
 	[fontItem release];
@@ -513,7 +513,7 @@ return [super respondsToSelector:aSelector];
 
 - (void)aboutAlert { // I like it, good idea.
 	NSString *version = [[NSBundle mainBundle]
-		objectForInfoDictionaryKey:@"CFBundleVersion"];
+                       objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 		version = @"??";
 	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, Benoit Cerrina, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
@@ -530,7 +530,7 @@ return [super respondsToSelector:aSelector];
 // TODO: Figure out the UIFontChooser and let them choose anything. Important for internationalization
 
 - (int)currentFontIndex {
-
+  
 	NSString	*font = [defaults textFont];	
 	if ([font isEqualToString:@"TimesNewRoman"]) {
 		return TIMES;
@@ -593,7 +593,7 @@ return [super respondsToSelector:aSelector];
 				break;
 		}
 	}
-
+  
 }
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
@@ -636,84 +636,84 @@ return [super respondsToSelector:aSelector];
 	{
 		case 0:
 			switch (row)
-			{
-				case 0:
-					prefCell = fontChoicePreferenceCell;
-					break;
-				case 1: 
-					prefCell = fontSizePreferenceCell;
-					break;
-				case 2:
-					prefCell = invertPreferenceCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = fontChoicePreferenceCell;
+        break;
+      case 1: 
+        prefCell = fontSizePreferenceCell;
+        break;
+      case 2:
+        prefCell = invertPreferenceCell;
+        break;
+    }
 			break;
 		case 1:
 			switch (row)
-			{
-				case 0:
-					prefCell = showNavbarPreferenceCell;
-					break;
-				case 1:
-					prefCell = showToolbarPreferenceCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = showNavbarPreferenceCell;
+        break;
+      case 1:
+        prefCell = showToolbarPreferenceCell;
+        break;
+    }
 			break;
 		case 2:
 			switch (row)
-			{
-				case 0:
-					prefCell = chapterButtonsPreferenceCell;
-					break;
-				case 1:
-					prefCell = pageButtonsPreferenceCell;
-					break;
-				case 2:
-					prefCell = flippedToolbarPreferenceCell;
-					break;
-				case 3:
-					prefCell = invNavZonePreferenceCell;
-					break;
-				case 4:
-					prefCell = enlargeNavZonePreferenceCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = chapterButtonsPreferenceCell;
+        break;
+      case 1:
+        prefCell = pageButtonsPreferenceCell;
+        break;
+      case 2:
+        prefCell = flippedToolbarPreferenceCell;
+        break;
+      case 3:
+        prefCell = invNavZonePreferenceCell;
+        break;
+      case 4:
+        prefCell = enlargeNavZonePreferenceCell;
+        break;
+    }
 			break;
 		case 3:
 			switch (row)
-			{
-				case 0:
-					prefCell = defaultEncodingPreferenceCell;
-					break;
-				case 1:
-					prefCell = smartConversionPreferenceCell;
-					break;
-				case 2:
-					prefCell = renderTablesPreferenceCell;
-					break;
-				case 3:
-					prefCell = subchapteringPreferenceCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = defaultEncodingPreferenceCell;
+        break;
+      case 1:
+        prefCell = smartConversionPreferenceCell;
+        break;
+      case 2:
+        prefCell = renderTablesPreferenceCell;
+        break;
+      case 3:
+        prefCell = subchapteringPreferenceCell;
+        break;
+    }
 			break;
 		case 4:
 			switch (row)
-			{
-				case 0:
-					prefCell = scrollSpeedPreferenceCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = scrollSpeedPreferenceCell;
+        break;
+    }
 			break;
 		case 5:
 			switch (row)
-			{
-				case 0:
-					prefCell = markCurrentBookAsNewCell;
-					break;
-				case 1:
-					prefCell = markAllBooksAsNewCell;
-					break;
-			}
+    {
+      case 0:
+        prefCell = markCurrentBookAsNewCell;
+        break;
+      case 1:
+        prefCell = markAllBooksAsNewCell;
+        break;
+    }
 			break;
 	}
 	return prefCell;
@@ -753,25 +753,25 @@ return [super respondsToSelector:aSelector];
 
 
 
-	- (void)dealloc {
-		if (preferencesView != nil)
-		{
-			[[NSNotificationCenter defaultCenter] removeObserver:self];
-			[preferencesView release];
-			[appView release];
-			[preferencesTable release];
-			[translate release];
-			[animator release];
-			[transitionView release];
-			[navigationBar release];
-		}
-		if (encodingPrefs != nil)
-			[encodingPrefs release];
-		if (fontChoicePrefs != nil)
-			[fontChoicePrefs release];
-		[defaults release];
-		[controller release];
-		[super dealloc];
-	}
+- (void)dealloc {
+  if (preferencesView != nil)
+  {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [preferencesView release];
+    [appView release];
+    [preferencesTable release];
+    [translate release];
+    [animator release];
+    [transitionView release];
+    [navigationBar release];
+  }
+  if (encodingPrefs != nil)
+    [encodingPrefs release];
+  if (fontChoicePrefs != nil)
+    [fontChoicePrefs release];
+  [defaults release];
+  [controller release];
+  [super dealloc];
+}
 
 @end

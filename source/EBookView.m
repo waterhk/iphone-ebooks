@@ -94,6 +94,7 @@
 }
 
 - (void)hideNavbars {
+  GSLog(@"EBookView-hideNavbars");
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(hideNavbars)]) {
 			[_heartbeatDelegate hideNavbars];
@@ -104,25 +105,9 @@
 	}
 }
 
-/*
-   - (void)drawRect:(struct CGRect)rect
-   {
-
-   if (nil != path)
-   {
-   NSString *coverPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"cover.jpg"];
-   UIImage *img = [UIImage imageAtPath:coverPath];
-   if (nil != img)
-   {
-   [img compositeToPoint:CGPointMake(0,0) operation:1];
-   }
-   }
-
-   [super drawRect:rect];
-   }
-   */
 
 - (void)toggleNavbars {
+  GSLog(@"EBookView-toggleNavbars");
 	if (_heartbeatDelegate != nil) {
 		if ([_heartbeatDelegate respondsToSelector:@selector(toggleNavbars)]) {
 			[_heartbeatDelegate toggleNavbars];

@@ -123,6 +123,8 @@
 		F8AFA20C0D831EBF007DC91F /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = source/AGRegex/pcre.c; sourceTree = "<group>"; };
 		F8AFA20D0D831EBF007DC91F /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = source/AGRegex/pcre.h; sourceTree = "<group>"; };
 		F8AFA20E0D831EBF007DC91F /* study.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = study.c; path = source/AGRegex/study.c; sourceTree = "<group>"; };
+		F8F3D4A20D87865A00089C63 /* FileNavigationItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FileNavigationItem.h; path = source/FileNavigationItem.h; sourceTree = "<group>"; };
+		F8F3D4A30D87865A00089C63 /* FileNavigationItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FileNavigationItem.m; path = source/FileNavigationItem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,9 +142,9 @@
 			isa = PBXGroup;
 			children = (
 				F8AFA2040D831EAC007DC91F /* AGRegex */,
+				F8214B880D7A0B05006A195D /* BooksDefaultsController.h */,
 				F8214B860D7A0B05006A195D /* BooksApp.h */,
 				F8214B870D7A0B05006A195D /* BooksApp.m */,
-				F8214B880D7A0B05006A195D /* BooksDefaultsController.h */,
 				F8214B890D7A0B05006A195D /* BooksDefaultsController.m */,
 				F8214B8A0D7A0B05006A195D /* ChapteredHTML.h */,
 				F8214B8B0D7A0B05006A195D /* ChapteredHTML.m */,
@@ -174,6 +176,8 @@
 				F8214BB60D7A0B05006A195D /* Regex.m */,
 				F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */,
 				F8214BA20D7A0B05006A195D /* palm */,
+				F8F3D4A20D87865A00089C63 /* FileNavigationItem.h */,
+				F8F3D4A30D87865A00089C63 /* FileNavigationItem.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
