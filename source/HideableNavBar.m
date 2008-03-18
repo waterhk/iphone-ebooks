@@ -101,9 +101,8 @@
   GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
   
   if([self isAnimationEnabled]) {
-    UIView *oldView = [poppedFi view];
-    [_transView transition:2 fromView:oldView toView:[topFi view]];
     [[self delegate] setNavForItem:poppedFi];
+    [_transView transition:2 fromView:[poppedFi view] toView:[topFi view]];
   }
   
   [poppedFi release];
@@ -120,8 +119,8 @@
   GSLog(@"Pushing %@ %@", ([pushedFi isDocument] ? @"Document" : @"Directory"), [pushedFi path]);
   
   if([self isAnimationEnabled]) {
-    [_transView transition:1 fromView:[topFi view] toView:[pushedFi view]];
     [[self delegate] setNavForItem:topFi];
+    [_transView transition:1 fromView:[topFi view] toView:[pushedFi view]];
   }
 }
 
