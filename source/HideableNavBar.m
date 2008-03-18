@@ -110,6 +110,16 @@
 
 /**
  * Defer transition until the ebook is ready.
+ *
+ * When we're loading a book, we want a nice spinny progress indicator thing.  Cocoa is rather
+ * particular about how things are threaded and when we get back to runLoops for that to work.
+ * So...  We let the push/pop's call here and end up looping until the book is loaded and we're
+ * ready to go.  Then we transition, call the book to finish getting its act together, and we're
+ * done!  It's ugly as sin, but it works, and it's something approaching encapsulated...
+ *
+ * Future enhancements should make a single base class for all of the various views that can
+ * end up in a navbar (FileBrowser, EBookView, EBookImageView) or at least a common interface
+ * between them.  For now, we cast over to EBookView to call the methods we know are there.
  */
 - (void)transitionViewsWhenReady:(id)p_tmr {
   NSDictionary *info;
@@ -137,23 +147,20 @@
   } 
   
   if(bCanShow) {
-    // Do the transition
-    GSLog(@"Ready to transition.");
+    // Do the transition        
+    [[self delegate] setNavForItem:destItem];
+    [_transView transition:[transition intValue] fromView:fromView toView:toView];
     
+    // If it's a book, call cleanup on the progress bar and also get the book prefs loaded.
     if([toView respondsToSelector:@selector(isReadyToShow)]) {
       EBookView *ebv = (EBookView*)toView;     
       [ebv hidePleaseWait];
-      [ebv applyPreferences];
     }
-    
-    [[self delegate] setNavForItem:destItem];
-    [_transView transition:[transition intValue] fromView:fromView toView:toView];
     
     // Cleanup the startup image later so we can still use it to transition.
     [NSTimer scheduledTimerWithTimeInterval:0.5f target:[self delegate] selector:@selector(cleanupStartupImage) userInfo:nil repeats:NO];
   } else {
     // Reschedule
-    GSLog(@"Not ready to transition.  Retrying...");
     [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(transitionViewsWhenReady:) userInfo:info repeats:NO];
   }
 }

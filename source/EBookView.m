@@ -51,8 +51,6 @@
 
 - (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par {
 	if(self = [super initWithFrame:rect]) {
-    m_pendingScrollPoint = -1.0f;
-
     chapteredHTML = [[ChapteredHTML alloc] init];
     subchapter    = 0;
     defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
@@ -397,13 +395,22 @@
 }
 
 /**
- * Hide the please wait / progress spinner view.
+ * Hide the please wait / progress spinner view, apply book preferences.
  */
 - (void)hidePleaseWait {
   [m_progressIndicator show:NO];
   [m_progressIndicator removeFromSuperview];
   [m_progressIndicator release];
   m_progressIndicator = nil;
+  
+  /*
+   * This is a kludge for some weird threading issues.  We need to perform this from a timer on the main
+   * thread in order for the scroll point to be updated.  I've tried numerous combinations of the various
+   * thread and perform selector methods.  This seems to be the only one that works.  The navbar will
+   * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
+   * and all is well. -ZSB 16-Mar-2008
+   */
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:ebv selector:@selector(applyPreferences) userInfo:nil repeats:NO];
 }
 
 /**
@@ -520,7 +527,7 @@
   } else {
     [self setText:theHTML];
   }
-  
+ 
   m_readyToShow = YES;
   
 	/* This code doesn't work.  Sorry, charlie.
@@ -747,30 +754,8 @@
  * Scrolls to the given point by waking up the heartbeat for one pulse.
  */
 - (void)scrollToPoint:(float)p_pt {
-  m_pendingScrollPoint = p_pt;
-  [self startHeartbeat:@selector(beatIt) inRunLoopMode:nil];
-}
-
-/**
- * Set scroll point at startup.
- *
- * For some reason, we can't set the scroll point programatically until
- * a heart beat happens.  The user moving things around is enough to 
- * make the scroller and buttons work, but for the restore at startup
- * to happen, we need to beat once.
- *
- * We don't need the heartbeat for anything else at this point, so we'll 
- * stop it again right after scrolling.  No sense having all those 
- * messages flying around.
- */
-- (void)beatIt {
-  if(m_pendingScrollPoint >= 0) {
-    float pt = m_pendingScrollPoint;
-    m_pendingScrollPoint = -1.0f;
-    GSLog(@"Scrolling book position to %f", pt);
-    [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, pt) animated:NO];
-    [self stopHeartbeat:@selector(beatIt)];
-  }
+  GSLog(@"Scrolling book position to %f", p_pt);
+  [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, p_pt) animated:NO];
 }
 
 /**

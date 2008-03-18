@@ -51,7 +51,6 @@
 
   BOOL m_navBarsVisible;
   
-  float m_pendingScrollPoint;
   UIProgressHUD *m_progressIndicator;
   
   BOOL m_readyToShow;
