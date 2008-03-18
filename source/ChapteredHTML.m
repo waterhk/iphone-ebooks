@@ -1,18 +1,18 @@
 /* ChapteredHTML.m, by John A. Whitney for Books.app
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; version 2
- of the License.
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; version 2
+   of the License.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #import <stdio.h>
@@ -45,14 +45,16 @@
 {
 	NSMutableString *filename = [[NSMutableString alloc] initWithCapacity:80];
 	int              index;
-
-	[_fullHTML release];
-	_fullHTML = [html retain];
+	//bcc don't release if we already have this hml
+	if (_fullHTML != html)
+	{
+		[_fullHTML release];
+		_fullHTML = [html retain];
+	}
 
 	if (html == nil)
 	{
 		_fullHTML = nil;
-
 		_headerRange.location   = 0;
 		_headerRange.length     = 0;
 		_bodyRange.location     = 0;
@@ -64,12 +66,14 @@
 	}
 
 	SHA1 ((const unsigned char *) [_fullHTML UTF8String],
-	      (unsigned long) [_fullHTML length],
-	      _fullHTMLHash);
+			(unsigned long) [_fullHTML length],
+			_fullHTMLHash);
 	NSString *lDirName = [NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Caches/Books/"];
 	filename = [[NSMutableString alloc] initWithString:lDirName];
 	for (index = 0; index < sizeof (_fullHTMLHash); index++)
+	{
 		[filename appendFormat:@"%02x", _fullHTMLHash[index]];
+	}
 	[filename appendString:@".plist"];
 
 	if ([self loadFromFile:filename] == NO)
@@ -96,24 +100,24 @@
 - (NSString *) getChapterHTML: (int) chapter
 {
 	NSMutableString *string;
-	
+
 	if (chapter >= _chapterCount)
 	{
 		return @"<html><body></body></html>";
 	}
 
 	string = [[NSMutableString alloc] initWithCapacity:_headerRange.length +
-	                                                   _chapterRange[chapter].length +
-	                                                   _trailerRange.length +
-	                                                   8];
+		_chapterRange[chapter].length +
+		_trailerRange.length +
+		8];
 	[string setString:[_fullHTML substringWithRange:_headerRange]];
 	[string appendString:[_fullHTML substringWithRange:_chapterRange[chapter]]];
 	[string appendString:@"<br><br>"];
 	[string appendString:[_fullHTML substringWithRange:_trailerRange]];
 
-FILE *file = fopen ("/tmp/book.html", "w");
-fprintf (file, "%s\n", [string UTF8String]);
-fclose (file);
+	FILE *file = fopen ("/tmp/book.html", "w");
+	fprintf (file, "%s\n", [string UTF8String]);
+	fclose (file);
 	return [string autorelease];
 }
 
@@ -196,7 +200,7 @@ fclose (file);
 	NSMutableDictionary *dictionary;
 	NSMutableDictionary *chapterRanges;
 	NSMutableDictionary *chapter;
-	
+
 	for (index = [filename length] - 1; index > 1; index--)
 		if ([filename characterAtIndex:index] == (unichar) '/')
 			break;
@@ -208,68 +212,86 @@ fclose (file);
 	chapterRanges = [[NSMutableDictionary alloc] initWithCapacity:10];
 
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_headerRange.location]
-	               forKey:@"headerStart"];
+				   forKey:@"headerStart"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_headerRange.length]
-	               forKey:@"headerLength"];
+				   forKey:@"headerLength"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_bodyRange.location]
-	               forKey:@"bodyStart"];
+				   forKey:@"bodyStart"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_bodyRange.length]
-	               forKey:@"bodyLength"];
+				   forKey:@"bodyLength"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_trailerRange.location]
-	               forKey:@"trailerStart"];
+				   forKey:@"trailerStart"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_trailerRange.length]
-	               forKey:@"trailerLength"];
+				   forKey:@"trailerLength"];
 	[dictionary setObject:[NSNumber numberWithUnsignedInt:_chapterCount]
-	               forKey:@"chapterCount"];
+				   forKey:@"chapterCount"];
 	for (index = 0; index < _chapterCount; index++)
 	{
 		NSRange *range = &_chapterRange[index];
 
 		chapter = [[NSMutableDictionary alloc] initWithCapacity:2];
 		[chapter setObject:[NSNumber numberWithUnsignedInt:range->location]
-		            forKey:@"start"];
+					forKey:@"start"];
 		[chapter setObject:[NSNumber numberWithUnsignedInt:range->length]
-		            forKey:@"length"];
+					forKey:@"length"];
 		[chapterRanges setObject:chapter
-		                  forKey:[NSString stringWithFormat:@"%d", index]];
+						  forKey:[NSString stringWithFormat:@"%d", index]];
 		[chapter release];
 	}
 	[dictionary setObject:chapterRanges forKey:@"chapterRanges"];
 	[chapterRanges release];
-	      
-    if ([dictionary writeToFile:filename atomically:NO] == YES)
-    	GSLog (@"Wrote cachefile: %s", [filename cString]);
-    else
-    	GSLog (@"Unable to write cachefile: %s", [filename cString]);
+
+	if ([dictionary writeToFile:filename atomically:NO] == YES)
+	   GSLog (@"Wrote cachefile: %s", [filename cString]);
+	else
+		GSLog (@"Unable to write cachefile: %s", [filename cString]);
 
 	[dictionary release];
 }
 
 - (void) findSections
 {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	NSString *bodyIdentifier    = @"<body";
 	NSString *trailerIdentifier = @"</body>";
 
 	_bodyRange.location   = 0;
 	_bodyRange.length     = [bodyIdentifier length];
 
+	GSLog(@"%s:%d %s ._bodyRange.length %d",__FILE__, __LINE__, _cmd, _bodyRange.length);
 	/*
 	 * Find "<body" within the HTML text.
 	 */
+	BOOL lFound = NO;
 	while (_bodyRange.location < ([_fullHTML length] - _bodyRange.length))
 	{
 		NSString *substr = [_fullHTML substringWithRange:_bodyRange];
 		if ([substr caseInsensitiveCompare:bodyIdentifier] == NSOrderedSame)
+		{
+			lFound = YES;
 			break;
+		}
 
 		_bodyRange.location += 1;
 	}
+	if (!lFound)
+	{
+		_headerRange.location   = 0;
+		_headerRange.length     = 0;
+		_bodyRange.location     = 0;
+		_bodyRange.length       = 0;
+		_trailerRange.location  = 0;
+		_trailerRange.length    = 0;
+		return;
+	}
+
+	GSLog(@"%s:%d %s ._bodyRange.location %d",__FILE__, __LINE__, _cmd, _bodyRange.location);
 
 	/*
 	 * Look for the end of the <body...> block.
 	 */
 	while ((_bodyRange.location < [_fullHTML length]) &&
-	       ([_fullHTML characterAtIndex:_bodyRange.location] != (unichar) '>'))
+			([_fullHTML characterAtIndex:_bodyRange.location] != (unichar) '>'))
 	{
 		_bodyRange.location += 1;
 	}
@@ -288,24 +310,27 @@ fclose (file);
 		_trailerRange.length    = 0;
 		return;
 	}
-	            
+
 	/*
 	 * Find the start of the trailer by looking for "</body>" starting at
 	 * the end of the HTML.
 	 */
 	_trailerRange.length   = [trailerIdentifier length];
 	_trailerRange.location = [_fullHTML length] - _trailerRange.length;
-
+	lFound = NO;
 	while (_trailerRange.location > _bodyRange.location)
 	{
 		NSString *substr = [_fullHTML substringWithRange:_trailerRange];
 		if ([substr caseInsensitiveCompare:trailerIdentifier] == NSOrderedSame)
+		{
+			lFound = YES;
 			break;
+		}
 
 		_trailerRange.location -= 1;
 	}
 
-	if (_trailerRange.location == _bodyRange.location)
+	if (!lFound)
 	{
 		_headerRange.location  = 0;
 		_headerRange.length    = 0;
@@ -328,14 +353,18 @@ fclose (file);
 
 	return;
 }
-
+- (NSString*) description
+{
+	return [NSString stringWithFormat: @"%@: _headerRange: %d,%d  _bodyRange %d,%d _trailerRange %d,%d, _chapterCount %d", [super description], _headerRange.location, _headerRange.length, _bodyRange.location, _bodyRange.length, _trailerRange.location, _trailerRange.length, _chapterCount];
+}
 - (void) findChapters
 {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	int      lastChapterOffset = _bodyRange.location;
 	int      index;
 	Regex   *regexArray[2];
 	int      regexIndex;
-
+	GSLog(@"%s:%d %s self: %@",__FILE__, __LINE__, _cmd, self);
 	if (_bodyRange.length == 0)
 	{
 		_chapterRange[0].location = 0;
@@ -351,17 +380,19 @@ fclose (file);
 	_chapterRange[0].location = _bodyRange.location;
 
 	for (index = 0;
-	     (index < _bodyRange.length) &&
-	     (_chapterCount < (MAX_CHAPTERS - 2));
-	     index++)
+			(index < _bodyRange.length) &&
+			(_chapterCount < (MAX_CHAPTERS - 2));
+			index++)
 	{
 		int     offset = (_bodyRange.location + index);
+		GSLog(@"offset: %d, _fullHTML.length %d", offset, [_fullHTML length]);
+		//trouble
 		unichar chr    = [_fullHTML characterAtIndex:offset];
 
 		for (regexIndex = 0;
-		     (regexIndex < ARRAY_SIZE (regexArray)) &&
-		     (_chapterCount < (MAX_CHAPTERS - 2));
-		     regexIndex++)
+				(regexIndex < ARRAY_SIZE (regexArray)) &&
+				(_chapterCount < (MAX_CHAPTERS - 2));
+				regexIndex++)
 		{
 			Regex *regex = regexArray[regexIndex];
 
@@ -371,7 +402,7 @@ fclose (file);
 				offset -= [regex matchedChars] - 1;
 
 				if (((offset - lastChapterOffset) > 2048) &&
-				    ((_trailerRange.location - offset) > 2048))
+						((_trailerRange.location - offset) > 2048))
 				{
 					_chapterCount += 1;
 
@@ -385,9 +416,9 @@ fclose (file);
 					NSString *chapterName =
 						[_fullHTML substringWithRange:chapterNameRange];
 					GSLog (@"Chapter %2d (offset %6d): '%s'\n",
-					       _chapterCount,
-					       offset,
-					       [chapterName UTF8String]);
+							_chapterCount,
+							offset,
+							[chapterName UTF8String]);
 				}
 
 				[regex clear];
@@ -396,7 +427,7 @@ fclose (file);
 	}
 
 	_chapterRange[_chapterCount].length = _trailerRange.location -
-	                                      _chapterRange[_chapterCount].location;
+		_chapterRange[_chapterCount].location;
 	_chapterCount += 1;
 
 	[regexArray[0] release];
