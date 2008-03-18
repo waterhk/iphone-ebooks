@@ -66,6 +66,7 @@ typedef enum
 - (BOOL)canHandleSwipes;
 - (int)  swipe: ( int)num withEvent: ( struct __GSEvent *)event;
 - (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par;
+- (void)setupScrollerWithFrame:(struct CGRect)p_bounds parent:(UIView*)p_par;
 - (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap;
 - (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView;
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;

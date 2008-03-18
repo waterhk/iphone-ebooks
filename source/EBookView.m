@@ -78,19 +78,7 @@
     [self scrollSpeedDidChange:nil];
     
     [self setDelegate:p_del];
-    CGRect scrollerRect = CGRectMake(0, TOOLBAR_HEIGHT, [self bounds].size.width, TOOLBAR_HEIGHT);
-    m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
-
-    [p_par addSubview:m_scrollerSlider];
-    float backParts[4] = {0, 0, 0, .5};
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    [m_scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
-    [m_scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
-    [m_scrollerSlider setAlpha:0];
-    UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
-    [m_scrollerSlider setMinValueImage:img];
-    [m_scrollerSlider setMaxValueImage:img];
-    [self updateSliderPosition];
+    [self setupScrollerWithFrame:[self bounds] parent:p_par];
    
     [[NSNotificationCenter defaultCenter] addObserver:self
                          selector:@selector(scrollSpeedDidChange:)
@@ -99,11 +87,34 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(boundsDidChange:)
-                                                 name:[BoundsChangedNotification name]
+                                                 name:[BoundsChangedNotification didChangeName]
                                                object:nil];
   }
   
 	return self;
+}
+
+/**
+ * Setup the scroll slider.
+ */
+- (void)setupScrollerWithFrame:(struct CGRect)p_bounds parent:(UIView*)p_par {
+  if(m_scrollerSlider == nil) {
+    CGRect scrollerRect = CGRectMake(0, TOOLBAR_HEIGHT, p_bounds.size.width, TOOLBAR_HEIGHT);
+    m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
+    
+    [p_par addSubview:m_scrollerSlider];
+    float backParts[4] = {0, 0, 0, .5};
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    [m_scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+    [m_scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
+    [m_scrollerSlider setAlpha:0];
+    
+    UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
+    [m_scrollerSlider setMinValueImage:img];
+    [m_scrollerSlider setMaxValueImage:img];
+    
+    [self updateSliderPosition];
+  }
 }
 
 /**
@@ -144,6 +155,27 @@
   [self setHTML:html];
   [html release];
  */
+  
+  
+  // Recreate the slider
+  UIView *scrollParent = [[m_scrollerSlider superview] retain];
+  [m_scrollerSlider removeFromSuperview];
+  [m_scrollerSlider release];
+  m_scrollerSlider = nil;
+  [self setupScrollerWithFrame:newB parent:scrollParent];
+  [scrollParent release];
+    
+  // Setup to fix the visibleRect
+  [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(afterRotate) userInfo:nil repeats:NO];
+}
+
+/**
+ * Update our visible rect once any rotations are done.
+ */
+- (void)afterRotate {
+  // FIXME: This isn't working - we still have to double tap to scroll.
+  lastVisibleRect = [self visibleRect];
+  [self updateSliderPosition];
 }
 
 

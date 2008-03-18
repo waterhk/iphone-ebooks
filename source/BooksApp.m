@@ -56,9 +56,22 @@
 /**
  * Hide the navbars before we rotate.
  */
-- (void)boundsWillChange:(NSNotification*)p_note {
+- (void)boundsWillChange:(BoundsChangedNotification*)p_note {
   GSLog(@"BooksApp-boundsWillChange");
+   
+  // Hide the nav bars.
   [self hideNavbars];
+  
+  struct CGRect rect = [p_note newBounds];;
+  struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height, rect.size.width, TOOLBAR_HEIGHT);
+  [bottomNavBar setFrame:frameRect];
+  
+  // Hide the slider.
+  UIView *topView = [navBar topView];
+  if([topView respondsToSelector:@selector(hideSlider)]) {
+    EBookView *ebv = (EBookView*)topView;
+    [ebv hideSlider];
+  }
 }
 
 /**
@@ -66,6 +79,9 @@
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
   GSLog(@"BooksApp-boundsDidChange");
+  
+  // Fix the transition view's size
+  [m_transitionView setFrame:[p_note newBounds]];
   
   // Fix the position of the prefs button.
   struct CGSize newSize = [p_note newBounds].size;
@@ -82,6 +98,14 @@
   
   //[self setupNavbar];
   //[self setupToolbar];
+  
+  [self hideNavbars];
+  
+  UIView *topView = [navBar topView];
+  if([topView respondsToSelector:@selector(numberOfRowsInTable:)]) {
+    // FIXME: This selector is a kludgey choice, but it works.
+    [NSTimer scheduledTimerWithTimeInterval:0.1f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
+  }
 }
 
 - (void)applicationDidFinishLaunching:(id)unused {
@@ -159,12 +183,12 @@
   
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(boundsDidChange:)
-                                               name:[BoundsChangedNotification name]
+                                               name:[BoundsChangedNotification didChangeName]
                                              object:nil];
   
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(boundsWillChange:)
-                                               name:START_ROTATION_NOTIFICATION
+                                               name:[BoundsChangedNotification willChangeName]
                                              object:nil];
   
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
@@ -312,8 +336,6 @@
  * Hide the navigation bars.
  */
 - (void)hideNavbars {
-	//struct CGRect rect = [window bounds];
-	//[textView setFrame:rect];
 	[navBar hide];
 	[bottomNavBar hide];
 }
@@ -322,8 +344,6 @@
  * Show the navigation bars.
  */
 - (void)showNavbars {
-	//struct CGRect rect = [window bounds];
-	//[textView setFrame:rect];
 	[navBar show];
 	[bottomNavBar show];
 }

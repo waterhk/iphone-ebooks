@@ -18,28 +18,52 @@
 
 /** Notification for rotate/resize events. */
 #define BOUNDSDIDCHANGENOTEIFICATION @"boundsDidChangeNotification"
+#define BOUNDSWILLCHANGENOTEIFICATION @"boundsWillChangeNotification"
 
 #import "BoundsChangedNotification.h"
 
 @implementation BoundsChangedNotification
 /**
- * Name for this type of notification.
+ * Name of event signifying bounds are about to change.
  */
-+ (NSString*)name {
++ (NSString*)willChangeName {
+  return BOUNDSWILLCHANGENOTEIFICATION;  
+}
+
+/**
+ *Name of event signifying bounds have changed.
+ */
++ (NSString*)didChangeName {
   return BOUNDSDIDCHANGENOTEIFICATION;
 }
 
 /**
- * Return an autoreleased instance.
+ * Return an autoreleased did change instance.
  */
-+ (BoundsChangedNotification*)boundsChangedFrom:(struct CGRect)p_old 
-                                             to:(struct CGRect)p_new 
-                                      transform:(struct CGAffineTransform)p_tform
-                                      forObject:(id)p_obj {
++ (BoundsChangedNotification*)boundsDidChangeFrom:(struct CGRect)p_old 
+                                               to:(struct CGRect)p_new 
+                                        transform:(struct CGAffineTransform)p_tform
+                                        forObject:(id)p_obj {
   return [[[BoundsChangedNotification alloc] initWithOldBounds:p_old 
                                                      newBounds:p_new 
                                                      transform:p_tform
-                                                        object:p_obj] autorelease];
+                                                        object:p_obj
+                                                          name:[BoundsChangedNotification didChangeName]] autorelease];
+}
+
+
+/**
+ * Return an autoreleased will change instance.
+ */
++ (BoundsChangedNotification*)boundsWillChangeFrom:(struct CGRect)p_old 
+                                                to:(struct CGRect)p_new 
+                                         transform:(struct CGAffineTransform)p_tform
+                                         forObject:(id)p_obj {
+  return [[[BoundsChangedNotification alloc] initWithOldBounds:p_old 
+                                                     newBounds:p_new 
+                                                     transform:p_tform
+                                                        object:p_obj
+                                                          name:[BoundsChangedNotification willChangeName]] autorelease];
 }
 
 /**
@@ -48,13 +72,15 @@
 - (id)initWithOldBounds:(struct CGRect)p_old 
               newBounds:(struct CGRect)p_new 
               transform:(struct CGAffineTransform)p_tform
-                 object:(id)p_obj {
+                 object:(id)p_obj
+                   name:(NSString*)p_name {
   // Can't call super init for this!
   
   m_oldBounds = p_old;
   m_newBounds = p_new;
   m_transform = p_tform;
   m_changedObject = [p_obj retain];
+  m_name = [p_name retain];
   
   return self;
 }
@@ -77,7 +103,7 @@
  * Always the same name.
  */
 - (NSString*)name {
-  return BOUNDSDIDCHANGENOTEIFICATION;
+  return m_name;
 }
 
 /**
@@ -107,6 +133,9 @@
 - (void)dealloc {
   [m_changedObject release];
   m_changedObject = nil;
+  
+  [m_name release];
+  m_name = nil;
   
   [super dealloc];
 }

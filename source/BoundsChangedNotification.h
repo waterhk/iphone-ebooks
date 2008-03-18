@@ -26,21 +26,29 @@
   struct CGAffineTransform m_transform;
   
   id m_changedObject;
-  
+  NSString *m_name;
 }
 
-+ (NSString*)name;
++ (NSString*)willChangeName;
++ (NSString*)didChangeName;
 
-+ (BoundsChangedNotification*)boundsChangedFrom:(struct CGRect)p_old 
++ (BoundsChangedNotification*)boundsDidChangeFrom:(struct CGRect)p_old 
+                                                to:(struct CGRect)p_new 
+                                         transform:(struct CGAffineTransform)p_tform
+                                         forObject:(id)p_obj;
+
+
++ (BoundsChangedNotification*)boundsWillChangeFrom:(struct CGRect)p_old 
                                              to:(struct CGRect)p_new 
                                       transform:(struct CGAffineTransform)p_tform
                                       forObject:(id)p_obj;
 
 
-- (id)initWithOldBounds:(struct CGRect)p_old 
+- (id)initWithOldBounds:(struct CGRect)p_old
               newBounds:(struct CGRect)p_new 
               transform:(struct CGAffineTransform)p_tform
-                 object:(id)p_obj;
+                 object:(id)p_obj
+                   name:(NSString*)p_name;
 
 - (struct CGRect)oldBounds;
 - (struct CGRect)newBounds;

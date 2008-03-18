@@ -65,14 +65,16 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 }
 
 - (void) setUIOrientation: (unsigned int)o_code {
+  // Disable this for now.  It doesn't work, and it'll just be annoying.
+  return;
+  
+  
 	if (o_code > 6) return;
 	/* Degrees should technically be a float, but without integers here, rounding errors seem to screw up the UI over time.
    The compiler will automatically cast to a float when appropriate API calls are made. */
 	int degrees = orientations[o_code];
 	if (degrees == -1) return;
 	if (degrees == orientationDegrees) return;
-  
-  [[NSNotificationCenter defaultCenter] postNotificationName:START_ROTATION_NOTIFICATION object:nil];
 	
 	/* Find the rect a fullscreen app would use under the new rotation... */
 	bool landscape = (degrees == 90 || degrees == -90);
@@ -117,6 +119,13 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
           transEnd = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
 			}
       
+      [[NSNotificationCenter defaultCenter] postNotification:[BoundsChangedNotification 
+                                                              boundsWillChangeFrom:oldBounds 
+                                                              to:m_fullContentBounds 
+                                                              transform:transEnd
+                                                              forObject:transView]];
+      
+      
 			[UIView beginAnimations: nil];
       [transView setTransform:transEnd];
       [transView setBounds:m_fullContentBounds];
@@ -125,7 +134,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
       //[[Notifications sharedInstance] setFrame: FullContentBounds];
       
       [[NSNotificationCenter defaultCenter] postNotification:[BoundsChangedNotification 
-                                                              boundsChangedFrom:oldBounds 
+                                                              boundsDidChangeFrom:oldBounds 
                                                               to:m_fullContentBounds 
                                                               transform:transEnd
                                                               forObject:transView]];

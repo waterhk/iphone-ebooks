@@ -39,7 +39,7 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(boundsDidChange:)
-                                                 name:[BoundsChangedNotification name]
+                                                 name:[BoundsChangedNotification didChangeName]
                                                object:nil];
   }
   return self;
