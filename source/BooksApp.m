@@ -190,18 +190,19 @@
   
 	NSMutableArray *arPathComponents = [[NSMutableArray alloc] init]; 
   
-	if(![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) {
-    
-		[arPathComponents addObject:lastBrowserPath];
-    lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
-    
-    // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
-    NSString *stopAtPath = [[BooksDefaultsController defaultEBookPath] stringByDeletingLastPathComponent];
-    while(![lastBrowserPath isEqualToString:stopAtPath] && ![lastBrowserPath isEqualToString:@"/"]) {
-			[arPathComponents addObject:lastBrowserPath];
-      lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
-		} // while
-	} // if
+  GSLog(@"LastPath is %@", lastBrowserPath);
+  
+  [arPathComponents addObject:lastBrowserPath];
+  lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
+  
+  // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
+  NSString *stopAtPath = [[BooksDefaultsController defaultEBookPath] stringByDeletingLastPathComponent];
+  while(![lastBrowserPath isEqualToString:stopAtPath] && ![lastBrowserPath isEqualToString:@"/"]) {
+    [arPathComponents addObject:lastBrowserPath];
+    lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
+  } // while
+  
+  GSLog(@"Path list has %d elements", [arPathComponents count]);
   
   // Loop over all the paths and add them to the nav bar.
   int pathCount = [arPathComponents count];
