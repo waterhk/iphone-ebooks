@@ -44,9 +44,6 @@
 #define OPENEDTHISFILE @"openedThisFileNotification"
 #define RELOADTOPBROWSER @"reloadTopBrowserNotification"
 
-/** Notification for rotate/resize events. */
-#define BOUNDSDIDCHANGENOTEIFICATION @"boundsDidChangeNotification"
-
 #define WEBSITE_URL_STRING @"http://iphoneebooks.googlecode.com/"
 
 #endif

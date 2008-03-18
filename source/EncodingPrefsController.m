@@ -27,7 +27,7 @@
     {
       defaults = [BooksDefaultsController sharedBooksDefaultsController];
       GSLog(@"Creating encoding prefs!");
-      struct CGRect rect = [defaults fullScreenApplicationContentRect];
+      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 
       encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
       [encodingTable setDelegate:self];
@@ -136,7 +136,7 @@ int unsignedCompare(id x, id y, void *context)
       checked = ([[encodingNumbers objectAtIndex:(row - 1)] unsignedIntValue]
 		 == [defaults defaultTextEncoding]);
     }
-  CGRect rect = [defaults fullScreenApplicationContentRect];
+  CGRect rect = [UIHardware fullScreenApplicationContentRect];
   UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,PREFS_TABLE_ROW_HEIGHT)];
   [theCell setTitle:title];
   [theCell setChecked:checked];

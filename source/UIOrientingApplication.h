@@ -25,14 +25,13 @@
 @class UITransitionView;
 
 @interface UIOrientingApplication : UIApplication {
-	CGRect FullKeyBounds;
-	CGRect FullContentBounds;
+	CGRect m_fullKeyBounds;
+	CGRect m_fullContentBounds;
 	int orientations[7];
 	int orientationDegrees;
 	bool orientationLocked;
 	float reorientationDuration;
 	struct CGAffineTransform oldTransform;
-  UITransitionView *transitionView;
 }
 
 - (id) init;
@@ -42,8 +41,6 @@
 - (void) unlockUIOrientation;
 - (void) setUIOrientation: (unsigned int)o_code;
 - (void) setAngleForOrientation: (unsigned int)o_code toDegrees: (int)degrees;
-- (void) setTransitionView: (UITransitionView*)p_view;
-- (UITransitionView*)transitionView;
 
 - (CGRect) windowBounds;
 - (CGRect) contentBounds;

@@ -42,7 +42,7 @@ enum PreferenceAnimationType;
 	UIWindow 	*window;
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
-  
+  UITransitionView *m_transitionView;
   EBookImageView *m_startupImage;
   
 	NSString    *path;
@@ -81,7 +81,6 @@ enum PreferenceAnimationType;
 - (void)setupNavbar;
 - (void)setupToolbar;
 - (void)updateToolbar:(NSNotification *)notification;
-- (void)updateNavbar;
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped;
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
 - (void)showPrefs:(UINavBarButton *)button;

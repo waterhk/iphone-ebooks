@@ -25,6 +25,7 @@
 #import <UIKit/UIAlphaAnimation.h>
 #import <UIKit/UIProgressIndicator.h>
 #import <UIKit/UIProgressHUD.h>
+#import <UIKit/UIView-Gestures.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UITextTraitsClientProtocol.h>
 #import <UIKit/UIWebView.h>
@@ -36,6 +37,7 @@
 #import "BooksDefaultsController.h"
 #import "palm/palmconvert.h"
 #import "ChapteredHTML.h"
+#import "BoundsChangedNotification.h"
 
 #define ENCODING_LIST {[defaults defaultTextEncoding], NSUTF8StringEncoding, NSISOLatin1StringEncoding, \
 	NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
@@ -57,7 +59,7 @@
     m_navBarsVisible = NO;
     m_readyToShow = NO;
     
-    [self setAdjustForContentSizeChange:YES];
+    [self setAdjustForContentSizeChange:NO];
     [self setEditable:NO];
 
     [self setTextSize:16.0f];
@@ -94,14 +96,56 @@
                          selector:@selector(scrollSpeedDidChange:)
                            name:CHANGEDSCROLLSPEED
                            object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(boundsDidChange:)
+                                                 name:[BoundsChangedNotification name]
+                                               object:nil];
   }
   
 	return self;
 }
 
-- (void)setFrame:(struct CGRect)p_frame {
-  [super setFrame:p_frame];
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+  struct CGRect oldB = [p_note oldBounds];
+  struct CGRect newB = [p_note newBounds];
+  
+  GSLog(@"EBookView changing from %f x %f @ (%f, %f) to %f x %f @ (%f, %f)",
+        oldB.size.width, oldB.size.height, oldB.origin.x, oldB.origin.y,
+        newB.size.width, newB.size.height, newB.origin.x, newB.origin.y
+        );
+
+  [self setFrame:newB];
+  if(newB.size.width <= newB.size.height) {
+    // Portrait mode
+    struct CGSize cSize = [[[self _webView] webView] contentSize];
+    cSize.width = newB.size.width;
+    [[[self _webView] webView] setContentSize:cSize];
+//    [[self _webView]setFrame:[self bounds]];
+//    [self recalculateStyle];
+//    [self updateWebViewObjects];
+//    [self webViewDidChange:nil];
+//    [self setNeedsDisplay];
+  }
+//  
+  //UIWebView *webV = [self _webView];
+  
+//  struct CGRect innerRect = [[webV webView] frame];
+  //innerRect.size.width = newB.size.width;
+  
+    //[[[webV webView] mainFrame] reload:nil];
+
+  //[webV layoutBeforeDraw]; // This lets us get wider on landscape, but not smaller on portrait.
+/*
+  id html = [[self HTML] retain];
+  [self setHTML:html];
+  [html release];
+ */
 }
+
 
 /**
  * Make sure our lastVisible gets updated after a scroll event.
@@ -701,20 +745,6 @@
  */
 - (BOOL) gotoPreviousSubchapter {
   return [self setSubchapter:subchapter-1];
-}
-
-/**
- * Redraw the screen.
- */
--(void)redraw {
-	CGRect lWebViewFrame = [[self _webView] frame];
-	CGRect lFrame = [self frame];
-	//GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
-	//GSLog(@"lFrame : x=%f, y=%f, w=%f, h=%f", lFrame.origin.x, lFrame.origin.y, lFrame.size.width, lFrame.size.height);
-	[[self _webView]setFrame: [self frame]];
-	[self recalculateStyle];
-	[self updateWebViewObjects];
-	[self setNeedsDisplay];
 }
 
 - (int)  swipe: ( int)num  withEvent: ( struct __GSEvent *)event

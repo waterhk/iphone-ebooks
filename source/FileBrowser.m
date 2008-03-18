@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
+#import <UIKit/UIImageAndTextTableCell.h>
 
 #import "FileBrowser.h"
-//#import "FileBrowser.m" //whuh?!
-#import <UIKit/UIImageAndTextTableCell.h>
+#import "BoundsChangedNotification.h"
 
 @implementation FileBrowser 
 - (id)initWithFrame:(struct CGRect)frame{
@@ -59,12 +59,29 @@
      name:OPENEDTHISFILE
      object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(boundsDidChange:)
+                                                 name:[BoundsChangedNotification name]
+                                               object:nil];
+    
+    
 	}
 	return self;
 }
 
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+  [self setFrame:[p_note newBounds]];
+}
+
+/**
+ * Cleanup.
+ */
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  
 	[_path release];
 	[_files release];
 	[_extensions release];

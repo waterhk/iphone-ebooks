@@ -43,7 +43,7 @@
 	if(self = [super init])
 	{
 		controller = appController;
-		contentRect = [[BooksDefaultsController sharedBooksDefaultsController] fullScreenApplicationContentRect];
+		contentRect = [UIHardware fullScreenApplicationContentRect];
 		//contentRect.origin.x = 0.0f;
 		//contentRect.origin.y = 0.0f;
     
@@ -511,7 +511,7 @@
 	if (nil == version)
 		version = @"??";
 	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, Benoit Cerrina, and Zachary Bedell.", version];
-	CGRect rect = [defaults fullScreenApplicationContentRect];
+	CGRect rect = [UIHardware fullScreenApplicationContentRect];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];

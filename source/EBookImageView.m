@@ -19,6 +19,7 @@
 
 #import "EBookImageView.h"
 #import "BooksDefaultsController.h"
+#import "BoundsChangedNotification.h"
 
 @implementation EBookImageView
 /**
@@ -35,8 +36,20 @@
     [self setBackgroundColor:transparent];
     
     [self showImage:file inFrame:p_frame scaleAspect:p_aspect];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(boundsDidChange:)
+                                                 name:[BoundsChangedNotification name]
+                                               object:nil];
   }
   return self;
+}
+
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+  GSLog(@"FIXME: EBookImageView doesn't handle rotate correctly yet!"); 
 }
 
 /**
@@ -96,6 +109,8 @@
  * Cleanup.
  */
 - (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  
   [_imgView release];
   [super dealloc];
 }

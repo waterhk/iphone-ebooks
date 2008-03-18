@@ -35,6 +35,7 @@
 #import "FileBrowser.h"
 #import "EBookView.h"
 #import "FileNavigationItem.h"
+#import "BoundsChangedNotification.h"
 
 #define READY_FROM_VIEW @"fromView"
 #define READY_TO_VIEW @"toView"
@@ -72,7 +73,20 @@
                                                object:nil];
   }
   
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(boundsDidChange:)
+                                               name:[BoundsChangedNotification name]
+                                             object:nil];
+  
+  
 	return self;
+}
+
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+  GSLog(@"FIXME: Toolbars don't respond to bounds change properly!");
 }
 
 /**
@@ -274,7 +288,7 @@
  */
 - (void)hide {
 	if (!hidden) {	
-    struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+    struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
     struct CGAffineTransform endTrans;
     
@@ -299,7 +313,7 @@
  */
 - (void)show {
 	if (hidden) {
-    struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+    struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
     struct CGAffineTransform endTrans;
     

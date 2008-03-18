@@ -22,6 +22,8 @@
 #import "UIOrientingApplication.h"
 #import <GraphicsServices/GraphicsServices.h>
 
+#import "BoundsChangedNotification.h"
+
 #import "common.h"
 
 @implementation UIOrientingApplication
@@ -79,12 +81,12 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 		size.width -= statusBar;
 	} else size.height -= statusBar;
 	
-	FullKeyBounds.origin.x = (degrees == 90) ? statusBar : 0;
-	FullKeyBounds.origin.y = 0;
-	FullKeyBounds.size = size;
+	m_fullKeyBounds.origin.x = (degrees == 90) ? statusBar : 0;
+	m_fullKeyBounds.origin.y = 0;
+	m_fullKeyBounds.size = size;
 	
-	FullContentBounds.origin.x = FullContentBounds.origin.y = 0;
-	FullContentBounds.size = (landscape) ? CGSizeMake(size.height, size.width) : size; 
+	m_fullContentBounds.origin.x = m_fullContentBounds.origin.y = 0;
+	m_fullContentBounds.size = (landscape) ? CGSizeMake(size.height, size.width) : size; 
 	
 	/* Now that our member variable is set, we try to apply these changes to the key view, if present.
    If this routine is called before there is a key view, it will still set the rects and move the statusbar. */
@@ -95,7 +97,8 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
                orientation: (degrees == 180) ? 0 : degrees
                   duration:reorientationDuration fenceID:0 animation:3];
     
-		UIView* transView = [self transitionView];
+		UIView *transView = [key contentView];
+    struct CGRect oldBounds = [transView bounds];
 		if (transView) {
 			struct CGSize oldSize = [transView bounds].size;
       
@@ -114,15 +117,20 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
       
 			[UIView beginAnimations: nil];
       [transView setTransform:transEnd];
-      
-      [transView setBounds: FullContentBounds];
+      [transView setBounds:m_fullContentBounds];
       [transView resizeSubviewsWithOldSize: oldSize];
-      [[self transitionView] setBounds:FullContentBounds];
+      [[self transitionView] setBounds:m_fullContentBounds];
       //[[Notifications sharedInstance] setFrame: FullContentBounds];
       
-      [key setBounds: FullKeyBounds];
+      [[NSNotificationCenter defaultCenter] postNotification:[BoundsChangedNotification 
+                                                              boundsChangedFrom:oldBounds 
+                                                              to:m_fullContentBounds 
+                                                              transform:transEnd
+                                                              forObject:transView]];
+      
+      [key setBounds: m_fullKeyBounds];
 			[UIView endAnimations];
-		} else [key setBounds: FullKeyBounds];
+		} else [key setBounds: m_fullKeyBounds];
 	} else [self setStatusBarMode: [self statusBarMode] orientation: (degrees == 180) ? 0 : degrees duration:0.0f];
 	orientationDegrees = degrees;
 	[super setUIOrientation: o_code];
@@ -135,41 +143,15 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 }
 
 - (CGRect) windowBounds {
-	return FullKeyBounds;
+	return m_fullKeyBounds;
 }
 
 - (CGRect) contentBounds {
-	return FullContentBounds;
+	return m_fullContentBounds;
 }
 
 - (bool) orientationLocked {
 	return orientationLocked;
-}
-
-/**
- * Set the transition view for the app.
- */
-- (void) setTransitionView: (UITransitionView*)p_view {
-  [p_view retain];
-  [transitionView release];
-  transitionView = p_view;
-}
-
-/**
- * Get the app's transition view.
- */
-- (UITransitionView*)transitionView {
-  return transitionView;
-}
-
-/**
- * Cleanup.
- */
-- (void)dealloc {
-  [transitionView release];
-  transitionView = nil;
-  
-  [super dealloc];
 }
 
 @end

@@ -27,7 +27,7 @@
 	if (self = [super init])
 	{
 		defaults = [BooksDefaultsController sharedBooksDefaultsController];
-		struct CGRect rect = [defaults fullScreenApplicationContentRect];
+		struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		//    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		//  rect.origin.x = rect.origin.y = 0;
 
@@ -119,7 +119,7 @@
 	NSString *title;
 	BOOL checked = NO;
 
-	CGRect rect = [defaults fullScreenApplicationContentRect];
+	CGRect rect = [UIHardware fullScreenApplicationContentRect];
 	UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,TOOLBAR_HEIGHT)];
 
 	//UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,TOOLBAR_HEIGHT)];

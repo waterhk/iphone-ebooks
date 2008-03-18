@@ -94,7 +94,7 @@ typedef enum
 - (BOOL)setSubchapter:(int)chapter;
 - (BOOL)gotoNextSubchapter;
 - (BOOL)gotoPreviousSubchapter;
--(void)redraw;
+
 //-(void) setOrientation: (int) orientation animate:(bool)anime;
 //- (void) fitRect;
 //-(void) afterRotate: (NSTimer*) timer;
