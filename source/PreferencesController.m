@@ -191,7 +191,6 @@
 		if (![newValue isEqualToString:[defaultEncodingPreferenceCell value]])
 		{
 			[defaultEncodingPreferenceCell setValue:newValue];
-			[controller refreshTextViewFromDefaultsToolbarsOnly:NO];
 		}
 		[defaultEncodingPreferenceCell setSelected:NO];
 	}
@@ -200,7 +199,6 @@
 		if (![newValue isEqualToString:[fontChoicePreferenceCell value]])
 		{
 			[fontChoicePreferenceCell setValue:newValue];
-			//[controller refreshTextViewFromDefaultsToolbarsOnly:NO];
 		}
 		[fontChoicePreferenceCell setSelected:NO];
 	}
@@ -208,12 +206,10 @@
 
 - (void)hidePreferences {
 	// Save defaults here
-	BOOL textNeedsRefresh = NO;
 	NSString *proposedFont = [fontChoicePreferenceCell value];
 	if (![proposedFont isEqualToString:[defaults textFont]])
 	{
 		[defaults setTextFont:proposedFont];
-		textNeedsRefresh = YES;
 	}
 	//GSLog(@"%s Font: %@", _cmd, [self fontNameForIndex:[fontChoiceControl selectedSegment]]);
 	int proposedSize = [[fontSizePreferenceCell value] intValue];
@@ -222,14 +218,12 @@
 	if ([defaults textSize] != proposedSize)
 	{
 		[defaults setTextSize: proposedSize];
-		textNeedsRefresh = YES;
 	}
   
 	BOOL proposedInverted = [[[invertPreferenceCell control] valueForKey:@"value"] boolValue];
 	if ([defaults inverted] != proposedInverted)
 	{
 		[defaults setInverted:proposedInverted];
-		textNeedsRefresh = YES;
 	}
   
 	[defaults setToolbar:[[[showToolbarPreferenceCell control] valueForKey:@"value"] boolValue]];
@@ -259,7 +253,7 @@
 	if ([defaults synchronize]){
 		GSLog(@"Synced defaults from prefs pane.");
 	}
-	[controller refreshTextViewFromDefaultsToolbarsOnly:!textNeedsRefresh];
+
 	needsOutAnimation = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:PREFS_NEEDS_ANIMATE object:self];
   

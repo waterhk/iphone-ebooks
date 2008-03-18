@@ -33,42 +33,30 @@
 #import "BooksDefaultsController.h"
 #import "common.h"
 
-@interface HideableNavBar : UINavigationBar
-{
+@class FileNavigationItem;
+
+@interface HideableNavBar : UINavigationBar {
   BOOL hidden;
   BOOL isTop;
   UITransformAnimation *translate;
   UIAnimator *animator;
   UITransitionView *_transView;
-  NSArray *_extensions;
   BooksDefaultsController	*defaults;
-  id _browserDelegate;
-  
-  NSArray *m_browserList;
-  int m_nCurrentBrowser;
-  
-  UIView *m_oldView;
 }
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
-- (void)hideTopNavBar;
-- (void)showTopNavBar:(BOOL)withAnimation;
-- (void)hideBotNavBar;
-- (void)showBotNavBar;
 
-- (void)setOldView:(UIView*)p_view;
-
-- (void)hide:(BOOL)forced;
+- (void)hide;
 - (void)show;
 - (void)toggle;
 - (BOOL)hidden;
-- (void)setExtensions:(NSArray *)extensions;
+- (void)replaceTopNavigationItem:(UINavigationItem*)p_item;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
 - (FileBrowser*)topBrowser;
+- (UIView*)topView;
 @end
 
 //informal protocol declaration for _browserDelegate
 @interface NSObject (BrowserDelegate)
-- (UIView*)showDocumentAtPath:(NSString*)p_path;
-- (void)closeCurrentDocument;
+- (void)setNavForItem:(FileNavigationItem*)p_item;
 @end

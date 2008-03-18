@@ -470,14 +470,15 @@
 	[_defaults setObject:perFileData forKey:FILESPECIFICDATAKEY];
 }
 
-- (unsigned int) lastScrollPointForFile: (NSString *) filename
-						   inSubchapter: (unsigned int) subchapter
-{
+/**
+ * Get the scroll point last visible for the given file and chapter.
+ */
+- (float)lastScrollPointForFile: (NSString *) filename inSubchapter: (unsigned int) subchapter {
 	NSString     *location     = [NSString stringWithFormat:@"%d", subchapter];
 	NSDictionary *perFileData  = [_defaults objectForKey:FILESPECIFICDATAKEY];
 	NSDictionary *bookData     = [perFileData objectForKey:filename];
 	NSDictionary *locationData = [bookData objectForKey:FILELOCPERSUBCHAPTER];
-	int           scrollPoint  = [[locationData objectForKey:location] intValue];
+	float           scrollPoint  = [[locationData objectForKey:location] floatValue];
 
 	if ((bookData == nil) || (locationData == nil))
 		scrollPoint = 0;
@@ -485,15 +486,15 @@
 	return scrollPoint;
 }
 
-- (void) setLastScrollPoint: (unsigned int) scrollPoint
-			  forSubchapter: (unsigned int) subchapter
-					forFile: (NSString *) filename
-{
+/**
+ * Save the last visible point for this file.
+ */
+- (void) setLastScrollPoint:(float)scrollPoint forSubchapter:(unsigned int)subchapter forFile:(NSString *)filename {
 	NSString            *location     = [NSString stringWithFormat:@"%d", subchapter];
 	NSMutableDictionary *perFileData  = [NSMutableDictionary dictionaryWithDictionary:[_defaults objectForKey:FILESPECIFICDATAKEY]];
 	NSMutableDictionary *bookData     = [NSMutableDictionary dictionaryWithDictionary:[perFileData objectForKey:filename]];
 	NSMutableDictionary *locationData = [NSMutableDictionary dictionaryWithDictionary:[bookData objectForKey:FILELOCPERSUBCHAPTER]];
-	NSString            *scrollStr    = [NSString stringWithFormat:@"%d", scrollPoint];
+	NSNumber            *scrollStr    = [NSNumber numberWithFloat:scrollPoint];
 
 	[locationData setObject:scrollStr forKey:location];
 	[bookData setObject:locationData forKey:FILELOCPERSUBCHAPTER];

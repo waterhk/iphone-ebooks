@@ -15,8 +15,13 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <GraphicsServices/GraphicsServices.h>
+#import <UIKit/CDStructures.h>
+#import <UIKit/UISliderControl.h>
+#import <UIKit/UIAlphaAnimation.h>
 
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
@@ -26,95 +31,161 @@
 #define ENCODING_LIST {[defaults defaultTextEncoding], NSUTF8StringEncoding, NSISOLatin1StringEncoding, \
 	NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
 
+@interface NSObject (HeartbeatDelegate)
+- (void)showNavbars;
+- (void)hideNavbars;
+- (UIView*)scrollerParentView;
+@end
 
 
 @implementation EBookView
 
-- (id)initWithFrame:(struct CGRect)rect {
+- (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par {
+  /* WTF?
 	CGRect lFrame = rect;
 	if (rect.size.width < rect.size.height) {
 		lFrame.size.width = rect.size.height;
 	}
+  */
   
-	[super initWithFrame:lFrame];
-	[super setFrame:rect];	
-	//  tapinfo = [[UIViewTapInfo alloc] initWithDelegate:self view:self];
+	if(self = [super initWithFrame:rect]) {
+    //[super setFrame:rect];	
 
-	size = 16.0f;
+    size = 16.0f;
+    
+    m_pendingScrollPoint = -1.0f;
 
-	chapteredHTML = [[ChapteredHTML alloc] init];
-	subchapter    = 0;
-	defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
+    chapteredHTML = [[ChapteredHTML alloc] init];
+    subchapter    = 0;
+    defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
+    m_navBarsVisible = NO;
+    
+    [self setAdjustForContentSizeChange:YES];
+    [self setEditable:NO];
+
+    [self setTextSize:size];
+    [self setTextFont:@"TimesNewRoman"];
+
+    [self setAllowsRubberBanding:YES];
+    [self setBottomBufferHeight:0.0f];
+
+    [self scrollToMakeCaretVisible:NO];
+    
+    [self setScrollDecelerationFactor:0.996f];
+    [self setTapDelegate:self];
+    [self setScrollerIndicatorsPinToContent:NO];
+    
+    lastVisibleRect = [self visibleRect];
+    [self scrollSpeedDidChange:nil];
+    
+    [self setDelegate:p_del];
+    CGRect scrollerRect = CGRectMake(0, 48, [self bounds].size.width, 48);
+    m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
+
+    [p_par addSubview:m_scrollerSlider];
+    float backParts[4] = {0, 0, 0, .5};
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    [m_scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+    [m_scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
+    [m_scrollerSlider setAlpha:0];
+    UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
+    [m_scrollerSlider setMinValueImage:img];
+    [m_scrollerSlider setMaxValueImage:img];
+    [self updateSliderPosition];
+    
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                         selector:@selector(scrollSpeedDidChange:)
+                           name:CHANGEDSCROLLSPEED
+                           object:nil];
+  }
   
-	[self setAdjustForContentSizeChange:YES];
-	[self setEditable:NO];
-
-	[self setTextSize:size];
-	[self setTextFont:@"TimesNewRoman"];
-
-	[self setAllowsRubberBanding:YES];
-	[self setBottomBufferHeight:0.0f];
-
-	[self scrollToMakeCaretVisible:NO];
-
-	[self setScrollDecelerationFactor:0.996f];
-	
-	[self setTapDelegate:self];
-	[self setScrollerIndicatorsPinToContent:NO];
-	
-  lastVisibleRect = [self visibleRect];
-	[self scrollSpeedDidChange:nil];
-  
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(scrollSpeedDidChange:)
-												 name:CHANGEDSCROLLSPEED
-											   object:nil];
-
 	return self;
 }
 
-- (void)heartbeatCallback:(id)unused {
-	if ((![self isScrolling]) && (![self isDecelerating])) {
-		lastVisibleRect = [self visibleRect];
-	}
-
-	if (_heartbeatDelegate != nil) {
-		if ([_heartbeatDelegate respondsToSelector:@selector(heartbeatCallback:)]) {
-			 [_heartbeatDelegate heartbeatCallback:self];
-		} else {
-			[NSException raise:NSInternalInconsistencyException
-						format:@"Delegate doesn't respond to selector"];
-		}
-	}
+/**
+ * Make sure our lastVisible gets updated after a scroll event.
+ */
+- (void)_scrollAnimationEnded {
+  lastVisibleRect = [self visibleRect];
+  [super _scrollAnimationEnded];
 }
 
-- (void)setHeartbeatDelegate:(id)delegate {
-	_heartbeatDelegate = delegate;
-	[self startHeartbeat:@selector(heartbeatCallback:) inRunLoopMode:nil];
-}
-
+/**
+ * Hide the nav bars and slider.
+ */
 - (void)hideNavbars {
-  GSLog(@"EBookView-hideNavbars");
-	if (_heartbeatDelegate != nil) {
-		if ([_heartbeatDelegate respondsToSelector:@selector(hideNavbars)]) {
-			[_heartbeatDelegate hideNavbars];
-		} else {
-			[NSException raise:NSInternalInconsistencyException
-						format:@"Delegate doesn't respond to selector"];
-		}
-	}
+  if(m_navBarsVisible) {
+    [self hideSlider];
+    if ([self delegate] != nil) {
+      if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
+        [[self delegate] hideNavbars];
+      }
+    }
+    m_navBarsVisible = NO;
+  }
 }
 
-
+/**
+ * Toggle visibility of the navbars and slider.
+ */
 - (void)toggleNavbars {
-  GSLog(@"EBookView-toggleNavbars");
-	if (_heartbeatDelegate != nil) {
-		if ([_heartbeatDelegate respondsToSelector:@selector(toggleNavbars)]) {
-			[_heartbeatDelegate toggleNavbars];
-		} else {
-			[NSException raise:NSInternalInconsistencyException
-						format:@"Delegate doesn't respond to selector"];
-		}
+  if(m_navBarsVisible) {
+    // Hide the navbars
+    [self hideSlider];
+    if ([self delegate] != nil) {
+      if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
+        [[self delegate] hideNavbars];
+      }
+    }
+    m_navBarsVisible = NO;
+  } else {
+    // Show the nav bars
+    [self showSlider];
+    if ([self delegate] != nil) {
+      if ([[self delegate] respondsToSelector:@selector(showNavbars)]) {
+        [[self delegate] showNavbars];
+      }
+    }
+    m_navBarsVisible = YES;
+  }
+}
+
+/**
+ * Figure out where the scroller should be based on the currently visible portion of the document.
+ */
+- (void)updateSliderPosition {
+  CGRect theWholeShebang = [[self _webView] frame];  
+	CGRect lDefRect = [self bounds];
+	CGRect visRect = [self visibleRect];
+	int endPos = (int)theWholeShebang.size.height - lDefRect.size.height;
+	[m_scrollerSlider setMinValue:0.0];
+	[m_scrollerSlider setMaxValue:(float)endPos];
+	[m_scrollerSlider setValue:visRect.origin.y];
+}
+
+/**
+ * Show the scroll slider.
+ */
+- (void)showSlider {
+  [self updateSliderPosition];
+  [m_scrollerSlider setAlpha:1];
+}
+
+/**
+ * Hide the scroll slider.
+ */
+- (void)hideSlider {
+  [m_scrollerSlider setAlpha:0];
+}
+
+/**
+ * React to a change in the slider position.
+ */
+- (void)handleSlider:(id)sender {
+	if (m_scrollerSlider != nil) {
+		CGPoint scrollness = CGPointMake(0, [m_scrollerSlider value]);
+		[self scrollPointVisibleAtTopLeft:scrollness animated:NO];
 	}
 }
 
@@ -135,24 +206,30 @@
  *
  * "A noble spirit embiggens the smallest man." -- Jebediah Springfield
  */
-	- (void)embiggenText {
-		if (size < 36.0f)
-		{
-			struct CGRect oldRect = [self visibleRect];
-			struct CGRect totalRect = [[self _webView] frame];
-			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-			float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-			float scrollFactor = middleRect / totalRect.size.height;
-			size += 2.0f;
-			[self setTextSize:size];
-			[self reflowBook];
-
-
-			totalRect = [[self _webView] frame];
-			middleRect = scrollFactor * totalRect.size.height;
-			oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-			[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+- (void)embiggenText {
+	if (size < 36.0f) {
+		struct CGRect oldRect = [self visibleRect];
+		struct CGRect totalRect = [[self _webView] frame];
+		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
+		float scrollFactor = middleRect / totalRect.size.height;
+		size += 2.0f;
+		[self setTextSize:size];
+           
+    [self recalculateStyle];
+    [self webViewDidChange:nil];
+		[self setNeedsDisplay];
+    
+    totalRect = [[self _webView] frame];
+		middleRect = scrollFactor * totalRect.size.height;
+		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+    
+    if (m_scrollerSlider != nil) {
+			float maxval = totalRect.size.height;
+			float val = [m_scrollerSlider value];
+			float percentage = val / maxval;
+			[m_scrollerSlider setMaxValue:totalRect.size.height];
+			[m_scrollerSlider setValue:(totalRect.size.height * percentage)];
 		}
 	}
 
@@ -161,38 +238,33 @@
  *
  * "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
  */
-	- (void)ensmallenText {
-		if (size > 10.0f)
-		{
-			struct CGRect oldRect = [self visibleRect];
-			struct CGRect totalRect = [[self _webView] frame];
-			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-			float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
-			float scrollFactor = middleRect / totalRect.size.height;
-			size -= 2.0f;
-			[self setTextSize:size];
-			
-			[self reflowBook];
+- (void)ensmallenText {
+	if (size > 10.0f) {
+		struct CGRect oldRect = [self visibleRect];
+		struct CGRect totalRect = [[self _webView] frame];
+		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
+		float scrollFactor = middleRect / totalRect.size.height;
+		size -= 2.0f;
+		[self setTextSize:size];
 
-			totalRect = [[self _webView] frame];
-			middleRect = scrollFactor * totalRect.size.height;
-			oldRect.origin.y = middleRect - (oldRect.size.height / 2);
-			//		GSLog(@"size: %f y: %f\n", size, oldRect.origin.y);
-			[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+    [self recalculateStyle];
+    [self webViewDidChange:nil];
+		[self setNeedsDisplay];
+    
+    totalRect = [[self _webView] frame];
+		middleRect = scrollFactor * totalRect.size.height;
+		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
+		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
+    
+    if(m_scrollerSlider != nil) {
+			float maxval = totalRect.size.height;
+			float val = [m_scrollerSlider value];
+			float percentage = val / maxval;
+			[m_scrollerSlider setMaxValue:totalRect.size.height];
+			[m_scrollerSlider setValue:(totalRect.size.height * percentage)];
 		}
 	}
 
-
-// None of these tap methods work yet.  They may never work.
-- (void)handleDoubleTapEvent:(struct __GSEvent *)event {
-	[self embiggenText];
-	//[super handleDoubleTapEvent:event];
-}
-
-- (void)handleSingleTapEvent:(struct __GSEvent *)event {
-	[self ensmallenText];
-	//[super handleDoubleTapEvent:event];
-}
 /*
    - (BOOL)bodyAlwaysFillsFrame
    {//experiment!
@@ -206,14 +278,15 @@
 	_MouseDownY = clicked.y;
 	GSLog(@"MouseDown");
 	[super mouseDown:event];
+  lastVisibleRect = [self visibleRect];
 }
+
 - (void)mouseUp:(struct __GSEvent *)event {
 	/*************
 	 * NOTE: THE GSEVENTGETLOCATIONINWINDOW INVOCATION
 	 * WILL NOT COMPILE UNLESS YOU HAVE PATCHED GRAPHICSSERVICES.H TO ALLOW IT!
 	 * A patch is included in the svn.
 	 *****************/
-
 	CGPoint clicked = GSEventGetLocationInWindow(event);
 	//BCC: swipe detection
 	BOOL lChangeChapter = NO;
@@ -236,7 +309,7 @@
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
-	//GSLog(@"zone height %d", lZoneHeight);
+
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 	if (!lChangeChapter && [self isScrolling]) {
@@ -260,16 +333,14 @@
 			} else {  // If the old rect equals the new, then we must not be scrolling
 				[self toggleNavbars];
 			}
-		}
-		else
-		{ //we are, in fact, scrolling
+		}	else {
+      //we are, in fact, scrolling
 			[self hideNavbars];
 		}
 	}
 
 	BOOL unused = [self releaseRubberBandIfNecessary];
 	lastVisibleRect = [self visibleRect];
-	GSLog(@"MouseUp");
 	[super mouseUp:event];
 }
 
@@ -281,8 +352,7 @@
  // TODO: Adjust the bottom and top buffers.  The scrolling works, but
  // the text can wind up behind the toolbars at the bottom & top
  // of the text.
-- (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
-{
+- (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	float  scrollness = contentRect.size.height;
 	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
@@ -295,8 +365,7 @@
 	[self hideNavbars];
 }
 
--(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar
-{
+-(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
 	struct CGRect contentRect = [defaults fullScreenApplicationContentRect];
 	float  scrollness = contentRect.size.height;
 	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
@@ -309,44 +378,30 @@
 	[self hideNavbars];
 }
 
-- (int)textSize
-// This method is needed because the toolchain doesn't
-// currently handle floating-point return values in an
-// ARM-friendly way.
-{
+- (int)textSize {
 	return (int)size;
 }
 
-- (void)setTextSize:(int)newSize
-{
+- (void)setTextSize:(int)newSize {
 	size = (float)newSize;
 	[super setTextSize:size];
 }
 
-- (void)scrollSpeedDidChange:(NSNotification *)aNotification
-{
-	switch ([defaults scrollSpeedIndex])
-	{
-		case 0:
+- (void)scrollSpeedDidChange:(NSNotification *)aNotification {
+	switch ([defaults scrollSpeedIndex]) {
+  case 0:
 	  [self setScrollToPointAnimationDuration:0.75];
 	  break;
-		case 1:
+	case 1:
 	  [self setScrollToPointAnimationDuration:0.25];
 	  break;
-		case 2:
+	case 2:
 	  [self setScrollToPointAnimationDuration:0.0];
 	  break;
 	}
 }
 
 #pragma mark File Reading Methods START
-
-//USE WITH CAUTION!!!!
-- (void)setCurrentPathWithoutLoading:(NSString *)thePath {
-	[thePath retain];
-	[path release];
-	path = thePath;
-}
 
 /**
  * Master method to load book - all others delegate here.
@@ -358,10 +413,9 @@
  */
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
 	NSMutableString *theHTML = nil;
-	//GSLog(@"path: %@", thePath);
-
-	[thePath retain];
-	[path release];
+  
+  [thePath retain];
+  [path release];
 	path = thePath;
 
 	NSString *pathExt = [[thePath pathExtension] lowercaseString];
@@ -417,6 +471,8 @@
     [self setText:theHTML];
   }
 
+  [self applyPreferences];
+  
 	/* This code doesn't work.  Sorry, charlie.
 	   if (1) //replace with a defaults check
 	   { 
@@ -435,28 +491,28 @@
  * Convert Palm data to string using proper text encoding.
  */
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data {
-	NSMutableString *originalText;
-
-	int i=0;
-	NSStringEncoding encList[] = ENCODING_LIST;
-	NSStringEncoding curEnc = encList[i];
-	while(curEnc != -1) {
-		GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-		originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
-
-		if(originalText != nil) {
-			GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-			break;
-		}
-
-		curEnc = encList[++i];
-	}
-
-	if(originalText == nil) {
-		originalText = [[NSMutableString alloc] initWithString:
-			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-	}
-
+  NSMutableString *originalText;
+  
+  int i=0;
+  NSStringEncoding encList[] = ENCODING_LIST;
+  NSStringEncoding curEnc = encList[i];
+  while(curEnc != -1) {
+    //GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+    originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
+    
+    if(originalText != nil) {
+      //GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+      break;
+    }
+    
+    curEnc = encList[++i];
+  }
+  
+  if(originalText == nil) {
+    originalText = [[NSMutableString alloc] initWithString:
+                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+  }
+  
 	return [originalText autorelease];  
 }
 
@@ -465,34 +521,34 @@
  * or with a list of common encodings, convert to HTML and return.
  */
 - (NSMutableString *)readTextFile:(NSString *)file {  
-	NSMutableString *originalText;
-
-	int i=0;
-	NSStringEncoding encList[] = ENCODING_LIST;
-	NSStringEncoding curEnc = encList[i];
-	while(curEnc != -1) {
-
-		if(curEnc == AUTOMATIC_ENCODING) {
-			GSLog(@"Trying automatic encoding");
-			originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
-		} else {
-			GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-			originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
-		}
-
-		if(originalText != nil) {
-			GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-			break;
-		}
-
-		curEnc = encList[++i];
-	}
-
-	if(originalText == nil) {
-		originalText = [[NSMutableString alloc] initWithString:
-			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-	}
-
+  NSMutableString *originalText;
+  
+  int i=0;
+  NSStringEncoding encList[] = ENCODING_LIST;
+  NSStringEncoding curEnc = encList[i];
+  while(curEnc != -1) {
+    
+    if(curEnc == AUTOMATIC_ENCODING) {
+      //GSLog(@"Trying automatic encoding");
+      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
+    } else {
+      //GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+      originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
+    }
+    
+    if(originalText != nil) {
+      //GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+      break;
+    }
+    
+    curEnc = encList[++i];
+  }
+  
+  if(originalText == nil) {
+    originalText = [[NSMutableString alloc] initWithString:
+                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+  }
+  
 	return [originalText autorelease];  
 }
 
@@ -535,17 +591,6 @@
 }
 
 /**
- * Cleanup.
- */
-- (void)dealloc {
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[path release];
-	[chapteredHTML release];
-	[defaults release];
-	[super dealloc];
-}
-
-/**
  * Get the currently displayed html chapter.
  */
 - (int) getSubchapter {
@@ -567,72 +612,40 @@
 /**
  * Go to an explicit HTML chapter.
  */
-- (void) setSubchapter: (int) chapter {
-	CGPoint origin = { 0, 0 };
-
-	if ([defaults subchapteringEnabled] && (subchapter < [chapteredHTML chapterCount])) {
+- (BOOL)setSubchapter:(int)chapter {
+	if ([defaults subchapteringEnabled] && chapter >= 0 && (chapter < [chapteredHTML chapterCount])) {
+    GSLog(@"Set subchapter to %d", chapter);
+    subchapter = chapter;
+    [self saveBookPosition];
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-	}
-
-	[self scrollPointVisibleAtTopLeft:origin];
-	[self recalculateStyle];
-	[self updateWebViewObjects];
-	[self setNeedsDisplay];
+    [self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
+    [self recalculateStyle];
+    [self updateWebViewObjects];
+    [self setNeedsDisplay]; 
+    return YES;
+	} else {
+    return NO;
+  }
 }
 
 /**
  * Go to the next HTML chapter.
  */
-- (BOOL) gotoNextSubchapter {
-	CGPoint origin = { 0, 0 };
-
-	if ([defaults subchapteringEnabled] == NO)
-		return NO;
-
-	if ((subchapter + 1) >= [chapteredHTML chapterCount])
-		return NO;
-
-	[defaults setLastScrollPoint: [self visibleRect].origin.y
-				   forSubchapter: subchapter
-						 forFile: path];
-
-	[self setHTML:[chapteredHTML getChapterHTML:++subchapter]];
-
-	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
-	[self scrollPointVisibleAtTopLeft:origin];
-	[self setNeedsDisplay];
-	return YES;
+- (BOOL)gotoNextSubchapter {
+  return [self setSubchapter:subchapter+1];
 }
 
 /**
  * Change to the previous HTML chapter.
  */
 - (BOOL) gotoPreviousSubchapter {
-	CGPoint origin = { 0, 0 };
-
-	if ([defaults subchapteringEnabled] == NO)
-		return NO;
-
-	if (subchapter == 0)
-		return NO;
-
-	[defaults setLastScrollPoint: [self visibleRect].origin.y
-				   forSubchapter: subchapter
-						 forFile: path];
-
-	[self setHTML:[chapteredHTML getChapterHTML:--subchapter]];
-
-	origin.y = [defaults lastScrollPointForFile:path inSubchapter:subchapter];
-	[self scrollPointVisibleAtTopLeft:origin];
-	[self setNeedsDisplay];
-
-	return YES;
+  return [self setSubchapter:subchapter-1];
 }
 
 /**
  * Redraw the screen.
  */
--(void) redraw {
+-(void)redraw {
 	CGRect lWebViewFrame = [[self _webView] frame];
 	CGRect lFrame = [self frame];
 	//GSLog(@"lWebViewFrame :  x=%f, y=%f, w=%f, h=%f", lWebViewFrame.origin.x, lWebViewFrame.origin.y, lWebViewFrame.size.width, lWebViewFrame.size.height);
@@ -653,5 +666,97 @@
 - (BOOL)canHandleSwipes
 {
 	return YES;
+}
+
+/**
+ * Apply various defaults to the given EBookView.
+ */
+- (void)applyPreferences {
+  [self setTextSize:[defaults textSize]];
+  [self invertText:[defaults inverted]];
+  [self setTextFont:[defaults textFont]];
+
+  // FIXME: This toolbar/navbar stuff needs to react to hide/show
+	if (![defaults navbar]) {
+		[self setMarginTop:48];
+  } else {
+		[self setMarginTop:0];
+  }
+  
+	if (![defaults toolbar]) {
+		[self setBottomBufferHeight:48];
+	} else {
+		[self setBottomBufferHeight:0];
+  }
+
+  // Restore scroll location
+  [self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
+}
+
+/**
+ * Scrolls to the given point by waking up the heartbeat for one pulse.
+ */
+- (void)scrollToPoint:(float)p_pt {
+  m_pendingScrollPoint = p_pt;
+  [self startHeartbeat:@selector(beatIt) inRunLoopMode:nil];
+}
+
+/**
+ * Set scroll point at startup.
+ *
+ * For some reason, we can't set the scroll point programatically until
+ * a heart beat happens.  The user moving things around is enough to 
+ * make the scroller and buttons work, but for the restore at startup
+ * to happen, we need to beat once.
+ *
+ * We don't need the heartbeat for anything else at this point, so we'll 
+ * stop it again right after scrolling.  No sense having all those 
+ * messages flying around.
+ */
+- (void)beatIt {
+  if(m_pendingScrollPoint >= 0) {
+    float pt = m_pendingScrollPoint;
+    m_pendingScrollPoint = -1.0f;
+    GSLog(@"Scrolling book position to %f", pt);
+    [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, pt) animated:NO];
+    [self stopHeartbeat:@selector(beatIt)];
+  }
+}
+
+/**
+ * Save the current chapter and scroll point to preferences.
+ */
+- (void)saveBookPosition {
+  if(path) {
+    float pt = [self visibleRect].origin.y;
+    GSLog(@"EBookView saving position %f for book %@", pt, path);
+    [defaults setLastScrollPoint:pt
+                   forSubchapter:[self getSubchapter]
+                         forFile:[self currentPath]];
+    [defaults setLastSubchapter:subchapter forFile:[self currentPath]];
+  }
+}
+
+/**
+ * Cleanup.
+ */
+- (void)dealloc {
+  GSLog(@"EBookView dealloc");
+  
+  [self saveBookPosition];
+  
+  [m_scrollerSlider removeFromSuperview];
+  [m_scrollerSlider release];
+  
+  [self setTapDelegate:nil];
+  
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+  
+  
+	[path release];
+	[chapteredHTML release];
+	[defaults release];
+  
+	[super dealloc];
 }
 @end

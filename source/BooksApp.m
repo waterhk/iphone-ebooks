@@ -40,22 +40,20 @@
   GSLog(@"NOTIFICATION: %@", [p_note name]);
 }
 
-- (void) applicationDidFinishLaunching: (id) unused
-{
+- (void)applicationDidFinishLaunching:(id)unused {
   // Only log if the log file already exists!
   if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {    
     freopen([OUT_FILE fileSystemRepresentation], "a", stderr);
     freopen([OUT_FILE fileSystemRepresentation], "a", stdout);
-    GSLog(@"Should be logging to file now...");
     
     //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(debugNotification:) name:nil object:nil];
   }
+  
+  m_documentExtensions = [[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil] retain];
 	
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
 	//bcc rect to change for rotate90
-
-	doneLaunching = NO;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
@@ -81,14 +79,10 @@
   
   readingText = exists && !isDir;
   
-  GSLog(@"Recent file is %@", recentFile);
-  
   if(!exists) {
-    GSLog(@"File doesn't exist, so we should go back to root.");
     [defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
     [defaults removePerFileDataForFile:recentFile];
     recentFile = [defaults lastBrowserPath];
-    GSLog(@"Corrected recent file is %@", recentFile);
   }
   
   /*
@@ -101,16 +95,15 @@
    */
   NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
   if(coverart != nil) {
-    GSLog(@"Got cover art: %@", coverart);    
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:coverart 
+    m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:coverart 
                                                      withFrame:[window bounds] 
                                                    scaleAspect:YES];
-    [transitionView transition:1 toView:imageView];
+    [transitionView transition:1 toView:m_startupImage];
   } else {
-    imageView = [[EBookImageView alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
+    m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
                                                      withFrame:[window bounds] 
                                                    scaleAspect:NO];
-    [transitionView transition:0 toView:imageView];
+    [transitionView transition:0 toView:m_startupImage];
   }
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
@@ -123,31 +116,19 @@
 				progsize.height)];
 	[progressIndicator setStyle:0];
    */
-    
-  // Heart beat will trigger doc loading and the rest of the init process.
-  // We want to get back out to the main runloop to let some of the image & view stuff happen.
-  textView = [[EBookView alloc] initWithFrame:[window bounds]];
-  [textView setHeartbeatDelegate:self];
 
-
+  [self toggleStatusBarColor];
+  
   [window orderFront: self];
 	[window makeKey: self];
 	[window _setHidden: NO];
 
 //	[mainView addSubview:progressIndicator];
 //	[progressIndicator startAnimation];
-  GSLog(@"applicationDidFinishLaunching: finished");
-}
-
-/**
- * Heartbeat isn't needed in main app at this point, but we need to init
- * a delegate or the navbar toggle won't work.
- */
-- (void)heartbeatCallback:(id)ignored {
-  if(!doneLaunching) {
-    doneLaunching = YES;
-    [self finishUpLaunch];
-  }
+  
+  // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
+  // fire almost immediately.
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
 }
 
 /**
@@ -160,11 +141,6 @@
  * Clear as mud, right?
  */
 - (void)transitionNavbarAnimation {
-  GSLog(@"Enabling navbar animation");
-  [self refreshTextViewFromDefaultsToolbarsOnly:NO];
-  
-  [navBar setOldView:imageView];
-  
   [mainView addSubview:navBar];
   [mainView addSubview:bottomNavBar];
 
@@ -176,14 +152,10 @@
  * last read file.  Takes down splash image if it was present.
  */
 - (void)finishUpLaunch {
-  GSLog(@"finishUpLaunch");
-  
   NSString *recentFile = [defaults lastBrowserPath];
 
   [self setupNavbar];
 	[self setupToolbar];
-  
-  GSLog(@"TextView: %@, ImageView: %@", textView, imageView);
 
   // Get last browser path and start loading files
 	NSString *lastBrowserPath;
@@ -194,8 +166,6 @@
   }
   
 	NSMutableArray *arPathComponents = [[NSMutableArray alloc] init]; 
-  
-  GSLog(@"Original lastBrowserPath: %@", lastBrowserPath);
   
 	if(![lastBrowserPath isEqualToString:[BooksDefaultsController defaultEBookPath]]) {
     
@@ -222,11 +192,8 @@
     }
     
     NSString *curPath = [arPathComponents objectAtIndex:pathCount];
-    GSLog(@"Pushing path component %@", curPath);
     // Add the current path to the toolbar
-		FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithPath:curPath];
-		[navBar pushNavigationItem:tempItem];
-		[tempItem release];
+    [self fileBrowser:nil fileSelected:curPath];
     
     // Need to show the navbar after the last transition if we're not reading.
     if(!readingText && pathCount == 0) {
@@ -234,8 +201,7 @@
     }
   }
       
-	if(readingText) {    
-    GSLog(@"Reading text."); 
+	if(readingText) {
     /*
      * If we are reading text, then we DIDN'T finish setting up the navbar during
      * the path-push process.  So we'd better do it now!
@@ -243,14 +209,14 @@
     [self transitionNavbarAnimation];
     
     // Pushing the file onto the toolbar will trigger it being opened.
-    FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile];
+    UIView *view = [self showDocumentAtPath:recentFile];    
+    FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile view:view];
     [navBar pushNavigationItem:fni];
     [fni release];
     
     // If reading, hide the nav bars (but they need to be added to the view first)
-    [navBar hide:YES];
-    [bottomNavBar hide:YES];
-    [self hideSlider];  
+    [navBar hide];
+    [bottomNavBar hide];
   }
   
 	//bcc rotation
@@ -260,10 +226,15 @@
 
 	//[progressIndicator stopAnimation];
 	//[progressIndicator removeFromSuperview];
-  
-  [navBar setOldView:nil];
-  
-  GSLog(@"finishUpLaunch done.");
+}
+
+- (void)setNavForItem:(FileNavigationItem*)p_item {
+  if([p_item isDocument]) {
+    // Set nav bars for a document
+  } else {
+    // Set nav bars for a file browser
+    [bottomNavBar hide];
+  }
 }
 
 
@@ -287,194 +258,106 @@
  * Hide the navigation bars.
  */
 - (void)hideNavbars {
-  GSLog(@"BooksApp-hideNavbars");
-	struct CGRect rect = [window bounds];
-	[textView setFrame:rect];
-	[navBar hide:NO];
-	[bottomNavBar hide:NO];
-	[self hideSlider];
+	//struct CGRect rect = [window bounds];
+	//[textView setFrame:rect];
+	[navBar hide];
+	[bottomNavBar hide];
+}
+
+/**
+ * Show the navigation bars.
+ */
+- (void)showNavbars {
+	//struct CGRect rect = [window bounds];
+	//[textView setFrame:rect];
+	[navBar show];
+	[bottomNavBar show];
 }
 
 /**
  * Toggle visibility of the navigation bars.
  */
 - (void)toggleNavbars {
-  GSLog(@"BooksApp-toggleNavbars");
 	[navBar toggle];
 	[bottomNavBar toggle];
-  
-	if (nil == scrollerSlider) {
-		[self showSlider:true];
-	} else {
-		[self hideSlider];
-	}
 }
 
 /**
- * Show the scroll slider.
- *
- * FIXME: Is it really necessary to destory and reinit this thing every time??
+ * Return YES if the image at the given path is an image.
  */
-- (void)showSlider:(BOOL)withAnimation {
-  GSLog(@"BooksApp-showSlider");
-	CGRect rect = CGRectMake(0, 48, [defaults fullScreenApplicationContentRect].size.width, 48);
-	CGRect lDefRect = [defaults fullScreenApplicationContentRect];
-	if (nil != scrollerSlider) {
-		[scrollerSlider removeFromSuperview];
-		[scrollerSlider autorelease];
-		scrollerSlider = nil;
-	}
-
-	scrollerSlider = [[UISliderControl alloc] initWithFrame:rect];
-	[mainView addSubview:scrollerSlider];
-	CGRect theWholeShebang = [[textView _webView] frame];
-	CGRect visRect = [textView visibleRect];
-	//GSLog(@"visRect: x=%f, y=%f, w=%f, h=%f", visRect.origin.x, visRect.origin.y, visRect.size.width, visRect.size.height);
-	//GSLog(@"theWholeShebang: x=%f, y=%f, w=%f, h=%f", theWholeShebang.origin.x, theWholeShebang.origin.y, theWholeShebang.size.width, theWholeShebang.size.height);
-	int endPos = (int)theWholeShebang.size.height - lDefRect.size.height;
-	[scrollerSlider setMinValue:0.0];
-	[scrollerSlider setMaxValue:(float)endPos];
-	[scrollerSlider setValue:visRect.origin.y];
-	float backParts[4] = {0, 0, 0, .5};
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	[scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
-	[scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
-	[scrollerSlider setAlpha:0];
-	//  [scrollerSlider setShowValue:YES];
-	UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
-	[scrollerSlider setMinValueImage:img];
-	[scrollerSlider setMaxValueImage:img];
-	if (withAnimation) {
-		if (animator != nil) {
-			[animator release];
-    }
-		animator = [[UIAnimator alloc] init];
-		if (alpha != nil) {
-			[alpha release];
-    }
-		alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
-		[alpha setStartAlpha:0];
-		[alpha setEndAlpha:1];
-		[animator addAnimation:alpha withDuration:0.25 start:YES];
-	} else {
-		[scrollerSlider setAlpha:1];
-	}
-}
-
-- (void)hideSlider {
-  GSLog(@"BooksApp-hideSlider");
-	if (scrollerSlider != nil) {
-		if (animator != nil) {
-			[animator release];
-    }
-    
-		animator = [[UIAnimator alloc] init];
-		if (alpha != nil) {
-			[alpha release];
-    }
-    
-		alpha = [[UIAlphaAnimation alloc] initWithTarget:scrollerSlider];
-		[alpha setStartAlpha:1];
-		[alpha setEndAlpha:0];
-		[animator addAnimation:alpha withDuration:0.1 start:YES];
-		[scrollerSlider release];
-		scrollerSlider = nil;
-	}
-}
-
-- (void)handleSlider:(id)sender {
-	if (scrollerSlider != nil) {
-		CGPoint scrollness = CGPointMake(0, [scrollerSlider value]);
-		[textView scrollPointVisibleAtTopLeft:scrollness animated:NO];
-	}
+- (BOOL)isDocumentImage:(NSString*)p_path {
+  NSString *ext = [p_path pathExtension];
+  return ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
 }
 
 /**
  * Show the document and return the view used to allow for transition.
  */
 - (UIView*)showDocumentAtPath:(NSString*)p_path {
-  NSString *ext = [p_path pathExtension];
-  BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
+  BOOL isPicture = [self isDocumentImage:p_path];
   UIView *ret = nil;
   
-//  GSLog(@"Releaseing imageView");
-  // Always kill the image view.  We'll reuse the textView for now.
-  //[imageView autorelease];
-  //imageView = nil;
-  //GSLog(@"Released.");
-  
+  [defaults setLastBrowserPath:p_path];
+
   if (isPicture) {
-    GSLog(@"Loading picture: %@", p_path);
-    [imageView showImage:p_path];
-    ret = imageView;
+    ret = [[[EBookImageView alloc] initWithContentsOfFile:p_path withFrame:[mainView bounds] scaleAspect:YES] autorelease];
   } else { 
     //text or HTML file
     readingText = YES;
-    BOOL sameFile = [[textView currentPath] isEqualToString:p_path];
-    GSLog(@"Loading book %@ (previous was: %@)", p_path, [textView currentPath]);
-    if (!sameFile) {
-      GSLog(@"Really loading...");
-      // Slight optimization.  If the file is already loaded,
-      // don't bother reloading.
-      int subchapter = [defaults lastSubchapterForFile:p_path];
-      float scrollPoint = (float) [defaults lastScrollPointForFile:p_path
-                                                      inSubchapter:subchapter];
-      
-      [textView loadBookWithPath:p_path subchapter:subchapter];
-      [textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint) animated:NO];
-    }
-    // Whether we loaded it or not, need to return the text view.
-    ret = textView;
+    // Slight optimization.  If the file is already loaded,
+    // don't bother reloading.
+    int subchapter = [defaults lastSubchapterForFile:p_path];
+    float scrollPoint = (float) [defaults lastScrollPointForFile:p_path
+                                                    inSubchapter:subchapter];
+   
+    EBookView *ebv = [[[EBookView alloc] initWithFrame:[mainView bounds] delegate:self parentView:mainView] autorelease];
+    [ebv setDelegate:self];
+    [ebv loadBookWithPath:p_path subchapter:subchapter];
+    
+    ret = ebv;
   }  
   
   if (isPicture) {
     [navBar show];
-    [bottomNavBar hide:YES];
+    [bottomNavBar hide];
   } else {
-    [navBar hide:NO];
+    [navBar hide];
     if (![defaults toolbar]) {
       [bottomNavBar show];
     } else {
-      [bottomNavBar hide:NO];
+      [bottomNavBar hide];
     }
   }
   
-  GSLog(@"Sending file read notification.");
   // Make sure the "file read" dot is updated.
   [[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE object:p_path];
-  GSLog(@"Done Sending file read notification.");
+
   return ret;
 }
 
 /**
  * Cleanup the current document.  Saves settings for books or dealloc's views for images.
  */
+/*
 - (void)closeCurrentDocument {
   GSLog(@"Closing document.");
   if(readingText) {
-    struct CGRect  selectionRect = [textView visibleRect];
-    int            subchapter    = [textView getSubchapter];
-    NSString      *filename      = [textView currentPath];
-    
-    [defaults setLastScrollPoint: (unsigned int) selectionRect.origin.y
-                   forSubchapter:subchapter
-                         forFile:filename];
-    [defaults setLastSubchapter:subchapter forFile:filename];
+    [self saveBookPosition];
   } else {
     [imageView release];
     imageView = nil;
   }
   
   readingText = NO;
-  [bottomNavBar hide:YES];
-  [self hideSlider];
+  [bottomNavBar hide];
 }
+ */
 
 /**
  * Called by the file browser objects when a user taps a file or folder.  Calls to navBar
  * to push whatever was tapped.  Navbar will call us back to actually open something.
  */
-- (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file {
+- (void)fileBrowser:(FileBrowser *)browser fileSelected:(NSString *)file {
 	BOOL isDir = NO;
   NSFileManager *fileManager = [NSFileManager defaultManager];
   
@@ -487,13 +370,16 @@
   
   FileNavigationItem *tempItem;
 	if (isDir) {
-    GSLog(@"Loading browser for directory %@", file);
-		tempItem = [[FileNavigationItem alloc] initWithPath:file];
+    FileBrowser *browser = [[FileBrowser alloc] initWithFrame:[mainView bounds]];
+    [browser setPath:file];
+    [browser setDelegate:self];
+    [browser setExtensions:m_documentExtensions];
+		tempItem = [[FileNavigationItem alloc] initWithPath:file browser:browser];
+    [browser release];
 	} else {
     // not a directory
-    GSLog(@"Loading file: %@", file);
-		tempItem = [[FileNavigationItem alloc] initWithDocument:file];
-		// [defaults removePerFileDataForFile:file]; // Why would we remove per-file settings when we're opening the file???
+    UIView *displayView = [self showDocumentAtPath:file];
+		tempItem = [[FileNavigationItem alloc] initWithDocument:file view:displayView];
   }
   
   [navBar pushNavigationItem:tempItem];
@@ -502,19 +388,20 @@
 
 
 - (void)cleanUpBeforeQuit {
-	struct CGRect  selectionRect;
-	int            subchapter = [textView getSubchapter];
   FileNavigationItem *topItem = [navBar topItem];
-	NSString      *filename   = [topItem path];
-
+	NSString *filename = [topItem path];
   GSLog(@"Saving last browser path at shutdown: %@", filename);
   [defaults setLastBrowserPath:filename];
-	selectionRect = [textView visibleRect];
-	[defaults setLastScrollPoint: (unsigned int)selectionRect.origin.y
-				   forSubchapter: subchapter
-						 forFile: filename];
-	[defaults setLastSubchapter:subchapter forFile:filename];
+  
+  // Need to kick the top-most EBookView.  It doesn't clean up on its own at shutdown.
+  UIView *top = [navBar topView];
+  if([top respondsToSelector:@selector(saveBookPosition)]) {
+    EBookView *eb = (EBookView*)top;
+    [eb saveBookPosition];
+  }
+  
 	[defaults synchronize];
+  
   GSLog(@"Books is terminating.");
   GSLog(@"========================================================");
 }
@@ -523,153 +410,84 @@
 	[self cleanUpBeforeQuit];
 }
 
-- (void)applicationWillTerminate {
-  // Should always suspend before we terminate, so no need to cleanup twice.
-	//[self cleanUpBeforeQuit];
-}
-
 // FIXME: Seems like this text stuff should be purely in the EBookView class.
 - (void)embiggenText:(UINavBarButton *)button {
 	if (![button isPressed]) {// mouse up events only, kids!
-		CGRect rect = [[textView _webView] frame];
-		[textView embiggenText];
-		if (scrollerSlider != nil) {
-			float maxval = rect.size.height;
-			float val = [scrollerSlider value];
-			float percentage = val / maxval;
-			rect = [[textView _webView] frame];
-			[scrollerSlider setMaxValue:rect.size.height];
-			[scrollerSlider setValue:(rect.size.height * percentage)];
-		}
-		[defaults setTextSize:[textView textSize]];
+		[(EBookView*)[navBar topView] embiggenText];
+		[defaults setTextSize:[(EBookView*)[navBar topView] textSize]];
 	}
 }
 
 - (void)ensmallenText:(UINavBarButton *)button {
 	if (![button isPressed]) {// mouse up events only, kids!
-		CGRect rect = [[textView _webView] frame];
-		[textView ensmallenText];
-		if (scrollerSlider != nil) {
-			float maxval = rect.size.height;
-			float val = [scrollerSlider value];
-			float percentage = val / maxval;
-			rect = [[textView _webView] frame];
-			[scrollerSlider setMaxValue:rect.size.height];
-			//[scrollerSlider setValue:oldRect.origin.y];
-			[scrollerSlider setValue:(rect.size.height * percentage)];
-		}
-		[defaults setTextSize:[textView textSize]];
+		[(EBookView*)[navBar topView] ensmallenText];
+		[defaults setTextSize:[(EBookView*)[navBar topView] textSize]];
 	}
 }
 
 - (void)invertText:(UINavBarButton *)button {
   if (![button isPressed]) { // mouse up events only, kids!
 		textInverted = !textInverted;
-		[textView invertText:textInverted];
+		[(EBookView*)[navBar topView] invertText:textInverted];
 		[defaults setInverted:textInverted];
 		[self toggleStatusBarColor];
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
-		[textView setFrame:rect];
+		[(EBookView*)[navBar topView] setFrame:rect];
 	}	
 }
 
 - (void)pageDown:(UINavBarButton *)button {
 	if (![button isPressed]) {
-		[textView pageDownWithTopBar:![defaults navbar]
+		[(EBookView*)[navBar topView] pageDownWithTopBar:![defaults navbar]
 						   bottomBar:![defaults toolbar]];
 	}	
 }
 
 - (void)pageUp:(UINavBarButton *)button {
 	if (![button isPressed]) {
-		[textView pageUpWithTopBar:![defaults navbar]
+		[(EBookView*)[navBar topView] pageUpWithTopBar:![defaults navbar]
 						 bottomBar:![defaults toolbar]];
 	}	
 }
 
-- (void)chapForward:(UINavBarButton *)button 
-{
-	GSLog(@"chapForward start");
+/**
+ * Advance to the next chapter, either using chapterdHtml or moving to the
+ * next file in the file browser.
+ */
+- (void)chapForward:(UINavBarButton *)button {
 	if (![button isPressed]) {
-		if ([textView gotoNextSubchapter] == YES) {
-			[self hideSlider];
-			[navBar hide:NO];
-			[bottomNavBar hide:NO];
+		if ([(EBookView*)[navBar topView] gotoNextSubchapter] == YES) {
+			[navBar hide];
+			[bottomNavBar hide];
 		} else {
-			NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[textView currentPath]];
-			if ((nil != nextFile) && [nextFile isReadableTextFilePath]) {
-				[self hideSlider];
-
-				struct CGRect visRect = [textView visibleRect];
-				int            subchapter = [textView getSubchapter];
-				NSString      *filename   = [textView currentPath];
-
-				[defaults setLastScrollPoint:(unsigned int)visRect.origin.y
-							   forSubchapter:subchapter
-									 forFile:filename];
-				[defaults setLastSubchapter:subchapter forFile:filename];
-
-				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
-																	object:[textView currentPath]];
-
-				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:nextFile];
-				[navBar pushNavigationItem:tempItem];
-				[self refreshTextViewFromDefaultsToolbarsOnly:NO];
-
-				subchapter = [defaults lastSubchapterForFile:nextFile];
-				int lastPt = [defaults lastScrollPointForFile:nextFile inSubchapter:subchapter]; BOOL didLoadAll = NO; 
-
-				[textView loadBookWithPath:nextFile subchapter:subchapter];
-				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt) animated:NO];
-
+			NSString *nextFile = [[navBar topBrowser] fileAfterFileNamed:[defaults lastBrowserPath]];
+			if(nextFile != nil) {
+        UIView *newView = [self showDocumentAtPath:nextFile];
+				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:nextFile view:newView];
+				[navBar replaceTopNavigationItem:tempItem];
 				[tempItem release];
 			}
 		}
 	}	
-
-	GSLog(@"chapForward end");
 }
 
+/**
+ * Retreat to the last chapter, either using chapteredHtml or moving
+ * to the next file in the file browser.
+ */
 - (void)chapBack:(UINavBarButton *)button {
 	if (![button isPressed]) {
-		if ([textView gotoPreviousSubchapter] == YES) {
-			[self hideSlider];
-			[navBar hide:NO];
-			[bottomNavBar hide:NO];
+		if ([(EBookView*)[navBar topView] gotoPreviousSubchapter] == YES) {
+			[navBar hide];
+			[bottomNavBar hide];
 		} else {
-			NSString *prevFile = [[navBar topBrowser] fileBeforeFileNamed:[textView currentPath]];
-			if ((nil != prevFile) && [prevFile isReadableTextFilePath]) {
-				[self hideSlider];
-
-				struct CGRect visRect = [textView visibleRect];
-				int            subchapter = [textView getSubchapter];
-				NSString      *filename   = [textView currentPath];
-
-				[defaults setLastScrollPoint: (unsigned int) visRect.origin.y
-							   forSubchapter: subchapter
-									 forFile: filename];
-				[defaults setLastSubchapter:subchapter forFile:filename];
-
-				[[NSNotificationCenter defaultCenter] postNotificationName:OPENEDTHISFILE
-																	object:[textView currentPath]];
-
-				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:prevFile];
-				[navBar pushNavigationItem:tempItem];
-				[self refreshTextViewFromDefaultsToolbarsOnly:NO];
-
-				subchapter = [defaults lastSubchapterForFile:prevFile];
-				int lastPt = [defaults lastScrollPointForFile:prevFile
-												 inSubchapter:subchapter];
-				BOOL didLoadAll = NO; 
-
-				CGRect rect = [defaults fullScreenApplicationContentRect];
-				int numScreens = (lastPt / rect.size.height) + 1;  // how many screens down are we?  
-				int numChars = numScreens * (265000/([textView textSize]*[textView textSize]));  //bcc I wonder what is 265000 but it has to be replaced
-				[textView loadBookWithPath:prevFile numCharacters:numChars
-								didLoadAll:&didLoadAll subchapter:subchapter];
-				[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, (float) lastPt)
-											 animated:NO];
-				[tempItem release];
+      FileBrowser *fb = [navBar topBrowser];
+			NSString *prevFile = [fb fileBeforeFileNamed:[defaults lastBrowserPath]];
+			if(nil != prevFile) {
+        UIView *newView = [self showDocumentAtPath:prevFile];
+				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:prevFile view:newView];
+				[navBar replaceTopNavigationItem:tempItem];
+        [tempItem release];
 			}
 		}
 	}	
@@ -681,13 +499,11 @@
  * Create the nav bar (file browser).
  */
 - (void)setupNavbar {
-  GSLog(@"BooksApp-setupNavbar");
 	struct CGRect rect = [mainView bounds];
 	[navBar release]; //BCC in case this is not the first time this method is called
 	navBar = [[HideableNavBar alloc] initWithFrame:
             CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f) delegate:self transitionView:transitionView];
 
-	[navBar setExtensions:[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil]];
 	[navBar hideButtons];
 
   float lMargin = 45.0f;
@@ -704,7 +520,6 @@
  * Create the tool bar (reader).
  */
 - (void)setupToolbar {
-  GSLog(@"BooksApp-setupToolbar");
 	struct CGRect rect = [mainView bounds];
 	[bottomNavBar release]; //BCC in case this is not the first time this method is called
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
@@ -806,7 +621,7 @@
 	[self setupToolbar];
 	[mainView addSubview:bottomNavBar];
 	if (lBottomBarHidden) {
-    [bottomNavBar hide:NO];
+    [bottomNavBar hide];
   }
 }
 
@@ -832,53 +647,6 @@
 	[self applicationWillSuspend];
 }
 
-- (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly {
-	float scrollPercentage;
-	if (!toolbarsOnly) {
-		[textView setTextSize:[defaults textSize]];
-
-		textInverted = [defaults inverted];
-		[textView invertText:textInverted];
-
-		struct CGRect overallRect = [[textView _webView] frame];
-		struct CGRect visRect = [textView visibleRect];
-		scrollPercentage = visRect.origin.y / overallRect.size.height;
-		[textView setTextFont:[defaults textFont]];
-
-		[self toggleStatusBarColor];
-	}
-  
-	if (readingText) {
-    // Let's avoid the weird toggle behavior.
-		[navBar hide:NO];
-		[bottomNavBar hide:NO];
-		[self hideSlider];
-	} else {
-    // not reading text
-		[bottomNavBar hide:YES];
-	}
-
-	if (![defaults navbar]) {
-		[textView setMarginTop:48];
-  } else {
-		[textView setMarginTop:0];
-  }
-  
-	if (![defaults toolbar]) {
-		[textView setBottomBufferHeight:48];
-	} else {
-		[textView setBottomBufferHeight:0];
-  }
-  
-	if (!toolbarsOnly) {
-		struct CGRect rect = [window bounds];
-		[textView setFrame:rect];
-		struct CGRect overallRect = [[textView _webView] frame];
-		struct CGPoint thePoint = CGPointMake(0, (scrollPercentage * overallRect.size.height));
-		[textView scrollPointVisibleAtTopLeft:thePoint];
-	}
-}
-
 - (NSString *)currentBrowserPath {
 	return [[navBar topBrowser] path];
 }
@@ -900,21 +668,17 @@
 	}
 }
 
-- (void) dealloc {
+- (void)dealloc {
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];
-	//	[progressIndicator release];
-	[textView release];
-	[imageView release];
-	[scrollerSlider release];
-  [animator release];
-	[alpha release];
+//	[progressIndicator release];
 	[defaults release];
 	[minusButton release];
 	[plusButton release];
 	[invertButton release];
 	[rotateButton release];
+  [m_documentExtensions release];
 	[super dealloc];
 }
 
@@ -930,6 +694,7 @@
  * Toggle rotation status.
  */
 - (void)rotateApp {
+  /* This is going to be a disaster to fix all the views!
 	CGSize lContentSize = [textView contentSize];	
 	//GSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
 	//GSLog(@"rotateApp");
@@ -965,8 +730,8 @@
 
 		[transitionView setFrame: rect];
 		[textView setFrame: rect];
-		[self refreshTextViewFromDefaultsToolbarsOnly:NO];
-		[textView setHeartbeatDelegate:self];
+		[self refreshTextViewFromDefaultsToolbarsOnly];
+		[textView setDelegate:self];
 		int            subchapter = [textView getSubchapter];
 		NSString      *recentFile   = [textView currentPath];
 
@@ -994,11 +759,21 @@
 		[self updateToolbar: 0];
 		[self updateNavbar];
 
-		[bottomNavBar hide:NO];
-		//	GSLog(@"showing the slider");
-		[self hideSlider];
+		//[navBar showTopNavBar:NO];
+		//[navBar show];
+		[bottomNavBar hide];
 	}
-	//	
+//	
+*/
+	//BCC: animate this
+	/*	
+		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
+		struct CGAffineTransform lMatrixprev = [window transform];
+		[scaleAnim setStartTransform: lMatrixprev];
+		[scaleAnim setEndTransform: lTransform];
+		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
+		[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
+		*/
 }
 
 /**

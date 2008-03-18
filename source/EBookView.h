@@ -32,17 +32,18 @@
 #import "BooksDefaultsController.h"
 #import "ChapteredHTML.h"
 
-@interface EBookView : UITextView
-{
+@class UISliderControl;
+
+@interface EBookView : UITextView {
   //  UIViewTapInfo *tapinfo;
   NSString                *path;
   float                   size;
-  id                      _heartbeatDelegate;
   struct CGRect           lastVisibleRect;
   ChapteredHTML	          *chapteredHTML;
   int                      subchapter;
   BooksDefaultsController *defaults;
- 
+ 	UISliderControl *m_scrollerSlider;
+  
 	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
 	int _orient;
 	CGAffineTransform _matrixprev;  
@@ -54,6 +55,10 @@
 	 * stores the Y coordinate of the last mouse down event for swipe detection
 	 */
 	float _MouseDownY;
+
+  BOOL m_navBarsVisible;
+  
+  float m_pendingScrollPoint;
 }
 typedef enum
 {
@@ -65,10 +70,9 @@ typedef enum
 
 - (BOOL)canHandleSwipes;
 - (int)  swipe: ( int)num withEvent: ( struct __GSEvent *)event;
-- (id)initWithFrame:(struct CGRect)rect;
-
+- (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par;
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
-- (void)setCurrentPathWithoutLoading:(NSString *)thePath;
+
 - (NSMutableString *)readHtmlFile:(NSString *)thePath;
 - (NSMutableString *)readTextFile:(NSString *)file;
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data;
@@ -76,10 +80,6 @@ typedef enum
 - (NSString *)currentPath;
 - (void)embiggenText;
 - (void)ensmallenText;
-- (void)handleDoubleTapEvent:(struct __GSEvent *)event;
-- (void)handleSingleTapEvent:(struct __GSEvent *)event;
-- (void)setHeartbeatDelegate:(id)delegate;
-- (void)heartbeatCallback:(id)unused;
 - (void)hideNavbars;
 - (void)toggleNavbars;
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar;
@@ -89,17 +89,24 @@ typedef enum
 - (void)invertText:(BOOL)b;
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification;
 
-- (int) getSubchapter;
-- (int) getMaxSubchapter;
-- (void) setSubchapter: (int) chapter;
-- (BOOL) gotoNextSubchapter;
-- (BOOL) gotoPreviousSubchapter;
--(void) redraw;
+- (int)getSubchapter;
+- (int)getMaxSubchapter;
+- (BOOL)setSubchapter:(int)chapter;
+- (BOOL)gotoNextSubchapter;
+- (BOOL)gotoPreviousSubchapter;
+-(void)redraw;
 //-(void) setOrientation: (int) orientation animate:(bool)anime;
 //- (void) fitRect;
 //-(void) afterRotate: (NSTimer*) timer;
 -(void)reflowBook;
+- (void)saveBookPosition;
+- (void)applyPreferences;
 
+- (void)showSlider;
+- (void)hideSlider;
+- (void)handleSlider:(id)sender;
+- (void)updateSliderPosition;
+- (void)scrollToPoint:(float)p_pt;
 @end
 //informal protocol declaration for _heartbeatDelegate
 @interface NSObject (EBookViewHeartbeatDelegate)

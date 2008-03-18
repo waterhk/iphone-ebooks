@@ -19,7 +19,6 @@
  */
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
-#import <UIKit/CDStructures.h>
 #import <UIKit/UIWindow.h>
 #import <UIKit/UIView-Hierarchy.h>
 #import <UIKit/UIHardware.h>
@@ -33,8 +32,6 @@
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
 #import <UIKit/UIProgressIndicator.h>
-#import <UIKit/UISliderControl.h>
-#import <UIKit/UIAlphaAnimation.h>
 #import "EBookView.h"
 #import "EBookImageView.h"
 #import "FileBrowser.h"
@@ -49,16 +46,14 @@ enum PreferenceAnimationType;
 	UIWindow 	*window;
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
-	UISliderControl *scrollerSlider;
 	UITransitionView *transitionView;
-  EBookView   *textView;
-	EBookImageView *imageView;
+  
+  EBookImageView *m_startupImage;
   
 	NSString    *path;
   
 	BOOL        bookHasChapters;
 	BOOL        readingText;
-	BOOL        doneLaunching;
 	BOOL        textInverted;
 	BOOL        rotate90;
   
@@ -76,20 +71,16 @@ enum PreferenceAnimationType;
 	//UIProgressIndicator *progressIndicator;
   
 	NSString *imgPath;
-  
-	UIAnimator *animator;
-	UIAlphaAnimation *alpha;
+  NSArray *m_documentExtensions;
 }
 
+- (BOOL)isDocumentImage:(NSString*)p_path;
 - (UIView*)showDocumentAtPath:(NSString*)p_path;
-- (void)closeCurrentDocument;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
-- (void)heartbeatCallback:(id)ignored;
+- (void)setNavForItem:(FileNavigationItem*)p_item;
+- (void)showNavbars;
 - (void)hideNavbars;
 - (void)toggleNavbars;
-- (void)showSlider:(BOOL)withAnimation;
-- (void)hideSlider;
-- (void)handleSlider:(id)sender;
 - (void)embiggenText:(UINavBarButton *)button;
 - (void)ensmallenText:(UINavBarButton *)button;
 - (void)invertText:(UINavBarButton *)button;
@@ -102,13 +93,12 @@ enum PreferenceAnimationType;
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
 - (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;
-- (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly;
 - (void)toggleStatusBarColor;
 - (NSString *)currentBrowserPath;
 - (void)cleanUpBeforeQuit;
 - (void)rotateApp;
 - (void)rotateButtonCallback:(UINavBarButton*) button;
-- (void) applicationDidFinishLaunching: (id) unused;
+- (void)applicationDidFinishLaunching: (id) unused;
 - (void)finishUpLaunch;
-- (void) preferenceAnimationDidFinish;
+- (void)preferenceAnimationDidFinish;
 @end

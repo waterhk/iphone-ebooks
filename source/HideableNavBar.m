@@ -21,6 +21,7 @@
 #import <UIKit/UIHardware.h>
 #import "HideableNavBar.h"
 #import "FileBrowser.h"
+#import "EBookView.h"
 #import "FileNavigationItem.h"
 
 //#include "dolog.h"
@@ -39,14 +40,10 @@
 	animator = [[UIAnimator alloc] init];
 	hidden = NO;
 	_transView = nil;
-	_extensions = nil;
 
   [self disableAnimation];
-  
-  m_nCurrentBrowser = 0;
-  
+ 
   [self setDelegate:p_del];
-  _browserDelegate = [p_del retain];
   
   _transView = [p_tv retain];
 
@@ -56,20 +53,6 @@
                                              selector:@selector(shouldReloadTopBrowser:)
                                                  name:RELOADTOPBROWSER
                                                object:nil];
-    
-    
-    FileBrowser *fb1 = [[FileBrowser alloc] initWithFrame:[p_tv bounds]];
-    FileBrowser *fb2 = [[FileBrowser alloc] initWithFrame:[p_tv bounds]];
-    
-    [fb1 setDelegate:p_del];
-    [fb2 setDelegate:p_del];
-    
-    m_browserList = [[NSArray alloc] initWithObjects:fb1, fb2, nil];
-    
-    GSLog(@"FileBrowser1: %@, FileBrowser2: %@", fb1, fb2);
-    
-    [fb1 release];
-    [fb2 release];
   }
   
 	return self;
@@ -79,217 +62,174 @@
  * Get the currently active file browser.
  */
 - (FileBrowser*)topBrowser {
-  return [m_browserList objectAtIndex:m_nCurrentBrowser];
+  /*
+   * The top item might be a document.  We'll start at the top and work backwards until
+   * we find the first item that isn't a document, then return its browser.
+   * If we hit the bottom of the stack and still don't find a non-document (should be can't happen)
+   * then we'll end up returning nil which shouldn't cause too much trouble.
+   */
+  FileNavigationItem *topDir = nil;
+  NSArray *items = [self navigationItems];
+  int itemCount = [items count];
+
+  for(itemCount = itemCount - 1; itemCount >=0; itemCount--) {
+    topDir = [items objectAtIndex:itemCount];
+    if(![topDir isDocument]) {
+      break;
+    }
+  }
+  
+  return [topDir browser];
 }
 
+/**
+ * Return the top EBookView or EBookImageView or file browser if not a document.
+ */
+- (UIView*)topView {
+  FileNavigationItem *top = [self topItem];
+  return [top view];
+}
+
+/**
+ * Remove the top item from the navigation bar stack and adjust the on-screen views to match.
+ */
 - (void)popNavigationItem { 
-  FileNavigationItem *poppedFi = (FileNavigationItem*)[self topItem];
+  FileNavigationItem *poppedFi = (FileNavigationItem*)[[self topItem] retain];
   [super popNavigationItem];
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
   
-  GSLog(@"Popped item at %@, new top is %@", [poppedFi path], [topFi path]);
+  GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
   
-  FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
-  FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
-  
-  if([poppedFi isDocument]) {
-    // We're currently going from text to file
-    if([_browserDelegate respondsToSelector:@selector(closeCurrentDocument)]) {
-      [_browserDelegate closeCurrentDocument];
-    } 
-    
-    if([self isAnimationEnabled]) {
-      if(![[oldBrowser path] isEqualToString:[topFi path]]) {
-        [oldBrowser setPath:[topFi path]];
-        [oldBrowser reloadData];  
-      }
-      [_transView transition:2 fromView:nil toView:oldBrowser];
-    }
-  } else {
-    // Going file to file
-    if([self isAnimationEnabled]) {
-      m_nCurrentBrowser = !m_nCurrentBrowser;
-      if(![[newBrowser path] isEqualToString:[topFi path]]) {
-        [newBrowser setPath:[topFi path]];
-        [newBrowser reloadData];
-      }
-      [_transView transition:2 fromView:oldBrowser toView:newBrowser];
-    }
+  if([self isAnimationEnabled]) {
+    UIView *oldView = [poppedFi view];
+    [_transView transition:2 fromView:oldView toView:[topFi view]];
+    [[self delegate] setNavForItem:poppedFi];
   }
+  
+  [poppedFi release];
 }
 
+/**
+ * Add a new item to the navigation bar stack and adjust the on-screen views to match.
+ */
 - (void)pushNavigationItem:(UINavigationItem*)p_item {
-  /* Pushing may reveal a FileBrowser, EBookView, or EBookImageView. */
   FileNavigationItem *pushedFi = (FileNavigationItem*)p_item;
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
   [super pushNavigationItem:p_item];
   
-  GSLog(@"Pushing item at %@, old top is %@", [pushedFi path], [topFi path]);
+  GSLog(@"Pushing %@ %@", ([pushedFi isDocument] ? @"Document" : @"Directory"), [pushedFi path]);
   
-  FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
-  FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
-  
-  // Hack old view: Either it's a file browser OR if we starting up, it's the image view.
-  // It's up to BooksApp to call setOldView: if it needs us to clean up after it.
-  UIView *oldView = oldBrowser;
-  if(m_oldView != nil) {
-    GSLog(@"Startup oldView hack triggered...");
-    oldView = m_oldView;
+  if([self isAnimationEnabled]) {
+    [_transView transition:1 fromView:[topFi view] toView:[pushedFi view]];
+    [[self delegate] setNavForItem:topFi];
   }
-  
-  if([pushedFi isDocument]) {
-    UIView *newView = nil;
-    if([_browserDelegate respondsToSelector:@selector(showDocumentAtPath:)]) {
-      newView = [_browserDelegate showDocumentAtPath:[pushedFi path]];
-    }
-    
-    if([self isAnimationEnabled]) {
-       GSLog(@"Transitioning from %@ to %@", oldView, newView);
-      [_transView transition:1 fromView:oldView toView:newView];
-    }
-  } else {
-    // FileBrowser
-    if([self isAnimationEnabled]) {      
-      GSLog(@"Transitioning from %@ to %@", oldView, newBrowser);
-      m_nCurrentBrowser = !m_nCurrentBrowser;
-      if(![[newBrowser path] isEqualToString:[pushedFi path]]) {        
-        [newBrowser setPath:[pushedFi path]];
-        [newBrowser reloadData];
-      }
-      [_transView transition:1 fromView:oldView toView:newBrowser];
-    }
-  }
-  
-  [self setOldView:nil];
-}
-
-/**
- * Before pushing a navigation item, set the old view to be transitioned off
- * from.  Should only be necessary at startup to get the book image off.
- */
-- (void)setOldView:(UIView*)p_view {
-  [p_view retain];
-  [m_oldView release];
-  m_oldView = p_view;
 }
 
 - (void)shouldReloadTopBrowser:(NSNotification *)notification {
-	[[m_browserList objectAtIndex:m_nCurrentBrowser] reloadData];
+	[[self topBrowser] reloadData];
 }
 
-- (void)hide:(BOOL)forced {
+/**
+ * Replace the top navigation item with a new one.
+ * 
+ * Intended for chapter navigation from one document to another.
+ */
+- (void)replaceTopNavigationItem:(UINavigationItem*)p_item {
+  [self disableAnimation];
+  FileNavigationItem *poppedFi = (FileNavigationItem*)[[self topItem] retain];
+  FileNavigationItem *newFi = (FileNavigationItem*)p_item;
+  
+  [super popNavigationItem];
+  [super pushNavigationItem:newFi];
+  [self enableAnimation];
+  
+  [_transView transition:1 fromView:[poppedFi view] toView:[newFi view]];
+  [[self delegate] setNavForItem:newFi];
+  
+  [poppedFi release];
+}
+
+/**
+ * Hide this navigation bar.
+ */
+- (void)hide {
 	if (!hidden) {	
-		if (isTop && forced) {
-			[self hideTopNavBar];
-		} else if (forced) {
-			[self hideBotNavBar];
+    struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+    struct CGAffineTransform startTrans;
+    struct CGAffineTransform endTrans;
+    
+		if (isTop) {
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];      
+      startTrans = CGAffineTransformMake(1,0,0,1,0,0);
+      endTrans = CGAffineTransformMakeTranslation(0, -68.0);
+		} else {
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
+      startTrans = CGAffineTransformMake(1,0,0,1,0,0);
+      endTrans = CGAffineTransformMakeTranslation(0, 48);
 		}
-
-    // FIXME: What's this forced thing do?
-		if (!forced) {
-			if (isTop) {
-				if ([defaults navbar]) {
-          [self hideTopNavBar];
-        }
-			} else {
-				if ([defaults toolbar]) {
-          [self hideBotNavBar];
-        }
-			}
-		}
-	}
+    [translate setStartTransform:startTrans];
+    [translate setEndTransform:endTrans];
+    [animator addAnimation:translate withDuration:.25 start:YES];
+    hidden = YES;
+  }
 }
 
+/**
+ * Show the navigation bar.
+ */
 - (void)show {
 	if (hidden) {
+    struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
+    struct CGAffineTransform startTrans;
+    struct CGAffineTransform endTrans;
+    
 		if (isTop) {
-      [self showTopNavBar:YES];
+      //CHANGED: The "68" comes from SummerBoard--if we just use 48, 
+      // the top nav bar shows under the status bar.
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
+      startTrans = CGAffineTransformMakeTranslation(0,-68);
+      endTrans = CGAffineTransformIdentity;
     } else {
-      [self showBotNavBar];
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
+      startTrans = CGAffineTransformMakeTranslation(0, 48);
+      endTrans = CGAffineTransformMake(1,0,0,1,0,0);
     }
+    
+    [translate setStartTransform:startTrans];
+    [translate setEndTransform:endTrans];
+    [animator addAnimation:translate withDuration:.25 start:YES];
+    
 		hidden = NO;
 	}
 }
 
+/**
+ * Toggle the visibility of the nav bar.
+ */
 - (void)toggle {
 	if (hidden) {
 		[self show];
 	} else {
-    [self hide:NO];
+    [self hide];
   }
 }
 
+/**
+ * Return YES if the nav bar is currently hidden.
+ */
 - (BOOL)hidden; {
 	return hidden;
 }
 
-// FIXME: These four hide/show functions should all be a single function with a couple of parameters.
-- (void)showTopNavBar:(BOOL)withAnimation {
-  GSLog(@"Show Top Nav Bar");
-	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
-	//CHANGED: The "68" comes from SummerBoard--if we just use 48, 
-	// the top nav bar shows under the status bar.
-	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
-
-	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-68);
-	if (withAnimation) {
-		[translate setStartTransform: trans];
-		[translate setEndTransform: CGAffineTransformIdentity];
-		[animator addAnimation:translate withDuration:.25 start:YES];
-	} else {
-    [self setFrame: CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
-  }
-
-}
-
-- (void)hideTopNavBar {
-  GSLog(@"Hide Top Nav Bar");
-	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
-	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
-
-	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, -68.0);
-	[translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
-	[translate setEndTransform: trans];
-	[animator addAnimation:translate withDuration:.25 start:YES];
-	hidden = YES;
-}
-
-- (void)showBotNavBar {
-  GSLog(@"Show Bottom Nav Bar");
-	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
-	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
-	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
-	[translate setStartTransform: trans];
-	[translate setEndTransform: CGAffineTransformMake(1,0,0,1,0,0)];
-	[animator addAnimation:translate withDuration:.25 start:YES];
-
-}
-
-- (void)hideBotNavBar {
-  GSLog(@"Hide Bottom Nav Bar");
-	struct CGRect hardwareRect = [defaults fullScreenApplicationContentRect];
-	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
-	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0, 48);
-	[translate setStartTransform: CGAffineTransformMake(1,0,0,1,0,0)];
-	[translate setEndTransform: trans];
-	[animator addAnimation:translate withDuration:.25 start:YES];
-	hidden = YES;
-}
-
-- (void)setExtensions:(NSArray *)extensions {
-	_extensions = [extensions retain];
-}
-
+/**
+ * Cleanup.
+ */
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
-  [m_oldView release];
-  [m_browserList release];
 	[animator release];
 	[translate release];
   [_transView release];
-  [_extensions release];
-  [_browserDelegate release];
 
 	[defaults release];
   

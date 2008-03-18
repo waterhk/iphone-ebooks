@@ -124,11 +124,8 @@
 - (unsigned int) lastSubchapterForFile: (NSString *) filename;
 - (void) setLastSubchapter: (unsigned int) subchapter
                    forFile: (NSString *) filename;
-- (unsigned int) lastScrollPointForFile: (NSString *) filename
-                           inSubchapter: (unsigned int) subchapter;
-- (void) setLastScrollPoint: (unsigned int) scrollPoint
-              forSubchapter: (unsigned int) subchapter
-                    forFile: (NSString *) filename;
+- (float)lastScrollPointForFile:(NSString*)filename inSubchapter:(unsigned int)subchapter;
+- (void) setLastScrollPoint:(float)scrollPoint forSubchapter:(unsigned int)subchapter forFile:(NSString*)filename;
 - (void) removePerFileDataForFile: (NSString *) file;
 - (void) removePerFileDataForDirectory: (NSString *) directory;
 - (void) removePerFileData;

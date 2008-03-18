@@ -21,17 +21,22 @@
 #import <UIKit/UIKit.h>
 #import <UIKit/UINavigationItem.h>
 
+@class FileBrowser;
+
 @interface FileNavigationItem : UINavigationItem {
+  FileBrowser *m_browser;
+  UIView *m_view;
   NSString *m_path;
   BOOL m_isDocument;
 }
 
-- (id)initWithTitle:(NSString*)p_title forPath:(NSString*)p_path;
-- (id)initWithPath:(NSString*)p_path;
-- (id)initWithDocument:(NSString*)p_path;
+- (id)initWithPath:(NSString*)p_path browser:(FileBrowser*)p_browser;
+- (id)initWithDocument:(NSString*)p_path view:(UIView*)p_view;
 
 - (NSString*)path;
 - (BOOL)isDocument;
+- (FileBrowser*)browser;
+- (UIView*)view;
 
 - (void)dealloc;
 

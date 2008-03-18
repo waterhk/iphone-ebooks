@@ -18,13 +18,6 @@
 #import "NSString-BooksAppAdditions.h"
 
 @implementation NSString (BooksAppAdditions)
-
-- (BOOL)isReadableTextFilePath
-{
-  NSString *ext = [[self pathExtension] lowercaseString];
-  return ([ext isEqualToString:@"txt"] || [ext isEqualToString:@"htm"] || [ext isEqualToString:@"html"]); 
-}
-
 - (NSString *)HTMLsubstringToIndex:(unsigned)index
 {
   BOOL junk;

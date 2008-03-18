@@ -19,43 +19,39 @@
  */
 
 #import "FileNavigationItem.h"
+#import "FileBrowser.h"
 
 /**
  * This subclass of UINavigatioNItem carries with it a file path to be used
  * to draw the view associated with this item.
  */
 @implementation FileNavigationItem
-
 /**
- * Init with a title (passed to super) and a path.
+ * Init with just a path - title is last path component.
  */
-- (id)initWithTitle:(NSString*)p_title forPath:(NSString*)p_path {
-  if(self = [super initWithTitle:p_title]) {
+- (id)initWithPath:(NSString*)p_path browser:(FileBrowser*)p_browser {
+  NSString *title = [p_path lastPathComponent];
+  if(self = [super initWithTitle:title]) {
     m_isDocument = NO;
     m_path = [p_path retain];
+    m_browser = [p_browser retain];
   }
   
   return self;
 }
 
 /**
- * Init with just a path - title is last path component.
- */
-- (id)initWithPath:(NSString*)p_path {
-  NSString *title = [p_path lastPathComponent];
-  id tmp = [self initWithTitle:title forPath:p_path];
-  m_isDocument = NO; // override the designated init.
-  return tmp;
-}
-
-/**
  * Init with the name of a document- use last path component minus file extension as the tite.
  */
-- (id)initWithDocument:(NSString*)p_path {
+- (id)initWithDocument:(NSString*)p_path view:(UIView*)p_view {
   NSString *title = [[p_path lastPathComponent] stringByDeletingPathExtension];
-  id tmp = [self initWithTitle:title forPath:p_path];
-  m_isDocument = YES; // override the designated init.
-  return tmp;
+  if(self = [super initWithTitle:title]) {
+    m_isDocument = YES;
+    m_path = [p_path retain];
+    m_view = [p_view retain];
+  }
+  
+  return self;
 }
 
 /**
@@ -73,10 +69,33 @@
 }
 
 /**
+ * Get the associated browser.
+ */
+- (FileBrowser*)browser {
+  return m_browser;
+}
+
+/**
+ * Returns the view representing this item's contents.
+ * Will return a FileBrowser for directories or a UIView 
+ * (presumably EBookView or EBookImageView) for documents.
+ */
+- (UIView*)view {
+  if(m_isDocument) {
+    return m_view;
+  } else {
+    return m_browser;
+  }
+}
+
+/**
  * Cleanup.
  */
 - (void)dealloc {
+  GSLog(@"FileNavigationItem dealloc %@", m_path);
   [m_path release];
+  [m_browser release];
+  [m_view release];
   
   [super dealloc];
 }
