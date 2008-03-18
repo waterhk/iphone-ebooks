@@ -49,6 +49,10 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	orientationLocked = YES;
 }
 
+- (void)toggleUIOrientationLocked {
+  orientationLocked = !orientationLocked;
+}
+
 - (void) lockUIToOrientation: (unsigned int)o_code {
 	[self setUIOrientation: o_code];
 	[self lockUIOrientation];
@@ -65,10 +69,6 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 }
 
 - (void) setUIOrientation: (unsigned int)o_code {
-  // Disable this for now.  It doesn't work, and it'll just be annoying.
-  return;
-  
-  
 	if (o_code > 6) return;
 	/* Degrees should technically be a float, but without integers here, rounding errors seem to screw up the UI over time.
    The compiler will automatically cast to a float when appropriate API calls are made. */
@@ -164,5 +164,4 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 - (bool) orientationLocked {
 	return orientationLocked;
 }
-
 @end

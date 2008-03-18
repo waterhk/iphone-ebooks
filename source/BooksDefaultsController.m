@@ -18,6 +18,7 @@
 */
 
 #import "BooksDefaultsController.h"
+#import "UIOrientingApplication.h"
 #import <UIKit/UIHardware.h>
 
 #define DEBUG 0
@@ -38,38 +39,41 @@
 
 - (id) init
 {
-	NSMutableDictionary *temp;
+	if(self = [super init]) {
+    NSMutableDictionary *temp;
+    
+    _toolbarShouldUpdate = NO;
+    
+    _defaults = [[NSUserDefaults standardUserDefaults] retain];
 
-	self = [super init];
-	_toolbarShouldUpdate = NO;
-	_NeedRotate = NO;
+    temp = [[NSMutableDictionary alloc] initWithCapacity:18];
+    [temp setObject:@"16" forKey:TEXTSIZEKEY];
+    [temp setObject:@"0" forKey:ISINVERTEDKEY];
+    [temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
+    [temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
+    [temp setObject:@"1" forKey:NAVBAR];
+    [temp setObject:@"1" forKey:TOOLBAR];
+    [temp setObject:@"0" forKey:FLIPTOOLBAR];
+    [temp setObject:@"1" forKey:CHAPTERNAV];
+    [temp setObject:@"1" forKey:PAGENAV];
+    [temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
+    [temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
+    [temp setObject:@"0" forKey:RENDERTABLESKEY];
+    [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
+    [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
+    [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
+    [temp setObject:@"0" forKey:ISROTATELOCKEDKEY];
+    [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
+    [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
+    [temp setObject:@"1" forKey:ISROTATELOCKEDKEY];
+    
 
-	_defaults = [[NSUserDefaults standardUserDefaults] retain];
+    [_defaults registerDefaults:temp];
+    [temp release];
 
-	temp = [[NSMutableDictionary alloc] initWithCapacity:18];
-	[temp setObject:@"16" forKey:TEXTSIZEKEY];
-	[temp setObject:@"0" forKey:ISINVERTEDKEY];
-	[temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
-	[temp setObject:@"TimesNewRoman" forKey:TEXTFONTKEY];
-	[temp setObject:@"1" forKey:NAVBAR];
-	[temp setObject:@"1" forKey:TOOLBAR];
-	[temp setObject:@"0" forKey:FLIPTOOLBAR];
-	[temp setObject:@"1" forKey:CHAPTERNAV];
-	[temp setObject:@"1" forKey:PAGENAV];
-	[temp setObject:[NSNumber numberWithUnsignedInt:0] forKey:TEXTENCODINGKEY];
-	[temp setObject:@"1" forKey:SMARTCONVERSIONKEY];
-	[temp setObject:@"0" forKey:RENDERTABLESKEY];
-	[temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
-	[temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
-	[temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
-	[temp setObject:@"0" forKey:ISROTATE90KEY];
-	[temp setObject:@"0" forKey:INVERSENAVZONEKEY];
-	[temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
-
-	[_defaults registerDefaults:temp];
-	[temp release];
-
-	[self updateOldPreferences];
+    [self updateOldPreferences];
+  }
+  
 	return self;
 }
 
@@ -321,18 +325,21 @@
 /**
  * Query rotation status.
  */
-- (BOOL)isRotate90 {
-	BOOL value = [_defaults boolForKey:ISROTATE90KEY];
-	return value;
+- (BOOL)isRotateLocked {
+	return [_defaults boolForKey:ISROTATELOCKEDKEY];
 }
 
 /**
  * Save rotation status.
  */
-- (void)setRotate90:(BOOL)isRotate90 {
-	[_defaults setBool:isRotate90 forKey:ISROTATE90KEY];
-	_toolbarShouldUpdate = YES;
-	_NeedRotate = YES;
+- (void)setRotateLocked:(BOOL)isRotateLocked {
+	[_defaults setBool:isRotateLocked forKey:ISROTATELOCKEDKEY];
+  UIOrientingApplication *app = (UIOrientingApplication*)UIApp;
+  if(isRotateLocked) {
+    [app lockUIOrientation];
+  } else {
+    [app unlockUIOrientation];
+  }
 }
 
 - (BOOL)inverseNavZone
@@ -397,7 +404,7 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION object:self];
   }
 	_toolbarShouldUpdate = NO;
-	_NeedRotate = NO;
+
 	return [_defaults synchronize];
 }
 
@@ -550,114 +557,57 @@
 	return;
 }
 
-//Bcc:  I think this should not be called so often. Most of the views should get the size of their parent view or window.
-//Not the size of the hardware.
-- (struct CGRect) fullScreenApplicationContentRect
-{
-  GSLog(@"Called BooksDefaultsController-fullScreenApplicationContentRect");
-	struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
-	rect.origin.x = rect.origin.y = 0.0f;
-	if ([self isRotate90])
-	{
-		float oldwidth = rect.size.width;
-		rect.size.width = rect.size.height + 20;	//20 for the status bar
-		rect.size.height = oldwidth - 20; //20 for the status bar
-	}
-	//	GSLog(@"fullScreen x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-	return rect;
-}
-
-
 //Bcc makes it into a singleton
 static BooksDefaultsController *sharedBooksDefaultsController = nil;
 
-
-
-+ (BooksDefaultsController*)sharedBooksDefaultsController
-
-{
-
++ (BooksDefaultsController*)sharedBooksDefaultsController {
 	@synchronized(self) {
-
 		if (sharedBooksDefaultsController == nil) {
-
 			[[self alloc] init]; // assignment not done here
-
 		}
-
 	}
-
+  
 	return sharedBooksDefaultsController;
-
 }
 
 
 
-+ (id)allocWithZone:(NSZone *)zone
-
-{
-
++ (id)allocWithZone:(NSZone *)zone {
 	@synchronized(self) {
-
 		if (sharedBooksDefaultsController == nil) {
-
 			sharedBooksDefaultsController = [super allocWithZone:zone];
-
 			return sharedBooksDefaultsController;  // assignment and return on first allocation
-
 		}
-
 	}
 
 	return nil; //on subsequent allocation attempts return nil
-
 }
 
-- (id)copyWithZone:(NSZone *)zone
-
-{
-
+- (id)copyWithZone:(NSZone *)zone {
 	return self;
-
 }
 
 
 
-- (id)retain
-
-{
-
+- (id)retain {
 	return self;
-
 }
 
 
 
-- (unsigned)retainCount
-
-{
-
+- (unsigned)retainCount {
 	return UINT_MAX;  //denotes an object that cannot be released
-
 }
 
 
 
-- (void)release
-
-{
-
+- (void)release {
 	//do nothing
-
 }
 
 
 
-- (id)autorelease
-
-{
-
+- (id)autorelease {
 	return self;
-
 }
 @end

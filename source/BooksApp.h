@@ -67,6 +67,8 @@ enum PreferenceAnimationType;
   NSArray *m_documentExtensions;
 }
 
++ (void)debugNotification:(NSNotification*)p_note;
+
 - (BOOL)isDocumentImage:(NSString*)p_path;
 - (UIView*)showDocumentAtPath:(NSString*)p_path;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;

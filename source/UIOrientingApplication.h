@@ -36,14 +36,16 @@
 
 - (id) init;
 
-- (void) lockUIOrientation;
-- (void) lockUIToOrientation: (unsigned int)o_code;
-- (void) unlockUIOrientation;
-- (void) setUIOrientation: (unsigned int)o_code;
-- (void) setAngleForOrientation: (unsigned int)o_code toDegrees: (int)degrees;
+- (void)lockUIOrientation;
+- (void)unlockUIOrientation;
+- (void)toggleUIOrientationLocked;
 
-- (CGRect) windowBounds;
-- (CGRect) contentBounds;
-- (bool) orientationLocked;
+- (void)lockUIToOrientation:(unsigned int)o_code;
+- (void)setUIOrientation:(unsigned int)o_code;
+- (void)setAngleForOrientation:(unsigned int)o_code toDegrees:(int)degrees;
+
+- (CGRect)windowBounds;
+- (CGRect)contentBounds;
+- (bool)orientationLocked;
 
 @end

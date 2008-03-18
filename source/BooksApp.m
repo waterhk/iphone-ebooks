@@ -49,7 +49,7 @@
 /**
  * Log all notifications.
  */
-- (void)debugNotification:(NSNotification*)p_note {
++ (void)debugNotification:(NSNotification*)p_note {
   GSLog(@"NOTIFICATION: %@", [p_note name]);
 }
 
@@ -108,19 +108,12 @@
   }
 }
 
-- (void)applicationDidFinishLaunching:(id)unused {
-  // Only log if the log file already exists!
-  if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {    
-    freopen([OUT_FILE fileSystemRepresentation], "a", stderr);
-    freopen([OUT_FILE fileSystemRepresentation], "a", stdout);
-    
-    //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(debugNotification:) name:nil object:nil];
-  }
-  
+- (void)applicationDidFinishLaunching:(id)unused {  
   m_documentExtensions = [[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil] retain];
 	
 	//investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
+  [defaults setRotateLocked:[defaults isRotateLocked]];
 	//bcc rect to change for rotate90
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -763,7 +756,7 @@
  */
 - (void) rotateButtonCallback:(UINavBarButton*) button {
 	if (![button isPressed]) {
-		[self rotateApp];
+		[defaults setRotateLocked:![defaults isRotateLocked]];
 	}	
 }
 
@@ -772,6 +765,8 @@
  * Toggle rotation status.
  */
 - (void)rotateApp {
+  // Note most of the rotate code is in UIOrientingApplication.
+  // The rest is in the various objects which respond to rotation notifications.
   /*
   BOOL bWasRotated = [defaults isRotate90];  
   float rotateDegrees;
@@ -883,5 +878,73 @@
  */
 - (void) preferenceAnimationDidFinish {
 	[prefsButton setEnabled:true];
+}
+
+/**
+ * Creates a CGImage containing something appropriate to show the next time Books launches.
+ *
+ * If we're reading a book with a cover image, it's scaled and used.  If we're reading a book
+ * without a cover image, we take a screen shot of the book's text.
+ * If we're on the file browser, we take a screen shot of it.
+ */
+- (struct CGImage *)createApplicationDefaultPNG {
+  struct CGImage *ret;
+  NSString *sCover = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
+  
+  const float SHOT_WIDTH  = 320;
+  const float SHOT_HEIGHT = 460;
+  const int BYTES_PER_PIXEL = 4;
+  
+  if([sCover length] > 0) {
+    UIImage *img = [UIImage imageAtPath:sCover];
+    struct CGImage *imageRef = [img imageRef];
+    
+    // We need to resize this to exactly what the phone wants.
+    // Image resize code taken from code believed to be GPL attributed
+    // to Sean Heber.  (Thanks Sean!!!)
+    
+    // Create a new image of the right size (startup code is picky about the Default image size)
+    CGContextRef bitmap = CGBitmapContextCreate(
+      NULL, SHOT_WIDTH, SHOT_HEIGHT, CGImageGetBitsPerComponent(imageRef),
+      BYTES_PER_PIXEL*SHOT_WIDTH, CGImageGetColorSpace(imageRef), CGImageGetBitmapInfo(imageRef)
+    );
+    
+    // Scale it and set for return.
+    CGContextDrawImage( bitmap, CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT), imageRef );
+    ret = CGBitmapContextCreateImage( bitmap );
+    CGContextRelease(bitmap);
+  } else {
+    // Take a screen shot of the top view.
+    // FIXME: This doesn't currently get the nav bar for file browsers.
+    ret = [[navBar topView] createSnapshotWithRect:CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT)];
+    CGImageRetain(ret);
+  }
+  
+  return ret;
+}
+
+/**
+ * Called by UIKit when it's time to write out our default image - usually at shutdown.
+ */
+- (void)_updateDefaultImage {
+  // Check for cover art or get a screen shot:
+  struct CGImage *imgRef = [self createApplicationDefaultPNG];
+  
+  // Find the path to write it to:
+  NSString *pathToDefault = [self _pathToDefaultImageNamed:[self nameOfDefaultImageToUpdateAtSuspension]];  
+  
+  // Dump a CGImage to file
+  NSURL *urlToDefault = [NSURL fileURLWithPath:pathToDefault];
+  CGImageDestinationRef dest = CGImageDestinationCreateWithURL((CFURLRef)urlToDefault, CFSTR("public.jpeg")/*kUTTypeJPEG*/, 1, NULL);
+  CGImageDestinationAddImage(dest, imgRef, NULL);
+  CGImageDestinationFinalize(dest);
+  CGImageRelease(imgRef);
+}
+
+/**
+ * Gets a suffix for the image name to write for startup.
+ */
+- (id)nameOfDefaultImageToUpdateAtSuspension {
+    return @"Default";
 }
 @end

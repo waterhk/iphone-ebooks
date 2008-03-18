@@ -26,12 +26,10 @@
 {
   NSString       *_fileBeingRead;
   BOOL            _inverted;
-  BOOL            _rotate90;
   NSString       *_browserPath;
   NSUserDefaults *_defaults;
-  BOOL            _toolbarShouldUpdate;
-  BOOL            _NeedRotate;
   BOOL            _inverseNavZone;
+  BOOL            _toolbarShouldUpdate;
 }
 
 /*
@@ -73,7 +71,7 @@
 #define RENDERTABLESKEY        @"renderTablesKey"
 #define ENABLESUBCHAPTERINGKEY @"enableSubchapteringKey"
 #define SCROLLSPEEDINDEXKEY    @"scrollSpeedIndexKey"
-#define ISROTATE90KEY          @"isRotate90Key"
+#define ISROTATELOCKEDKEY      @"isRotateLockedKey"
 #define INVERSENAVZONEKEY      @"inverseNavZoneKey"
 #define ENLARGENAVZONEKEY      @"enlargeNavZoneKey"
 
@@ -98,8 +96,8 @@
 - (void)setInverseNavZone:(BOOL)Inversed;
 - (BOOL)enlargeNavZone;
 - (void)setEnlargeNavZone:(BOOL)Enlarge;
-- (BOOL)isRotate90;
-- (void)setRotate90:(BOOL)isRotate90;
+- (BOOL)isRotateLocked;
+- (void)setRotateLocked:(BOOL)isRotateLocked;
 - (NSString *)textFont;
 - (void)setTextFont:(NSString *)font;
 - (BOOL)chapternav;
@@ -129,12 +127,7 @@
 - (void) removePerFileDataForFile: (NSString *) file;
 - (void) removePerFileDataForDirectory: (NSString *) directory;
 - (void) removePerFileData;
-/**
- * retrieve the rectangle for the application taking into account the rotation preference.
- * This will always have 0,0 as the origin (contrarily to the case of the UIHardware version).
- *
- */
-- (struct CGRect) fullScreenApplicationContentRect;
+
 /**
  * retrieve the apps default location for EBooks.
  * Note that this is not the location stored in prefs but the default.  This is needed as opposed to the previous
@@ -143,10 +136,12 @@
  *
  */
 + (NSString*) defaultEBookPath;
+
 /**
  * singleton factory method
  */
 + (BooksDefaultsController*)sharedBooksDefaultsController;
+
 /**
  * delegate method for the alert sheet.
  */
