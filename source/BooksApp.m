@@ -300,23 +300,6 @@
   }
 }
 
-
-/**
- * Heartbeat is needed in main app at this point.
- * It is used as a delegate for the navbar (without it hte toggle won't work) a delegate or the navbar toggle won't work.
- * It is also used to complete the load of documents which were already partially loaded when opened from the file browser
- */
-	- (void)heartbeatCallback:(id)ignored {
-		if ((textViewNeedsFullText) && ![transitionView isTransitioning])
-		{
-			[textView loadBookWithPath:[textView currentPath] subchapter:[defaults lastSubchapterForFile:[textView currentPath]]];
-			textViewNeedsFullText = NO;
-		}
-
-	}
-=======
->>>>>>> File browser finally works again, but re-launch to open existing file leaves blank view:source/BooksApp.m
-
 /**
  * Hide the navigation bars.
  */

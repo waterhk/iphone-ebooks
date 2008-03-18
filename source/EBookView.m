@@ -46,6 +46,8 @@
 - (void)showNavbars;
 - (void)hideNavbars;
 - (UIView*)progressParentView;
+- (void)chapForward:(UINavBarButton *)button;
+- (void)chapBack:(UINavBarButton *)button;
 @end
 
 
@@ -301,6 +303,7 @@
     
     [self updateSliderPosition];
 	}
+}
 
 /**
  * Shrink on-screen text size.
@@ -326,6 +329,7 @@
     
     [self updateSliderPosition];
 	}
+}
 
 /**
  * Save the lastVisibleRect.
@@ -337,7 +341,6 @@
 	CGPoint clicked = GSEventGetLocationInWindow(event);
 	_MouseDownX = clicked.x;
 	_MouseDownY = clicked.y;
-	GSLog(@"MouseDown");
 	[super mouseDown:event];
   lastVisibleRect = [self visibleRect];
 }
@@ -353,51 +356,51 @@
 	{
 		if (clicked.x - _MouseDownX > 100 )
 		{
-			if ([_heartbeatDelegate respondsToSelector:@selector(chapForward:)]) 
-					   [_heartbeatDelegate chapForward:(UINavBarButton*)nil];
+      [[self delegate] chapForward:nil];
 			lChangeChapter = YES;
 		}
 		else if (clicked.x - _MouseDownX < -100)
 		{
-			if ([_heartbeatDelegate respondsToSelector:@selector(chapBack:)]) 
-						  [_heartbeatDelegate chapBack:(UINavBarButton*)nil];
+      [[self delegate] chapBack:nil];
 			lChangeChapter = YES;
 		}
 	}
 
-	struct CGRect newRect = [self visibleRect];
-	struct CGRect contentRect = [self bounds];
-	int lZoneHeight = [defaults enlargeNavZone] ? TOOLBAR_HEIGHT+30 : TOOLBAR_HEIGHT;
+  if(!lChangeChapter) {
+    struct CGRect newRect = [self visibleRect];
+    struct CGRect contentRect = [self bounds];
+    int lZoneHeight = [defaults enlargeNavZone] ? TOOLBAR_HEIGHT+30 : TOOLBAR_HEIGHT;
 
-	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
-	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
+    struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
+    struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 
-	if (!lChangeChapter && [self isScrolling]) {
-		if (CGRectEqualToRect(lastVisibleRect, newRect)) {
-			if (CGRectContainsPoint(topTapRect, clicked)) {
-				if ([defaults inverseNavZone]) {
-					//scroll forward one screen...
-					[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-				} else {
-					//scroll back one screen...
-					[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-				}
-			} else if (CGRectContainsPoint(botTapRect,clicked)) {
-				if ([defaults inverseNavZone]) {
-					//scroll back one screen...
-					[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-				} else {
-					//scroll forward one screen...
-					[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-				}
-			} else {  // If the old rect equals the new, then we must not be scrolling
-				[self toggleNavbars];
-			}
-		}	else {
-      //we are, in fact, scrolling
-			[self hideNavbars];
-		}
-	}
+    if ([self isScrolling]) {
+      if (CGRectEqualToRect(lastVisibleRect, newRect)) {
+        if (CGRectContainsPoint(topTapRect, clicked)) {
+          if ([defaults inverseNavZone]) {
+            //scroll forward one screen...
+            [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
+          } else {
+            //scroll back one screen...
+            [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
+          }
+        } else if (CGRectContainsPoint(botTapRect,clicked)) {
+          if ([defaults inverseNavZone]) {
+            //scroll back one screen...
+            [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
+          } else {
+            //scroll forward one screen...
+            [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
+          }
+        } else {  // If the old rect equals the new, then we must not be scrolling
+          [self toggleNavbars];
+        }
+      }	else {
+        //we are, in fact, scrolling
+        [self hideNavbars];
+      }
+    }
+  }
 
   [self releaseRubberBandIfNecessary];
 	lastVisibleRect = [self visibleRect];
@@ -531,9 +534,7 @@
  */
 - (void)reallyLoadBook {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  GSLog(@"ReallyLoadBook-starting");
   [self loadBookWithPath:path subchapter:subchapter];
-  GSLog(@"ReallyLoadBook-done");
   [pool release];
 }
 
@@ -779,6 +780,7 @@
   return [self setSubchapter:subchapter-1];
 }
 
+/*
 - (int)  swipe: ( int)num  withEvent: ( struct __GSEvent *)event
 {
 	if (num == kUIViewSwipeLeft)
@@ -786,6 +788,8 @@
 	if (num == kUIViewSwipeRight)
 		GSLog(@"SwipeRight");
 }
+*/
+
 - (BOOL)canHandleSwipes
 {
 	return YES;
