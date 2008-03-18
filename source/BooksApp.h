@@ -81,7 +81,8 @@ enum PreferenceAnimationType;
 	UIAlphaAnimation *alpha;
 }
 
-- (void)textViewDidGoAway:(id)sender;
+- (UIView*)showDocumentAtPath:(NSString*)p_path;
+- (void)closeCurrentDocument;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
 - (void)heartbeatCallback:(id)ignored;
 - (void)hideNavbars;
@@ -99,7 +100,6 @@ enum PreferenceAnimationType;
 - (void)updateNavbar;
 - (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped;
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
-- (void)textViewDidGoAway:(id)sender;
 - (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;
 - (void)refreshTextViewFromDefaultsToolbarsOnly:(BOOL)toolbarsOnly;

@@ -26,8 +26,9 @@
 //#include "dolog.h"
 @implementation HideableNavBar
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect {
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv {
 	[super initWithFrame:rect];
+  
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
 	// Try to infer whether the navbar is on the top or bottom of the screen.
 	if (rect.origin.y == 0.0f)
@@ -37,8 +38,6 @@
 	translate =  [[UITransformAnimation alloc] initWithTarget: self];
 	animator = [[UIAnimator alloc] init];
 	hidden = NO;
-	_textIsOnTop = NO;
-	_pixOnTop = NO;
 	_transView = nil;
 	_extensions = nil;
 	_browserArray = [[NSMutableArray alloc] initWithCapacity:3]; // eh?
@@ -46,129 +45,112 @@
 											 selector:@selector(shouldReloadTopBrowser:)
 												 name:RELOADTOPBROWSER
 											   object:nil];
+  [self disableAnimation];
+  
+  m_nCurrentBrowser = 0;
+  
+  [self setDelegate:p_del];
+  _browserDelegate = [p_del retain];
+  
+  _transView = [p_tv retain];
+  
+  FileBrowser *fb1 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
+  FileBrowser *fb2 = [[[FileBrowser alloc] initWithFrame:[p_tv bounds]] autorelease];
+  
+  [fb1 setDelegate:p_del];
+  [fb2 setDelegate:p_del];
+  
+  m_browserList = [[NSArray alloc] initWithObjects:fb1, fb1, nil];
+  
 	return self;
 }
 
-- (void)setBrowserDelegate:(id)bDelegate {
-  [bDelegate retain];
-  [_browserDelegate release];
-	_browserDelegate = bDelegate;
+/**
+ * Get the currently active file browser.
+ */
+- (FileBrowser*)topBrowser {
+  return [m_browserList objectAtIndex:m_nCurrentBrowser];
 }
 
 - (void)popNavigationItem {
+  /*
+   * MOZART: We need two file views and a text view.  Use the file views to transition/slide
+   * left/right.
+   *
+   * Popping will always show a FileBrowser.
+   
+   Pushing should always be the result of the user clicking on a file view.
+   Popping should always be the result of clicking the back button in the navbar.
+   
+   Both popping and clicking the filebrowser may cause a new filebrowser to be shown.
+   
+   Only tapping on the filebrowser should show a new document view.
+   */  
   FileNavigationItem *poppedFi = (FileNavigationItem*)[self topItem];
   [super popNavigationItem];
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
   
   GSLog(@"Popped item at %@, new top is %@", [poppedFi path], [topFi path]);
-  // FIXME: Add view wrangling here
+  
+  FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
+  FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
+
+  if(m_topDocView != nil) {
+    // We're currently going from text to file
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:m_topDocView toView:oldBrowser];  
+    [m_topDocView release];
+    m_topDocView = nil;
+  } else {
+    // Going file to file
+    m_nCurrentBrowser = !m_nCurrentBrowser;
+    [newBrowser setPath:[topFi path]];
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];  
+  }
 }
 
 - (void)pushNavigationItem:(UINavigationItem*)p_item {
+  /* Pushing may reveal a FileBrowser, EBookView, or EBookImageView. */
   FileNavigationItem *pushedFi = (FileNavigationItem*)p_item;
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
+  [super pushNavigationItem:p_item];
   
   GSLog(@"Pushing item at %@, old top is %@", [pushedFi path], [topFi path]);
   
-  [super pushNavigationItem:p_item];
-  // FIXME: Add view wrangling here
-}
-
-/*
-- (void)popNavigationItem {
-  GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
-	if (_textIsOnTop || _pixOnTop) 	{
-		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
-	} else {
-		[_browserArray removeLastObject];
-	}
-
-	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
-	if (!CGRectEqualToRect([[_browserArray lastObject] frame], fullRect)) {
-		GSLog(@"geometry changed creating new browser");
-		FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
-		[newBrowser setExtensions:_extensions];
-		[newBrowser setPath:[[_browserArray lastObject] path]];
-		[newBrowser setDelegate:_browserDelegate];
-		[_browserArray removeLastObject];
-		[_browserArray addObject: newBrowser];
-		[newBrowser release];  // we still have it in the array, don't worry!
-	}
-
-	[_transView transition:([self isAnimationEnabled]? 2 : 0) toView:[_browserArray lastObject]];
-	[super popNavigationItem];
-
-	if (_textIsOnTop || _pixOnTop)
-	{
-		_textIsOnTop = NO;
-		_pixOnTop = NO;
-
-		if ([_browserDelegate respondsToSelector:@selector(textViewDidGoAway:)])
-			 [_browserDelegate textViewDidGoAway:self];
-	}
-	else
-	{
-		GSLog(@"Popped to %@\n", [[_browserArray lastObject] path]);
-	}
-}
-*/
-- (NSString *)topBrowserPath {
-	return [[_browserArray lastObject] path];
-}
-/*
-- (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath {
-  GSLog(@"Pushed %@", browserPath);
+  FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
+  FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
   
-	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
-	FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
-	[newBrowser setExtensions:_extensions];
-	[newBrowser setPath:browserPath];
-	[newBrowser setDelegate:_browserDelegate];
-  id oldBrowser = [_browserArray lastObject];
-	[_browserArray addObject:newBrowser];
-	[_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
-	[newBrowser release];  // we still have it in the array, don't worry!
-	[super pushNavigationItem:item];
+  if([pushedFi isDocument]) {
+    // EBookView or EBookImageView
+    UIView *newView = nil;
+    if([_browserDelegate respondsToSelector:@selector(showDocumentAtPath:)]) {
+      newView = [_browserDelegate showDocumentAtPath:[pushedFi path]];
+    } 
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) 
+                  fromView:(m_topDocView == nil ? oldBrowser : m_topDocView) // Hack for startup cover image
+                    toView:newView];
+    [m_topDocView autorelease];
+    m_topDocView = [newView retain];
+  } else {
+    // FileBrowser
+    m_nCurrentBrowser = !m_nCurrentBrowser;
+    [newBrowser setPath:[pushedFi path]];
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];
+    [m_topDocView release];
+    m_topDocView = nil;
+  }
 }
 
-- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view {
-	[self pushNavigationItem:item withView:view reverseTransition:NO];
-}
-
-- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view reverseTransition:(BOOL)reversed {
-	BOOL thisIsText = [view respondsToSelector:@selector(loadBookWithPath:subchapter:)]; //ugh!
-	// Here, cometh funky code, in anticipation of multiple text views.
-	if (_textIsOnTop && thisIsText) {
-		[self disableAnimation];
-		[super popNavigationItem];
-		[self enableAnimation];
-	}
-
-	_textIsOnTop = thisIsText;
-	_pixOnTop = !thisIsText;
-	GSLog(@"Pushed view\n");
-	int transitionType = reversed ? 2 : 1;
-	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) toView:view];
-	[super pushNavigationItem:item];
-}
-*/
-- (FileBrowser *)topBrowser {
-	return [_browserArray lastObject];
+/**
+ * This hack exists only to make the startup image->text transition work.
+ */
+- (void)setTopDocumentView:(UIView*)p_view {
+  [m_topDocView autorelease];
+  m_topDocView = [p_view retain];
 }
 
 - (void)shouldReloadTopBrowser:(NSNotification *)notification {
-	if (isTop) // let's only do this once.
-	{
-		[[_browserArray lastObject] reloadData];
-	}
-}
-
-- (void)shouldReloadAllBrowsers:(NSNotification *)notification {
 	if (isTop) {
-		NSEnumerator *enumerator = [_browserArray objectEnumerator];
-		id i;
-		while (nil != (i = [enumerator nextObject]))
-			[i reloadData];
+		[[_browserArray lastObject] reloadData];
 	}
 }
 
@@ -266,10 +248,6 @@
 	hidden = YES;
 }
 
-- (void)setTransitionView:(UITransitionView *)view {
-	_transView = [view retain];
-}
-
 - (void)setExtensions:(NSArray *)extensions {
 	_extensions = [extensions retain];
 }
@@ -277,6 +255,8 @@
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
+  [m_browserList release];
+  [m_topDocView release];
 	[animator release];
 	[translate release];
   [_transView release];

@@ -263,11 +263,13 @@ int numberCompare(id firstString, id secondString, void *context)
 }
 
 - (void)shouldReloadThisCell:(NSNotification *)aNotification {
+  GSLog(@"Filebrowser should reload this cell. ");
   NSString *theFilepath = [aNotification object];
   NSString *basePath = [theFilepath stringByDeletingLastPathComponent];
   if ([basePath isEqualToString:_path]) {
     [self reloadCellForFilename:theFilepath];
   }
+  GSLog(@"DONE Filebrowser should reload this cell. ");
 }
 
 - (void)reloadCellForFilename:(NSString *)thePath {

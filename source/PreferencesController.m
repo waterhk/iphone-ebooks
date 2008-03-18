@@ -469,7 +469,7 @@
 			GSLog(@"mark all book as new");
 			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 			[defaults removePerFileData];
-			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADALLBROWSERS object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
 			[markAllBooksAsNewCell setEnabled:NO];
 			[markAllBooksAsNewCell setSelected:NO withFade:YES];
 			break;

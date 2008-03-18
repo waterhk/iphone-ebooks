@@ -37,8 +37,6 @@
 {
   BOOL hidden;
   BOOL isTop;
-  BOOL _textIsOnTop;
-  BOOL _pixOnTop;
   UITransformAnimation *translate;
   UIAnimator *animator;
   UITransitionView *_transView;
@@ -46,34 +44,33 @@
   NSArray *_extensions;
   BooksDefaultsController	*defaults;
   id _browserDelegate;
+  
+  NSArray *m_browserList;
+  int m_nCurrentBrowser;
+  
+  /** If currently showing a document, this is the view it's in. */
+  UIView *m_topDocView;
 }
+
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
 
 - (void)hideTopNavBar;
 - (void)showTopNavBar:(BOOL)withAnimation;
 - (void)hideBotNavBar;
 - (void)showBotNavBar;
 
-- (void)setTransitionView:(UITransitionView *)transView;
-
-//- (void)popNavigationItem;
-//- (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath;
-//- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view;
-//- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view reverseTransition:(BOOL)reversed;
+- (void)setTopDocumentView:(UIView*)p_view;
 - (void)hide:(BOOL)forced;
 - (void)show;
 - (void)toggle;
 - (BOOL)hidden;
 - (void)setExtensions:(NSArray *)extensions;
-- (void)setBrowserDelegate:(id)bDelegate;
-- (FileBrowser *)topBrowser;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
-- (void)shouldReloadAllBrowsers:(NSNotification *)notification;
-- (NSString *)topBrowserPath;
-
+- (FileBrowser*)topBrowser;
 @end
+
 //informal protocol declaration for _browserDelegate
 @interface NSObject (BrowserDelegate)
-
-- (void)textViewDidGoAway:(id)sender;
-
+- (UIView*)showDocumentAtPath:(NSString*)p_path;
+- (void)closeCurrentDocument;
 @end
