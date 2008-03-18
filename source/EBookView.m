@@ -99,6 +99,10 @@
 	return self;
 }
 
+- (void)setFrame:(struct CGRect)p_frame {
+  
+}
+
 /**
  * Make sure our lastVisible gets updated after a scroll event.
  */

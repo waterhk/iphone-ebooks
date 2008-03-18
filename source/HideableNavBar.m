@@ -107,6 +107,21 @@
   return [top view];
 }
 
+/**
+ * Perform an action on all item views in the stack.
+ */
+- (void)performSelectorOnItemViews:(SEL)p_sel withObject:(id)p_obj {
+  NSArray *items = [self navigationItems];
+  int itemCount = [items count];
+  
+  for(itemCount = itemCount - 1; itemCount >=0; itemCount--) {
+    FileNavigationItem *fni = (FileNavigationItem*)[items objectAtIndex:itemCount];
+    UIView *view = [fni view];
+    GSLog(@"Performing %@ on %@", p_sel, view);
+    [view performSelector:p_sel withObject:p_obj];
+  }
+}
+
 
 /**
  * Defer transition until the ebook is ready.

@@ -706,13 +706,21 @@
  * Toggle rotation status.
  */
 - (void)rotateApp {
-  /* This is going to be a disaster to fix all the views!
+  int degrees = 0;
+  if([defaults isRotate90]) {
+    degrees = 90;
+  }
+  
+  [navBar performSelectorOnItemViews:@selector(setRotationBy:) withObject:degrees];
+  
+  /*
 	CGSize lContentSize = [textView contentSize];	
 	//GSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
 	//GSLog(@"rotateApp");
-	CGRect rect = [defaults fullScreenApplicationContentRect];
+	CGRect rect = [window frame];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
 	[self toggleStatusBarColor];
+  
 	if ([defaults isRotate90]) {
 		int degree = 90;
 		CGAffineTransform lTransform2  = CGAffineTransformMake(0, 1, -1, 0, 0, 0);
@@ -735,12 +743,15 @@
 		float scrollPercentage = visRect.origin.y / overallRect.size.height;
 		if ([defaults isRotate90]) {
 			[window setFrame: rect];
-			[window setBounds: rect];
+			//[window setBounds: rect];
+      
 			[mainView setFrame: rect];
-			[mainView setBounds: rect];
+			//[mainView setBounds: rect];
 		}
 
 		[transitionView setFrame: rect];
+    
+    
 		[textView setFrame: rect];
 		[self refreshTextViewFromDefaultsToolbarsOnly];
 		[textView setDelegate:self];
@@ -752,18 +763,14 @@
 		//		GSLog(@"new overall height: %f", overallRect.size.height);
 		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
 
-		[textView loadBookWithPath:recentFile subchapter:subchapter];
-		//BCC something like the line bellow should work but I can't find what
-		//	[textView reflowBook];
-		[UIView beginAnimations: @"rotate"];
-		//[UIView setAnimationDuration:10.0];
-		textViewNeedsFullText = NO;
-		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint)
-									 animated:NO];
+    // FIXME: There's probably a better way to do this than reloading the whole book
+//		[textView loadBookWithPath:recentFile subchapter:subchapter];
+		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint) animated:NO];
+    
+        
 		[window setTransform: lTransform];
 
-		if (![defaults isRotate90])
-		{
+		if (![defaults isRotate90]) {
 			rect.origin.y+=20; //to take into account the status bar
 			[window setFrame: rect];
 		}
@@ -775,8 +782,8 @@
 		//[navBar show];
 		[bottomNavBar hide];
 	}
-//	
 */
+
 	//BCC: animate this
 	/*	
 		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];

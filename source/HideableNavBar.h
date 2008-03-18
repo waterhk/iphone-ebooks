@@ -48,6 +48,8 @@
 - (void)toggle;
 - (BOOL)hidden;
 
+- (void)performSelectorOnItemViews:(SEL)p_sel withObject:(id)p_obj;
+
 - (void)replaceTopNavigationItem:(UINavigationItem*)p_item;
 - (void)setTransitionOffView:(UIView*)p_view;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
