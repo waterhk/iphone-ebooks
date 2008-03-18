@@ -24,6 +24,7 @@
 #import <UIKit/UISliderControl.h>
 #import <UIKit/UIAlphaAnimation.h>
 #import <UIKit/UIProgressIndicator.h>
+#import <UIKit/UIProgressHUD.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UITextTraitsClientProtocol.h>
 #import <UIKit/UIWebView.h>
@@ -49,22 +50,14 @@
 @implementation EBookView
 
 - (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par {
-  /* WTF?
-	CGRect lFrame = rect;
-	if (rect.size.width < rect.size.height) {
-		lFrame.size.width = rect.size.height;
-	}
-  */
-  
 	if(self = [super initWithFrame:rect]) {
-    //[super setFrame:rect];	
-
     m_pendingScrollPoint = -1.0f;
 
     chapteredHTML = [[ChapteredHTML alloc] init];
     subchapter    = 0;
     defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
     m_navBarsVisible = NO;
+    m_readyToShow = NO;
     
     [self setAdjustForContentSizeChange:YES];
     [self setEditable:NO];
@@ -98,9 +91,7 @@
     [m_scrollerSlider setMinValueImage:img];
     [m_scrollerSlider setMaxValueImage:img];
     [self updateSliderPosition];
-    
-    m_parentView = [p_par retain];
-    
+   
     [[NSNotificationCenter defaultCenter] addObserver:self
                          selector:@selector(scrollSpeedDidChange:)
                            name:CHANGEDSCROLLSPEED
@@ -391,35 +382,35 @@
 /**
  * Show the please wait / progress spinner view.
  */
-- (void)showPleaseWait:(id)sender {
-  // Setup the progress indicator.
-  if(m_progressIndicator == nil) {
-    GSLog(@"About to setup progress.");
-    struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
-    struct CGRect progRect = CGRectMake(([self bounds].size.width - progsize.width) / 2,
-                                        ([self bounds].size.height - progsize.height) / 2,
-                                        progsize.width, 
-                                        progsize.height);
-    m_progressIndicator = [[UIProgressIndicator alloc] initWithFrame:progRect];
-    [m_progressIndicator setStyle:5];
-    GSLog(@"Done setting up progress.");
-  }
+- (void)showPleaseWait:(UIView*)p_parent {
+  const int progHeight = 120;
+  const int progWidth = 180;
+  struct CGRect progRect = CGRectMake(([p_parent bounds].size.width - progWidth) / 2,
+                                      ([p_parent bounds].size.height - progHeight) / 2,
+                                      progWidth, 
+                                      progHeight);
   
-  UIView *parent = [[self delegate] progressParentView];
-  GSLog(@"Starting progress indicator with parent view %@", parent);
-  [parent addSubview:m_progressIndicator];
-  
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:m_progressIndicator selector:@selector(startAnimation) userInfo:nil repeats:NO];
-  
-//  [m_progressIndicator startAnimation];
+  m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
+  [m_progressIndicator setText:@"Loading..."];
+  [p_parent addSubview:m_progressIndicator];
+  [m_progressIndicator show:YES];
 }
 
 /**
  * Hide the please wait / progress spinner view.
  */
-- (void)hidePleaseWait:(id)sender {
-//	[m_progressIndicator stopAnimation];
-	//[m_progressIndicator removeFromSuperview];
+- (void)hidePleaseWait {
+  [m_progressIndicator show:NO];
+  [m_progressIndicator removeFromSuperview];
+  [m_progressIndicator release];
+  m_progressIndicator = nil;
+}
+
+/**
+ * Return YES if content is loaded and we're ready to transition.
+ */
+- (BOOL)isReadyToShow {
+  return m_readyToShow;
 }
 
 #pragma mark File Reading Methods START
@@ -429,6 +420,7 @@
  * Use for deferred loading with progress bars, etc.
  */
 - (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap {
+  m_readyToShow = NO;
   [p_path retain];
   [path release];
   path = p_path;
@@ -440,17 +432,22 @@
  */
 - (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView {
   if(p_progView != nil) {
-    [self showPleaseWait:nil];
-    GSLog(@"Prog should be running.");
+    [self showPleaseWait:p_progView];
+    [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:self withObject:nil];
+  } else {
+    [self loadBookWithPath:path subchapter:subchapter];
   }
-  
+}
+
+/**
+ * Call from main runloop so progres hud displays.
+ */
+- (void)reallyLoadBook {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  GSLog(@"ReallyLoadBook-starting");
   [self loadBookWithPath:path subchapter:subchapter];
-  
-  if(p_progView != nil) {
-    GSLog(@"Done loading, shutting down progress.");
-    [self hidePleaseWait:nil];
-    GSLog(@"Progress down.");
-  }
+  GSLog(@"ReallyLoadBook-done");
+  [pool release];
 }
 
 /**
@@ -462,6 +459,7 @@
  * @param theSubchapter subchapter number for chaptered HTML
  */
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
+  m_readyToShow = NO;
   GSLog(@"Loading book %@", thePath);
   
 	NSMutableString *theHTML = nil;
@@ -523,7 +521,9 @@
     [self setText:theHTML];
   }
 
-  [self applyPreferences];
+  [self performSelectorOnMainThread:@selector(applyPreferences) withObject:nil waitUntilDone:NO];
+  
+  m_readyToShow = YES;
   
 	/* This code doesn't work.  Sorry, charlie.
 	   if (1) //replace with a defaults check
@@ -771,6 +771,7 @@
     m_pendingScrollPoint = -1.0f;
     GSLog(@"Scrolling book position to %f", pt);
     [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, pt) animated:NO];
+    [self redraw];
     [self stopHeartbeat:@selector(beatIt)];
   }
 }
@@ -793,18 +794,18 @@
  * Cleanup.
  */
 - (void)dealloc {
+  GSLog(@"Book dealloc");
   [self saveBookPosition];
   
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-  
-  [m_parentView release];
-  
-  [m_progressIndicator removeFromSuperview];
-  [m_scrollerSlider removeFromSuperview];
-  
+ 
+  [m_progressIndicator removeFromSuperview];  
   [m_progressIndicator release];
+
+  [m_scrollerSlider removeFromSuperview];
   [m_scrollerSlider release];
-	[path release];
+	
+  [path release];
 	[chapteredHTML release];
 	[defaults release];
   

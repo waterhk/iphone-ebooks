@@ -203,9 +203,11 @@
     [self fileBrowser:nil fileSelected:curPath];
     
     // Need to show the navbar after the last transition if we're not reading.
+    /*
     if(!readingText && pathCount == 0) {
       [navBar show];
     }
+     */
   }
       
 	if(readingText) {
@@ -223,20 +225,34 @@
     [fni release];
     
     // If reading, hide the nav bars (but they need to be added to the view first)
+    /*
     [navBar hide];
     [bottomNavBar hide];
+     */
   }
   
 	//bcc rotation
 	[self rotateApp];
 
 	[arPathComponents release];
+}
 
+/**
+ * Need to cleanup after the first transition is done.
+ *
+ * This is called from the deferred transition code in HideableNavBar.  We need this
+ * object to stay alive long enough for the book to finish loading (which is async) and
+ * for the final transition to complete.
+ */
+- (void)cleanupStartupImage {
+  [m_startupImage removeFromSuperview];
+  m_startupImage = nil;
 }
 
 - (void)setNavForItem:(FileNavigationItem*)p_item {
   if([p_item isDocument]) {
     // Set nav bars for a document
+    [self hideNavbars];
   } else {
     // Set nav bars for a file browser
     [bottomNavBar hide];
@@ -310,15 +326,22 @@
   } else { 
     //text or HTML file
     readingText = YES;
-    // Slight optimization.  If the file is already loaded,
-    // don't bother reloading.
+    UIView *progView;
     int subchapter = [defaults lastSubchapterForFile:p_path];
-    float scrollPoint = (float) [defaults lastScrollPointForFile:p_path
-                                                    inSubchapter:subchapter];
-   
     EBookView *ebv = [[[EBookView alloc] initWithFrame:[mainView bounds] delegate:self parentView:mainView] autorelease];
     [ebv setDelegate:self];
-    [ebv loadBookWithPath:p_path subchapter:subchapter];
+    [ebv setBookPath:p_path subchapter:subchapter];
+    
+    // FIXME: It might make sense to move this kludge into the toolbar -- if m_offViewKludge is set,
+    // return that for topView instead of a document or filebrowser.  Not sure if that would
+    // break anything that calls topView, though.
+    if(m_startupImage != nil) {
+      progView = m_startupImage;
+    } else {
+      progView = [navBar topView];
+    }
+    
+    [ebv loadSetDocumentWithProgressOnView:progView];
     
     ret = ebv;
   }  
@@ -340,24 +363,6 @@
 
   return ret;
 }
-
-/**
- * Cleanup the current document.  Saves settings for books or dealloc's views for images.
- */
-/*
-- (void)closeCurrentDocument {
-  GSLog(@"Closing document.");
-  if(readingText) {
-    [self saveBookPosition];
-  } else {
-    [imageView release];
-    imageView = nil;
-  }
-  
-  readingText = NO;
-  [bottomNavBar hide];
-}
- */
 
 /**
  * Called by the file browser objects when a user taps a file or folder.  Calls to navBar

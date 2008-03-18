@@ -19,10 +19,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-
+@class UIView;
 @class UITextView;
 @class UISliderControl;
 @class UIProgressIndicator;
+@class UIProgressHUD;
 
 @class ChapteredHTML;
 @class BooksDefaultsController;
@@ -51,8 +52,9 @@
   BOOL m_navBarsVisible;
   
   float m_pendingScrollPoint;
-  UIProgressIndicator *m_progressIndicator;
-  UIView *m_parentView;
+  UIProgressHUD *m_progressIndicator;
+  
+  BOOL m_readyToShow;
 }
 typedef enum
 {
@@ -73,8 +75,10 @@ typedef enum
 - (NSMutableString *)readTextFile:(NSString *)file;
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data;
 
-- (void)showPleaseWait:(id)sender;
-- (void)hidePleaseWait:(id)sender;
+- (BOOL)isReadyToShow;
+
+- (void)showPleaseWait:(UIView*)p_parent;
+- (void)hidePleaseWait;
 
 - (NSString *)currentPath;
 - (void)embiggenText;

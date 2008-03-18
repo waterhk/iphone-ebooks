@@ -88,6 +88,7 @@ enum PreferenceAnimationType;
 - (void)toggleStatusBarColor;
 - (NSString *)currentBrowserPath;
 - (void)cleanUpBeforeQuit;
+- (void)cleanupStartupImage;
 - (void)rotateApp;
 - (void)rotateButtonCallback:(UINavBarButton*) button;
 - (void)applicationDidFinishLaunching: (id) unused;

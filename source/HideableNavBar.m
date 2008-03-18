@@ -36,6 +36,11 @@
 #import "EBookView.h"
 #import "FileNavigationItem.h"
 
+#define READY_FROM_VIEW @"fromView"
+#define READY_TO_VIEW @"toView"
+#define READY_TRANSITION @"transition"
+#define READY_DEST_NAV @"destNav"
+
 //#include "dolog.h"
 @implementation HideableNavBar
 
@@ -102,6 +107,68 @@
   return [top view];
 }
 
+
+/**
+ * Defer transition until the ebook is ready.
+ */
+- (void)transitionViewsWhenReady:(id)p_tmr {
+  NSDictionary *info;
+  
+  // We can either get a timer w/ user info, or just pass the dictionary directly.
+  if([p_tmr respondsToSelector:@selector(userInfo)]) {
+    NSTimer *tmr = (NSTimer*)p_tmr;
+    info = [p_tmr userInfo];
+  } else {
+    info = (NSDictionary*)p_tmr;
+  }
+  
+  UIView *fromView = (UIView*)[info objectForKey:READY_FROM_VIEW];
+  UIView *toView = (UIView*)[info objectForKey:READY_TO_VIEW];
+  NSNumber *transition = (NSNumber*)[info objectForKey:READY_TRANSITION];
+  FileNavigationItem *destItem = (FileNavigationItem*)[info objectForKey:READY_DEST_NAV];
+  
+  // By default, we're ready.
+  BOOL bCanShow = YES;
+  
+  // If it's a book and it's not ready, then we're not ready.  Otherwise, we are.
+  if([toView respondsToSelector:@selector(isReadyToShow)]) {
+    EBookView *ebv = (EBookView*)toView;
+    bCanShow = [ebv isReadyToShow];
+  } 
+  
+  if(bCanShow) {
+    // Do the transition
+    GSLog(@"Ready to transition.");
+    
+    if([toView respondsToSelector:@selector(isReadyToShow)]) {
+      EBookView *ebv = (EBookView*)toView;     
+      [ebv hidePleaseWait];
+    }
+    
+    [[self delegate] setNavForItem:destItem];
+    [_transView transition:[transition intValue] fromView:fromView toView:toView];
+    
+    // Cleanup the startup image later so we can still use it to transition.
+    [NSTimer scheduledTimerWithTimeInterval:0.5f target:[self delegate] selector:@selector(cleanupStartupImage) userInfo:nil repeats:NO];
+  } else {
+    // Reschedule
+    GSLog(@"Not ready to transition.  Retrying...");
+    [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(transitionViewsWhenReady:) userInfo:info repeats:NO];
+  }
+}
+
+/**
+ * Helper to create a userInfo dictionary for transitionViewsWhenReady:
+ */
+- (NSDictionary*)transitionDictFromView:(UIView*)p_from toView:(UIView*)p_to destItem:(FileNavigationItem*)p_item transition:(int)p_trans {
+  return [NSDictionary dictionaryWithObjectsAndKeys:
+                       p_from, READY_FROM_VIEW,
+                       p_to, READY_TO_VIEW,
+                       p_item, READY_DEST_NAV,
+                       [NSNumber numberWithInt:p_trans], READY_TRANSITION,
+                       nil];
+}
+
 /**
  * Remove the top item from the navigation bar stack and adjust the on-screen views to match.
  */
@@ -113,8 +180,7 @@
   GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
   
   if([self isAnimationEnabled]) {
-    [[self delegate] setNavForItem:poppedFi];
-    [_transView transition:2 fromView:[poppedFi view] toView:[topFi view]];
+    [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[topFi view] destItem:topFi transition:2]];
   }
   
   [poppedFi release];
@@ -139,8 +205,7 @@
       fromView = m_offViewKludge;
     }
     
-    [[self delegate] setNavForItem:topFi];
-    [_transView transition:1 fromView:fromView toView:[pushedFi view]];
+    [self transitionViewsWhenReady:[self transitionDictFromView:fromView toView:[pushedFi view] destItem:pushedFi transition:1]];
     
     [self setTransitionOffView:nil];
   }
@@ -160,8 +225,7 @@
   [super pushNavigationItem:newFi];
   [self enableAnimation];
   
-  [_transView transition:1 fromView:[poppedFi view] toView:[newFi view]];
-  [[self delegate] setNavForItem:newFi];
+  [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[newFi view] destItem:newFi transition:1]];
   
   [poppedFi release];
 }

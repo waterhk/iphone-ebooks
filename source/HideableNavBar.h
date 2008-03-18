@@ -58,4 +58,5 @@
 //informal protocol declaration for _browserDelegate
 @interface NSObject (BrowserDelegate)
 - (void)setNavForItem:(FileNavigationItem*)p_item;
+- (void)cleanupStartupImage;
 @end
