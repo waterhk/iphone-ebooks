@@ -46,7 +46,7 @@
 - (struct CGRect)newBounds;
 
 - (NSString*)name;
-- (struct CGAffineTransform)transform;
+- (struct CGAffineTransform)transformation;
 - (id)object;
 - (NSDictionary*)userInfo;
 @end

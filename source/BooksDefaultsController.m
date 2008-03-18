@@ -393,10 +393,9 @@
 - (BOOL)synchronize
 {
 	GSLog(@"default:synchronize");
-	if (_toolbarShouldUpdate)
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"toolbarDefaultsChanged" object:self];
-	if (_NeedRotate)
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"rotationDefaultChanged" object:self];
+	if (_toolbarShouldUpdate) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION object:self];
+  }
 	_toolbarShouldUpdate = NO;
 	_NeedRotate = NO;
 	return [_defaults synchronize];

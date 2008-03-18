@@ -71,6 +71,8 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	int degrees = orientations[o_code];
 	if (degrees == -1) return;
 	if (degrees == orientationDegrees) return;
+  
+  [[NSNotificationCenter defaultCenter] postNotificationName:START_ROTATION_NOTIFICATION object:nil];
 	
 	/* Find the rect a fullscreen app would use under the new rotation... */
 	bool landscape = (degrees == 90 || degrees == -90);
@@ -119,7 +121,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
       [transView setTransform:transEnd];
       [transView setBounds:m_fullContentBounds];
       [transView resizeSubviewsWithOldSize: oldSize];
-      [[self transitionView] setBounds:m_fullContentBounds];
+      [transView setBounds:m_fullContentBounds];
       //[[Notifications sharedInstance] setFrame: FullContentBounds];
       
       [[NSNotificationCenter defaultCenter] postNotification:[BoundsChangedNotification 

@@ -112,12 +112,12 @@
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
   struct CGRect oldB = [p_note oldBounds];
   struct CGRect newB = [p_note newBounds];
-  
+  /*
   GSLog(@"EBookView changing from %f x %f @ (%f, %f) to %f x %f @ (%f, %f)",
         oldB.size.width, oldB.size.height, oldB.origin.x, oldB.origin.y,
         newB.size.width, newB.size.height, newB.origin.x, newB.origin.y
         );
-
+*/
   [self setFrame:newB];
   if(newB.size.width <= newB.size.height) {
     // Portrait mode

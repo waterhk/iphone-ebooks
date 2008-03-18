@@ -43,6 +43,8 @@
 
 #define OPENEDTHISFILE @"openedThisFileNotification"
 #define RELOADTOPBROWSER @"reloadTopBrowserNotification"
+#define START_ROTATION_NOTIFICATION @"startRotationNotification"
+#define TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION @"toolbarDefaultsChanged"
 
 #define WEBSITE_URL_STRING @"http://iphoneebooks.googlecode.com/"
 

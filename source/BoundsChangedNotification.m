@@ -83,7 +83,7 @@
 /**
  * Return the transform used in this bounds change.
  */
-- (struct CGAffineTransform)transform {
+- (struct CGAffineTransform)transformation {
   return m_transform;
 }
 

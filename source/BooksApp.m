@@ -54,11 +54,34 @@
 }
 
 /**
+ * Hide the navbars before we rotate.
+ */
+- (void)boundsWillChange:(NSNotification*)p_note {
+  GSLog(@"BooksApp-boundsWillChange");
+  [self hideNavbars];
+}
+
+/**
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
-  [self setupNavbar];
-  [self setupToolbar];
+  GSLog(@"BooksApp-boundsDidChange");
+  
+  // Fix the position of the prefs button.
+  struct CGSize newSize = [p_note newBounds].size;
+  GSLog(@"Tweaking prefs button for width %f", newSize.width);
+  float lMargin = 45.0f;
+  [prefsButton retain];
+  [prefsButton removeFromSuperview];
+  [prefsButton setFrame:CGRectMake(newSize.width - lMargin, 9, 40, 30)];
+  [navBar addSubview:prefsButton];
+  [prefsButton release];
+  
+  //[navBar setTransform:[p_note transformation]];
+  //[bottomNavBar setTransform:[p_note transformation]];
+  
+  //[self setupNavbar];
+  //[self setupToolbar];
 }
 
 - (void)applicationDidFinishLaunching:(id)unused {
@@ -78,7 +101,7 @@
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
-												 name:@"toolbarDefaultsChanged"
+												 name:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION
 											   object:nil];
 
 	window = [[UIWindow alloc] initWithContentRect:[UIHardware fullScreenApplicationContentRect]];  
@@ -137,6 +160,11 @@
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(boundsDidChange:)
                                                name:[BoundsChangedNotification name]
+                                             object:nil];
+  
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(boundsWillChange:)
+                                               name:START_ROTATION_NOTIFICATION
                                              object:nil];
   
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
@@ -530,6 +558,7 @@
     [navBar addSubview:prefsButton];
     
   } else {
+    /*
     [navBar retain];
     [navBar removeFromSuperview];
     [navBar setFrame:frameRect];
@@ -537,6 +566,7 @@
     [prefsButton setFrame:CGRectMake(frameRect.size.width-lMargin,9,40,30) ];
     [mainView addSubview:navBar];
     [navBar release];
+     */
   }	
 }
 
@@ -546,103 +576,61 @@
 - (void)setupToolbar {
 	struct CGRect rect = [mainView bounds];
   struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height - TOOLBAR_HEIGHT, rect.size.width, TOOLBAR_HEIGHT);
-  BOOL wasNil = NO;
   
   if(bottomNavBar == nil) {
-    wasNil = YES;
+    // FIXME: This will never redraw the nav bars after prefs.
     bottomNavBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView];
     [bottomNavBar setBarStyle:0];
-  } 
-
-  // Remove all existing buttons
-  [minusButton removeFromSuperview];
-  [minusButton release];
-  minusButton = nil;
-  
-  [plusButton removeFromSuperview];
-  [plusButton release];
-  plusButton = nil;
-  
-  [invertButton removeFromSuperview];
-  [invertButton release];
-  invertButton = nil;
-  
-  [rotateButton removeFromSuperview];
-  [rotateButton release];
-  rotateButton = nil;
-  
-  [leftButton removeFromSuperview];
-  [leftButton release];
-  leftButton = nil;
-  
-  [rightButton removeFromSuperview];
-  [rightButton release];
-  rightButton = nil;
-  
-  [upButton removeFromSuperview];
-  [upButton release];
-  upButton = nil;
-  
-  [downButton removeFromSuperview];
-  [downButton release];
-  downButton = nil;
     
-  // Put the buttons back
-  if ([defaults flipped]) {
-    downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
-    upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
+    // Put the buttons back
+    if ([defaults flipped]) {
+      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
+      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
 
-    if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-      leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
-      rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      } else {
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
+      }
+
+      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
+      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
     } else {
-      leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
-      rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
+      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
+      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+
+      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      } else {
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      }
+
+      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
+      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
     }
 
-    rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
-    invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
-    minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-    plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-  } else {
-    minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-    plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-    invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
-    rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+    [bottomNavBar addSubview:minusButton];
+    [bottomNavBar addSubview:plusButton];
+    [bottomNavBar addSubview:invertButton];
+    [bottomNavBar addSubview:rotateButton];
 
-    if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-      leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
-      rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
-    } else {
-      leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
-      rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
+    if ([defaults chapternav]) {
+      [bottomNavBar addSubview:leftButton];
+      [bottomNavBar addSubview:rightButton];
     }
-
-    upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
-    downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
-  }
-
-  [bottomNavBar addSubview:minusButton];
-  [bottomNavBar addSubview:plusButton];
-  [bottomNavBar addSubview:invertButton];
-  [bottomNavBar addSubview:rotateButton];
-
-  if ([defaults chapternav]) {
-    [bottomNavBar addSubview:leftButton];
-    [bottomNavBar addSubview:rightButton];
-  }
-  
-  if ([defaults pagenav]) {	
-    [bottomNavBar addSubview:upButton];
-    [bottomNavBar addSubview:downButton];
-  }
-  
-  if(wasNil) {
-    [bottomNavBar retain];
-    [bottomNavBar removeFromSuperview];
-    [bottomNavBar setFrame:frameRect];
-    [mainView addSubview:bottomNavBar];
-    [bottomNavBar release];
+    
+    if ([defaults pagenav]) {	
+      [bottomNavBar addSubview:upButton];
+      [bottomNavBar addSubview:downButton];
+    }
   }
 }
 
