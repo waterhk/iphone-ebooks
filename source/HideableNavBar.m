@@ -25,8 +25,7 @@
 //#include "dolog.h"
 @implementation HideableNavBar
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect
-{
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect {
 	[super initWithFrame:rect];
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
 	// Try to infer whether the navbar is on the top or bottom of the screen.
@@ -49,8 +48,7 @@
 	return self;
 }
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top
-{
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect isTop:(BOOL)top {
 	[super initWithFrame:rect];
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
 	// If we can't infer, use this method instead.
@@ -75,26 +73,20 @@
 	return self;
 }
 
-- (void)setBrowserDelegate:(id)bDelegate
-{
+- (void)setBrowserDelegate:(id)bDelegate {
 	_browserDelegate = [bDelegate retain];
 }
 
-- (void)popNavigationItem
-{
-	if (_textIsOnTop || _pixOnTop)
-	{
+- (void)popNavigationItem {
+	if (_textIsOnTop || _pixOnTop) 	{
 		GSLog(@"Popped from text to %@\n", [[_browserArray lastObject] path]);
 		//[[_browserArray lastObject] reloadData]; // to remove the "unread" dot
-	}
-	else
-	{
+	} else {
 		[_browserArray removeLastObject];
 	}
 
 	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
-	if (!CGRectEqualToRect([[_browserArray lastObject] frame], fullRect))
-	{
+	if (!CGRectEqualToRect([[_browserArray lastObject] frame], fullRect)) {
 		GSLog(@"geometry changed creating new browser");
 		FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
 		[newBrowser setExtensions:_extensions];
@@ -122,40 +114,32 @@
 	}
 }
 
-- (NSString *)topBrowserPath;
-{
+- (NSString *)topBrowserPath {
 	return [[_browserArray lastObject] path];
 }
 
-- (void)pushNavigationItem:(UINavigationItem *)item
-		   withBrowserPath:(NSString *)browserPath
-{
+- (void)pushNavigationItem:(UINavigationItem *)item withBrowserPath:(NSString *)browserPath {
 	struct CGRect fullRect = [defaults fullScreenApplicationContentRect];
 	FileBrowser *newBrowser = [[FileBrowser alloc] initWithFrame:fullRect];
 	[newBrowser setExtensions:_extensions];
 	[newBrowser setPath:browserPath];
 	[newBrowser setDelegate:_browserDelegate];
+  id oldBrowser = [_browserArray lastObject];
 	[_browserArray addObject:newBrowser];
-	[_transView transition:([self isAnimationEnabled] ? 1 : 0) toView:newBrowser];
+	[_transView transition:([self isAnimationEnabled] ? 1 : 0) fromView:oldBrowser toView:newBrowser];
 	[newBrowser release];  // we still have it in the array, don't worry!
 	GSLog(@"Pushed %@\n", browserPath);
 	[super pushNavigationItem:item];
 }
 
-- (void)pushNavigationItem:(UINavigationItem *)item
-				  withView:(UIView *)view
-{
+- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view {
 	[self pushNavigationItem:item withView:view reverseTransition:NO];
 }
 
-- (void)pushNavigationItem:(UINavigationItem *)item
-				  withView:(UIView *)view
-		 reverseTransition:(BOOL)reversed
-{
+- (void)pushNavigationItem:(UINavigationItem *)item withView:(UIView *)view reverseTransition:(BOOL)reversed {
 	BOOL thisIsText = [view respondsToSelector:@selector(loadBookWithPath:subchapter:)]; //ugh!
 	// Here, cometh funky code, in anticipation of multiple text views.
-	if (_textIsOnTop && thisIsText)
-	{
+	if (_textIsOnTop && thisIsText) {
 		[self disableAnimation];
 		[super popNavigationItem];
 		[self enableAnimation];
@@ -165,27 +149,23 @@
 	_pixOnTop = !thisIsText;
 	GSLog(@"Pushed view\n");
 	int transitionType = reversed ? 2 : 1;
-	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) 
-					toView:view];
+	[_transView transition:([self isAnimationEnabled] ? transitionType : 0) toView:view];
 	[super pushNavigationItem:item];
 }
 
-- (FileBrowser *)topBrowser
-{
+- (FileBrowser *)topBrowser {
 	return [_browserArray lastObject];
 }
 
-- (void)shouldReloadTopBrowser:(NSNotification *)notification
-{
+- (void)shouldReloadTopBrowser:(NSNotification *)notification {
 	if (isTop) // let's only do this once.
 	{
 		[[_browserArray lastObject] reloadData];
 	}
 }
-- (void)shouldReloadAllBrowsers:(NSNotification *)notification
-{
-	if (isTop)
-	{
+
+- (void)shouldReloadAllBrowsers:(NSNotification *)notification {
+	if (isTop) {
 		NSEnumerator *enumerator = [_browserArray objectEnumerator];
 		id i;
 		while (nil != (i = [enumerator nextObject]))
@@ -193,8 +173,7 @@
 	}
 }
 
-- (void)hide:(BOOL)forced
-{
+- (void)hide:(BOOL)forced {
 	if (!hidden) {	
 		if (isTop && forced) {
 			[self hideTopNavBar];
@@ -212,10 +191,8 @@
 	}
 }
 
-- (void)show
-{
-	if (hidden)
-	{
+- (void)show {
+	if (hidden) {
 		if (isTop)
 			[self showTopNavBar:YES];
 		else
@@ -224,16 +201,14 @@
 	}
 }
 
-- (void)toggle
-{
+- (void)toggle {
 	if (hidden)
 		[self show];
 	else
 		[self hide:NO];
 }
 
-- (BOOL)hidden;
-{
+- (BOOL)hidden; {
 	return hidden;
 }
 
@@ -244,14 +219,13 @@
 	[self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
 
 	struct CGAffineTransform trans = CGAffineTransformMakeTranslation(0,-68);
-	if (withAnimation)
-	{
+	if (withAnimation) {
 		[translate setStartTransform: trans];
 		[translate setEndTransform: CGAffineTransformIdentity];
 		[animator addAnimation:translate withDuration:.25 start:YES];
-	}
-	else
-		[self setFrame: CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
+	} else {
+    [self setFrame: CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];
+  }
 
 }
 
@@ -286,18 +260,15 @@
 	hidden = YES;
 }
 
-- (void)setTransitionView:(UITransitionView *)view
-{
+- (void)setTransitionView:(UITransitionView *)view {
 	_transView = [view retain];
 }
 
-- (void)setExtensions:(NSArray *)extensions
-{
+- (void)setExtensions:(NSArray *)extensions {
 	_extensions = [extensions retain];
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[animator release];
 	[translate release];

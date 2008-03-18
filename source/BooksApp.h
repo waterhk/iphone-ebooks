@@ -59,7 +59,6 @@ enum PreferenceAnimationType;
 	BOOL        readingText;
 	BOOL        doneLaunching;
 	BOOL        transitionHasBeenCalled;
-	BOOL        textViewNeedsFullText;
 	BOOL        navbarsAreOn;
 	BOOL		textInverted;
 

@@ -32,10 +32,10 @@
 
 - (id)initWithFrame:(struct CGRect)rect {
 	CGRect lFrame = rect;
-	if (rect.size.width < rect.size.height)
-	{
+	if (rect.size.width < rect.size.height) {
 		lFrame.size.width = rect.size.height;
 	}
+  
 	[super initWithFrame:lFrame];
 	[super setFrame:rect];	
 	//  tapinfo = [[UIViewTapInfo alloc] initWithDelegate:self view:self];
@@ -45,6 +45,7 @@
 	chapteredHTML = [[ChapteredHTML alloc] init];
 	subchapter    = 0;
 	defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
+  
 	[self setAdjustForContentSizeChange:YES];
 	[self setEditable:NO];
 
@@ -57,11 +58,13 @@
 	[self scrollToMakeCaretVisible:NO];
 
 	[self setScrollDecelerationFactor:0.996f];
-	//  GSLog(@"scroll deceleration:%f\n", self->_scrollDecelerationFactor);
+	
 	[self setTapDelegate:self];
 	[self setScrollerIndicatorsPinToContent:NO];
-	lastVisibleRect = [self visibleRect];
+	
+  lastVisibleRect = [self visibleRect];
 	[self scrollSpeedDidChange:nil];
+  
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(scrollSpeedDidChange:)
 												 name:CHANGEDSCROLLSPEED
@@ -353,16 +356,6 @@
 
 #pragma mark File Reading Methods START
 
-- (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
-	BOOL junk;
-	return [self loadBookWithPath:thePath numCharacters:-1 didLoadAll:&junk subchapter:theSubchapter];
-}
-
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int)theSubchapter {
-	BOOL junk;
-	return [self loadBookWithPath:thePath numCharacters:numChars didLoadAll:&junk subchapter:theSubchapter];
-}
-
 //USE WITH CAUTION!!!!
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath {
 	[thePath retain];
@@ -378,8 +371,7 @@
  * @param didLoadAll pointer to bool which will return YES if the entire file was loaded into memory
  * @param theSubchapter subchapter number for chaptered HTML
  */
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int)theSubchapter {
-
+- (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
 	NSMutableString *theHTML = nil;
 	//GSLog(@"path: %@", thePath);
 
@@ -422,35 +414,23 @@
 		}
 	}
 
-	if ((-1 == numChars) || (numChars >= [theHTML length])) {
-		*didLoadAll = YES;
-
-		if(bIsHtml) {
-			if ([defaults subchapteringEnabled] == NO) {
-				[self setHTML:theHTML];
-				subchapter = 0;
-			} else {
-				[chapteredHTML setHTML:theHTML];
-
-				if (theSubchapter < [chapteredHTML chapterCount])
-					subchapter = theSubchapter;
-				else
-					subchapter = 0;
-
-				[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-			}
-		} else {
-			[self setText:theHTML];
-		}
-	} else {
-		if(bIsHtml) {
-			NSString *tempyString = [NSString stringWithFormat:@"%@</body></html>",
-								 [theHTML HTMLsubstringToIndex:numChars didLoadAll:didLoadAll]];
-			[self setHTML:tempyString];
-		} else {
-			[self setText:theHTML];
-		}
-	}
+  if(bIsHtml) {
+    if ([defaults subchapteringEnabled] == NO) {
+      [self setHTML:theHTML];
+      subchapter = 0;
+    } else {
+      [chapteredHTML setHTML:theHTML];
+      
+      if (theSubchapter < [chapteredHTML chapterCount])
+        subchapter = theSubchapter;
+      else
+        subchapter = 0;
+      
+      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+    }
+  } else {
+    [self setText:theHTML];
+  }
 
 	/* This code doesn't work.  Sorry, charlie.
 	   if (1) //replace with a defaults check

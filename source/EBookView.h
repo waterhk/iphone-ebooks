@@ -68,8 +68,6 @@ typedef enum
 - (id)initWithFrame:(struct CGRect)rect;
 
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars didLoadAll:(BOOL *)didLoadAll subchapter:(int) theSubchapter;
-- (void)loadBookWithPath:(NSString *)thePath numCharacters:(int)numChars subchapter:(int) theSubchapter;
 - (void)setCurrentPathWithoutLoading:(NSString *)thePath;
 - (NSMutableString *)readHtmlFile:(NSString *)thePath;
 - (NSMutableString *)readTextFile:(NSString *)file;
