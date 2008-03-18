@@ -24,7 +24,6 @@
 
 @interface BooksDefaultsController : NSObject
 {
-  BOOL            _readingText;
   NSString       *_fileBeingRead;
   BOOL            _inverted;
   BOOL            _rotate90;
@@ -47,8 +46,6 @@
 /*
  * Application stored data
  */
-#define READINGTEXTKEY         @"readingTextKey"
-#define FILEBEINGREADKEY       @"fileBeingReadKey"
 #define BROWSERFILESKEY        @"browserPathsKey"
 
 /*
@@ -83,16 +80,12 @@
 - (id) init;
 - (void) updateOldPreferences;
 
-- (NSString *)fileBeingRead;
-- (void)setFileBeingRead:(NSString *)file;
 - (int)textSize;
 - (void)setTextSize:(int)size;
 - (BOOL)inverted;
 - (void)setInverted:(BOOL)isInverted;
 - (BOOL)subchapteringEnabled;
 - (void)setSubchapteringEnabled:(BOOL)isEnabled;
-- (BOOL)readingText;
-- (void)setReadingText:(BOOL)readingText;
 - (NSString *)lastBrowserPath;
 - (void)setLastBrowserPath:(NSString *)browserPath;
 - (BOOL)navbar;

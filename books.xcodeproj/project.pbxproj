@@ -142,11 +142,11 @@
 			isa = PBXGroup;
 			children = (
 				F8AFA2040D831EAC007DC91F /* AGRegex */,
-				F8214B880D7A0B05006A195D /* BooksDefaultsController.h */,
 				F8214B860D7A0B05006A195D /* BooksApp.h */,
 				F8214B870D7A0B05006A195D /* BooksApp.m */,
 				F8214B9B0D7A0B05006A195D /* HideableNavBar.h */,
 				F8214B9C0D7A0B05006A195D /* HideableNavBar.m */,
+				F8214B880D7A0B05006A195D /* BooksDefaultsController.h */,
 				F8214B890D7A0B05006A195D /* BooksDefaultsController.m */,
 				F8214B8A0D7A0B05006A195D /* ChapteredHTML.h */,
 				F8214B8B0D7A0B05006A195D /* ChapteredHTML.m */,

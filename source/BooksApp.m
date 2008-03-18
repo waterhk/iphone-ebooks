@@ -69,8 +69,28 @@
   transitionView = [[UITransitionView alloc] initWithFrame:[window bounds]];
   [mainView addSubview:transitionView];
 	[transitionView setDelegate:self];
-    
-  NSString *coverart = [EBookImageView coverArtForBookPath:[defaults lastBrowserPath]];
+  
+  
+  /*
+   * We need to fix up any prefs-weirdness relating to file path before we try to open a document.
+   */
+  NSString *recentFile = [defaults lastBrowserPath];
+  BOOL isDir = NO;
+  BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:recentFile isDirectory:&isDir];
+  
+  readingText = exists && !isDir;
+  
+  GSLog(@"Recent file is %@", recentFile);
+  
+  if(!exists) {
+    GSLog(@"File doesn't exist, so we should go back to root.");
+    [defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
+    [defaults removePerFileDataForFile:recentFile];
+    recentFile = [defaults lastBrowserPath];
+    GSLog(@"Corrected recent file is %@", recentFile);
+  }
+  
+  NSString *coverart = [EBookImageView coverArtForBookPath:recentFile];
   if(coverart != nil) {
     UIImageView *tmpEBIV = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"Default.png"]];                            
     [tmpEBIV setFrame:[window bounds]];
@@ -98,8 +118,6 @@
 				progsize.height)];
 	[progressIndicator setStyle:0];
    */
-  
-	readingText = [defaults readingText];
     
   // Heart beat will trigger doc loading and the rest of the init process.
   // We want to get back out to the main runloop to let some of the image & view stuff happen.
@@ -134,7 +152,7 @@
  */
 - (void)finishUpLaunch {
   GSLog(@"finishUpLaunch");
-	NSString *recentFile = [defaults fileBeingRead];
+	NSString *recentFile = [defaults lastBrowserPath];
   
   [self setupNavbar];
 	[self setupToolbar];
@@ -168,8 +186,6 @@
 		} // while
 	} // if
   
-  GSLog(@"Modified lastBrowserPath %@", lastBrowserPath);
-  
 	NSEnumerator *pathEnum = [arPathComponents reverseObjectEnumerator];
 	NSString *curPath;  
 	while(nil != (curPath = [pathEnum nextObject])) {
@@ -179,60 +195,39 @@
 		[tempItem release];
 	}
   
-  // Hack the image view into place so we get a nice cover->document transition
-  [navBar setTopDocumentView:imageView];
-  
-	if(readingText) {
-		if([[NSFileManager defaultManager] fileExistsAtPath:recentFile]) {
-      // Pushing the file onto the toolbar will trigger it being opened.
-      FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile];
-      [navBar pushNavigationItem:fni];
-      [fni release];
-		} else {  // Recent file has been deleted!  RESET!
-      GSLog(@"File %@ doesn't exist anymore.", recentFile);
-			readingText = NO;
-			[defaults setReadingText:NO];
-			[defaults setFileBeingRead:@""];
-			[defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
-			[defaults removePerFileDataForFile:recentFile];
-		}    
-	} else {
-    GSLog(@"Not reading text.");
-  }
-
-  GSLog(@"After filebrowser");
-  
-
-  
   [self refreshTextViewFromDefaultsToolbarsOnly:NO];
-
-  if(!readingText) {
-    // Either we didn't have a file open, or it doesn't exist anymore.
-    // We need to transition to the file browser view.
-    GSLog(@"Transitioning to file browser.");
-    //[transitionView transition:6 fromView:imageView toView:[navBar topBrowser]];
-    [navBar show];
-  }
-  
-  // FIXME: We shouldn't clear this if we are in fact trying to show an image.
-  [imageView removeFromSuperview];
-  [mainView addSubview:textView];
-//  [imageView autorelease];
- // imageView = nil;
   
   [mainView addSubview:navBar];
 	[mainView addSubview:bottomNavBar];
   
-  [navBar hide:YES];
-  [bottomNavBar hide:YES];
-  [self hideSlider];  
+  [navBar enableAnimation];
+  
+	if(readingText) {
+    GSLog(@"Reading text.");
+    // Pushing the file onto the toolbar will trigger it being opened.
+    FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile];
+    [navBar pushNavigationItem:fni];
+    [fni release];
+
+
+    
+    // If reading, hide the nav bars (but they need to be added to the view first)
+    [navBar hide:YES];
+    [bottomNavBar hide:YES];
+    [self hideSlider];  
+  } else {
+    // Either we didn't have a file open, or it doesn't exist anymore.
+    // We need to transition to the file browser view.
+    GSLog(@"Transitioning to file browser.");
+
+    [navBar show];
+  }
   
 	//bcc rotation
 	[self rotateApp];
 
 	[arPathComponents release];
 
-	[navBar enableAnimation];
 	//[progressIndicator stopAnimation];
 	//[progressIndicator removeFromSuperview];
   
@@ -370,15 +365,16 @@
   BOOL isPicture = ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
   UIView *ret = nil;
   
-  GSLog(@"Releaseing imageView");
+//  GSLog(@"Releaseing imageView");
   // Always kill the image view.  We'll reuse the textView for now.
-  [imageView autorelease];
-  imageView = nil;
-  GSLog(@"Released.");
+  //[imageView autorelease];
+  //imageView = nil;
+  //GSLog(@"Released.");
   
   if (isPicture) {
     GSLog(@"Loading picture: %@", p_path);
-    
+    [imageView autorelease];
+    // FIXME: imageView should have a setImage: method
     imageView = [[EBookImageView alloc] initWithContentsOfFile:p_path];
     ret = imageView;
   } else { 
@@ -457,11 +453,12 @@
     return;
   }
   
+ 	[defaults setLastBrowserPath:file];
+  
   FileNavigationItem *tempItem;
 	if (isDir) {
     GSLog(@"Loading browser for directory %@", file);
 		tempItem = [[FileNavigationItem alloc] initWithPath:file];
-   	[defaults setLastBrowserPath:file];
 	} else {
     // not a directory
     GSLog(@"Loading file: %@", file);
@@ -479,13 +476,14 @@
 	int            subchapter = [textView getSubchapter];
 	NSString      *filename   = [textView currentPath];
 
-	[defaults setFileBeingRead:filename];
+  // FIXME: This probably won't pick up if we're on a file browers instead of a book
+  GSLog(@"Saving last browser path at shutdown: %@", filename);
+  [defaults setLastBrowserPath:filename];
 	selectionRect = [textView visibleRect];
 	[defaults setLastScrollPoint: (unsigned int)selectionRect.origin.y
 				   forSubchapter: subchapter
 						 forFile: filename];
 	[defaults setLastSubchapter:subchapter forFile:filename];
-	[defaults setReadingText:readingText];
 	[defaults synchronize];
   GSLog(@"Books is terminating.");
   GSLog(@"========================================================");

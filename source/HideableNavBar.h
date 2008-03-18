@@ -46,19 +46,14 @@
   
   NSArray *m_browserList;
   int m_nCurrentBrowser;
-  
-  /** If currently showing a document, this is the view it's in. */
-  UIView *m_topDocView;
 }
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
-
 - (void)hideTopNavBar;
 - (void)showTopNavBar:(BOOL)withAnimation;
 - (void)hideBotNavBar;
 - (void)showBotNavBar;
 
-- (void)setTopDocumentView:(UIView*)p_view;
 - (void)hide:(BOOL)forced;
 - (void)show;
 - (void)toggle;

@@ -86,8 +86,11 @@
   
   FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
   FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
+  
+  GSLog(@"POP: obidx %d nbidx %d, Anim? %d", m_nCurrentBrowser, !m_nCurrentBrowser, [self isAnimationEnabled]);
+  GSLog(@"POP: oldBrowserPath: %@ | newBrowserPath: %@", [oldBrowser path], [newBrowser path]);
 
-  if(m_topDocView != nil) {
+  if([poppedFi isDocument]) {
     // We're currently going from text to file
     GSLog(@"Transitioning from text back to file browser.");
     if([_browserDelegate respondsToSelector:@selector(closeCurrentDocument)]) {
@@ -98,19 +101,19 @@
       GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
     }
     
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:m_topDocView toView:oldBrowser];  
+    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:nil toView:oldBrowser];  
+    [oldBrowser reloadData];
     GSLog(@"Transition sent.");
-    [m_topDocView release];
-    m_topDocView = nil;
-    GSLog(@"Done cleaning up.");
   } else {
     // Going file to file
     GSLog(@"Transitioning from file to file");
-    m_nCurrentBrowser = !m_nCurrentBrowser;
-    [newBrowser setPath:[topFi path]];
-    GSLog(@"Browser loaded files.");
     [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];  
     GSLog(@"Transition sent.");
+    
+    m_nCurrentBrowser = !m_nCurrentBrowser;
+    [newBrowser setPath:[topFi path]];
+    [newBrowser reloadData];
+    GSLog(@"Browser loaded files.");
   }
 }
 
@@ -125,6 +128,9 @@
   FileBrowser *oldBrowser = [m_browserList objectAtIndex:m_nCurrentBrowser];
   FileBrowser *newBrowser = [m_browserList objectAtIndex:!m_nCurrentBrowser];
   
+  GSLog(@"PUSH: obidx %d nbidx %d, Anim? %d", m_nCurrentBrowser, !m_nCurrentBrowser, [self isAnimationEnabled]);
+  GSLog(@"PUSH: oldBrowserPath: %@ | newBrowserPath: %@", [oldBrowser path], [newBrowser path]);
+
   
   if([pushedFi isDocument]) {
     UIView *oldView = oldBrowser;
@@ -139,38 +145,20 @@
       GSLog(@"HideableNavBar._browserDelegate doesn't respond to showDocumentAtPath:!");
     }
     
-    if(m_topDocView != nil) {
-       // Hack for startup cover image
-      GSLog(@"Transitioning from old document");
-      oldView = m_topDocView;
-    } else {
-      GSLog(@"Transitioning from old file browser");
-    }
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldView toView:newView];
+    [_transView transition:([self isAnimationEnabled]? 1 : 0) fromView:oldView toView:newView];
     GSLog(@"Transition sent");
-    [m_topDocView autorelease];
-    m_topDocView = [newView retain];
-    GSLog(@"Done cleaning up");
   } else {
     GSLog(@"Pushing directory");
     // FileBrowser
+    [_transView transition:([self isAnimationEnabled]? 1 : 0) fromView:oldBrowser toView:newBrowser];
+    GSLog(@"Transition sent.");
+    
     m_nCurrentBrowser = !m_nCurrentBrowser;
     [newBrowser setPath:[pushedFi path]];
-    [_transView transition:([self isAnimationEnabled]? 2 : 0) fromView:oldBrowser toView:newBrowser];
-    GSLog(@"Transition sent.");
-    [m_topDocView release];
-    m_topDocView = nil;
+    [newBrowser reloadData];
+    
     GSLog(@"Done cleaning up");
   }
-}
-
-/**
- * This hack exists only to make the startup image->text transition work.
- */
-- (void)setTopDocumentView:(UIView*)p_view {
-  GSLog(@"Setting new top document view.");
-  [m_topDocView autorelease];
-  m_topDocView = [p_view retain];
 }
 
 - (void)shouldReloadTopBrowser:(NSNotification *)notification {
@@ -284,7 +272,6 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
   [m_browserList release];
-  [m_topDocView release];
 	[animator release];
 	[translate release];
   [_transView release];

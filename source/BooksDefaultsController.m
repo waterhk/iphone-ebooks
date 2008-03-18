@@ -47,8 +47,6 @@
 	_defaults = [[NSUserDefaults standardUserDefaults] retain];
 
 	temp = [[NSMutableDictionary alloc] initWithCapacity:18];
-	[temp setObject:@"0" forKey:READINGTEXTKEY];
-	[temp setObject:@"" forKey:FILEBEINGREADKEY];
 	[temp setObject:@"16" forKey:TEXTSIZEKEY];
 	[temp setObject:@"0" forKey:ISINVERTEDKEY];
 	[temp setObject:[BooksDefaultsController defaultEBookPath] forKey:BROWSERFILESKEY];
@@ -89,7 +87,7 @@
 	{
 		if ([_defaults objectForKey:LASTSCROLLPOINTKEY] != nil)
 		{
-			NSString *filename      = [self fileBeingRead];
+			NSString *filename      = [self lastBrowserPath];
 			float     point         = (float) [_defaults integerForKey:LASTSCROLLPOINTKEY];
 			float     textSize      = (float) [self textSize];
 			int       adjPoint      = (int) (point / textSize);
@@ -133,20 +131,6 @@
 	return;
 }
 
-- (NSString *)fileBeingRead
-{
-	NSString *filename = [_defaults objectForKey:FILEBEINGREADKEY];
-
-	Debug (@"[_defaults fileBeingRead] = %s", [filename cString]);
-	return filename;
-}
-
-- (void)setFileBeingRead:(NSString *)file
-{
-	Debug (@"[_defaults setFileBeingRead %s]", file);
-	[_defaults setObject:file forKey:FILEBEINGREADKEY];
-}
-
 - (int)textSize
 {
 	int textSize = [_defaults integerForKey:TEXTSIZEKEY];
@@ -184,19 +168,6 @@
 - (void)setSubchapteringEnabled:(BOOL)isEnabled
 {
 	[_defaults setBool:isEnabled forKey:ENABLESUBCHAPTERINGKEY];
-}
-
-- (BOOL)readingText
-{
-	BOOL readingText = [_defaults boolForKey:READINGTEXTKEY];
-
-	Debug (@"[_defaults readingText] = %s", (readingText) ? "YES" : "NO");
-	return readingText;
-}
-
-- (void)setReadingText:(BOOL)readingText
-{
-	[_defaults setBool:readingText forKey:READINGTEXTKEY];
 }
 
 - (NSString *)lastBrowserPath
