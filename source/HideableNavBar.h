@@ -37,6 +37,8 @@
   UIAnimator *animator;
   UITransitionView *_transView;
   BooksDefaultsController	*defaults;
+  
+  UIView *m_offViewKludge;
 }
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
@@ -45,7 +47,9 @@
 - (void)show;
 - (void)toggle;
 - (BOOL)hidden;
+
 - (void)replaceTopNavigationItem:(UINavigationItem*)p_item;
+- (void)setTransitionOffView:(UIView*)p_view;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
 - (FileBrowser*)topBrowser;
 - (UIView*)topView;

@@ -318,15 +318,18 @@
 	_toolbarShouldUpdate = YES;
 }
 
-- (BOOL)isRotate90
-{
+/**
+ * Query rotation status.
+ */
+- (BOOL)isRotate90 {
 	BOOL value = [_defaults boolForKey:ISROTATE90KEY];
 	return value;
 }
 
-- (void)setRotate90:(BOOL)isRotate90
-{
-	GSLog(@"setRotate90");
+/**
+ * Save rotation status.
+ */
+- (void)setRotate90:(BOOL)isRotate90 {
 	[_defaults setBool:isRotate90 forKey:ISROTATE90KEY];
 	_toolbarShouldUpdate = YES;
 	_NeedRotate = YES;

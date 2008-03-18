@@ -31,7 +31,6 @@
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
-#import <UIKit/UIProgressIndicator.h>
 #import "EBookView.h"
 #import "EBookImageView.h"
 #import "FileBrowser.h"
@@ -130,24 +129,11 @@
   }
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
-	/*
-  struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
-  progressIndicator = [[UIProgressIndicator alloc] 
-		initWithFrame:CGRectMake((rect.size.width-progsize.width)/2,
-				(rect.size.height-progsize.height)/2,
-				progsize.width, 
-				progsize.height)];
-	[progressIndicator setStyle:0];
-   */
-
   [self toggleStatusBarColor];
   
   [window orderFront: self];
 	[window makeKey: self];
 	[window _setHidden: NO];
-
-//	[mainView addSubview:progressIndicator];
-//	[progressIndicator startAnimation];
   
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
   // fire almost immediately.
@@ -156,10 +142,10 @@
 
 /**
  * This needs to be called once at startup.
+ *
  * Should be called at the point where the next toolbar or view change needs
  * to trigger animation.  If readingText, call right before swtiching to the text view.
- * If not reading text and at root, call before pushing the root entry.  If not reading
- * text and NOT at the root, call right before the last path push.
+ * If not reading text call right before pushing the top-most path entry (even it it's the root).
  *
  * Clear as mud, right?
  */
@@ -190,8 +176,6 @@
   
 	NSMutableArray *arPathComponents = [[NSMutableArray alloc] init]; 
   
-  GSLog(@"LastPath is %@", lastBrowserPath);
-  
   [arPathComponents addObject:lastBrowserPath];
   lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
   
@@ -202,8 +186,6 @@
     lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent];
   } // while
   
-  GSLog(@"Path list has %d elements", [arPathComponents count]);
-  
   // Loop over all the paths and add them to the nav bar.
   int pathCount = [arPathComponents count];
   for(pathCount = pathCount-1; pathCount >= 0 ; pathCount--) {    
@@ -213,6 +195,7 @@
        * book image gets transitioned off.
        */
       [self transitionNavbarAnimation];
+      [navBar setTransitionOffView:m_startupImage];
     }
     
     NSString *curPath = [arPathComponents objectAtIndex:pathCount];
@@ -233,6 +216,7 @@
     [self transitionNavbarAnimation];
     
     // Pushing the file onto the toolbar will trigger it being opened.
+    [navBar setTransitionOffView:m_startupImage];
     UIView *view = [self showDocumentAtPath:recentFile];    
     FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile view:view];
     [navBar pushNavigationItem:fni];
@@ -248,8 +232,6 @@
 
 	[arPathComponents release];
 
-	//[progressIndicator stopAnimation];
-	//[progressIndicator removeFromSuperview];
 }
 
 - (void)setNavForItem:(FileNavigationItem*)p_item {
@@ -696,7 +678,6 @@
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];
-//	[progressIndicator release];
 	[defaults release];
 	[minusButton release];
 	[plusButton release];
@@ -706,9 +687,11 @@
 	[super dealloc];
 }
 
+/**
+ * Callback for the rotation toolbar button to call.
+ */
 - (void) rotateButtonCallback:(UINavBarButton*) button {
-	if (![button isPressed]) // mouse up events only, kids!
-	{
+	if (![button isPressed]) {
 		[defaults setRotate90:![defaults isRotate90]];
 		[self rotateApp];
 	}	

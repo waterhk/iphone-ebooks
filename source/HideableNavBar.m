@@ -120,8 +120,11 @@
   [poppedFi release];
 }
 
+
 /**
  * Add a new item to the navigation bar stack and adjust the on-screen views to match.
+ * If p_repView is not nil, it will be used as the fromView for the transition instead
+ * of the view we think we should use - kludge for startup image.
  */
 - (void)pushNavigationItem:(UINavigationItem*)p_item {
   FileNavigationItem *pushedFi = (FileNavigationItem*)p_item;
@@ -131,13 +134,16 @@
   GSLog(@"Pushing %@ %@", ([pushedFi isDocument] ? @"Document" : @"Directory"), [pushedFi path]);
   
   if([self isAnimationEnabled]) {
+    UIView *fromView = [topFi view];
+    if(m_offViewKludge != nil) {
+      fromView = m_offViewKludge;
+    }
+    
     [[self delegate] setNavForItem:topFi];
-    [_transView transition:1 fromView:[topFi view] toView:[pushedFi view]];
+    [_transView transition:1 fromView:fromView toView:[pushedFi view]];
+    
+    [self setTransitionOffView:nil];
   }
-}
-
-- (void)shouldReloadTopBrowser:(NSNotification *)notification {
-	[[self topBrowser] reloadData];
 }
 
 /**
@@ -158,6 +164,20 @@
   [[self delegate] setNavForItem:newFi];
   
   [poppedFi release];
+}
+
+/**
+ * Set a view which will override the next animated view transition.
+ * This is a kludge to get the startup image view to work properly.
+ */
+- (void)setTransitionOffView:(UIView*)p_view {
+  [p_view retain];
+  [m_offViewKludge release];
+  m_offViewKludge = p_view;
+}
+
+- (void)shouldReloadTopBrowser:(NSNotification *)notification {
+	[[self topBrowser] reloadData];
 }
 
 /**
@@ -238,6 +258,7 @@
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
+  [m_offViewKludge release];
 	[animator release];
 	[translate release];
   [_transView release];

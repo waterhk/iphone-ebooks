@@ -20,11 +20,12 @@
 #import <UIKit/UIKit.h>
 
 
+@class UITextView;
+@class UISliderControl;
+@class UIProgressIndicator;
+
 @class ChapteredHTML;
 @class BooksDefaultsController;
-@class UITextView;
-
-@class UISliderControl;
 
 @interface EBookView : UITextView {
   //  UIViewTapInfo *tapinfo;
@@ -50,6 +51,8 @@
   BOOL m_navBarsVisible;
   
   float m_pendingScrollPoint;
+  UIProgressIndicator *m_progressIndicator;
+  UIView *m_parentView;
 }
 typedef enum
 {
@@ -62,11 +65,16 @@ typedef enum
 - (BOOL)canHandleSwipes;
 - (int)  swipe: ( int)num withEvent: ( struct __GSEvent *)event;
 - (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par;
+- (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap;
+- (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView;
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
 
 - (NSMutableString *)readHtmlFile:(NSString *)thePath;
 - (NSMutableString *)readTextFile:(NSString *)file;
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data;
+
+- (void)showPleaseWait:(id)sender;
+- (void)hidePleaseWait:(id)sender;
 
 - (NSString *)currentPath;
 - (void)embiggenText;

@@ -23,7 +23,7 @@
 #import <UIKit/CDStructures.h>
 #import <UIKit/UISliderControl.h>
 #import <UIKit/UIAlphaAnimation.h>
-
+#import <UIKit/UIProgressIndicator.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UITextTraitsClientProtocol.h>
 #import <UIKit/UIWebView.h>
@@ -42,7 +42,7 @@
 @interface NSObject (HeartbeatDelegate)
 - (void)showNavbars;
 - (void)hideNavbars;
-- (UIView*)scrollerParentView;
+- (UIView*)progressParentView;
 @end
 
 
@@ -99,6 +99,7 @@
     [m_scrollerSlider setMaxValueImage:img];
     [self updateSliderPosition];
     
+    m_parentView = [p_par retain];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                          selector:@selector(scrollSpeedDidChange:)
@@ -387,7 +388,70 @@
 	}
 }
 
+/**
+ * Show the please wait / progress spinner view.
+ */
+- (void)showPleaseWait:(id)sender {
+  // Setup the progress indicator.
+  if(m_progressIndicator == nil) {
+    GSLog(@"About to setup progress.");
+    struct CGSize progsize = [UIProgressIndicator defaultSizeForStyle:0];
+    struct CGRect progRect = CGRectMake(([self bounds].size.width - progsize.width) / 2,
+                                        ([self bounds].size.height - progsize.height) / 2,
+                                        progsize.width, 
+                                        progsize.height);
+    m_progressIndicator = [[UIProgressIndicator alloc] initWithFrame:progRect];
+    [m_progressIndicator setStyle:5];
+    GSLog(@"Done setting up progress.");
+  }
+  
+  UIView *parent = [[self delegate] progressParentView];
+  GSLog(@"Starting progress indicator with parent view %@", parent);
+  [parent addSubview:m_progressIndicator];
+  
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:m_progressIndicator selector:@selector(startAnimation) userInfo:nil repeats:NO];
+  
+//  [m_progressIndicator startAnimation];
+}
+
+/**
+ * Hide the please wait / progress spinner view.
+ */
+- (void)hidePleaseWait:(id)sender {
+//	[m_progressIndicator stopAnimation];
+	//[m_progressIndicator removeFromSuperview];
+}
+
 #pragma mark File Reading Methods START
+
+/**
+ * Set the book and chapter without loading.
+ * Use for deferred loading with progress bars, etc.
+ */
+- (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap {
+  [p_path retain];
+  [path release];
+  path = p_path;
+  subchapter = p_chap;
+}
+
+/**
+ * Actually load the book set with setBookPath:subchapter:.
+ */
+- (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView {
+  if(p_progView != nil) {
+    [self showPleaseWait:nil];
+    GSLog(@"Prog should be running.");
+  }
+  
+  [self loadBookWithPath:path subchapter:subchapter];
+  
+  if(p_progView != nil) {
+    GSLog(@"Done loading, shutting down progress.");
+    [self hidePleaseWait:nil];
+    GSLog(@"Progress down.");
+  }
+}
 
 /**
  * Master method to load book - all others delegate here.
@@ -398,6 +462,8 @@
  * @param theSubchapter subchapter number for chaptered HTML
  */
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
+  GSLog(@"Loading book %@", thePath);
+  
 	NSMutableString *theHTML = nil;
   
   [thePath retain];
@@ -727,18 +793,17 @@
  * Cleanup.
  */
 - (void)dealloc {
-  GSLog(@"EBookView dealloc");
-  
   [self saveBookPosition];
-  
-  [m_scrollerSlider removeFromSuperview];
-  [m_scrollerSlider release];
-  
-  [self setTapDelegate:nil];
   
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
   
+  [m_parentView release];
   
+  [m_progressIndicator removeFromSuperview];
+  [m_scrollerSlider removeFromSuperview];
+  
+  [m_progressIndicator release];
+  [m_scrollerSlider release];
 	[path release];
 	[chapteredHTML release];
 	[defaults release];

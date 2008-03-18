@@ -61,8 +61,6 @@ enum PreferenceAnimationType;
 	UINavBarButton *upButton;
 	UINavBarButton *rightButton;
 	UINavBarButton *leftButton;
-	
-	//UIProgressIndicator *progressIndicator;
   
 	NSString *imgPath;
   NSArray *m_documentExtensions;
