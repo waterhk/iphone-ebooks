@@ -510,12 +510,12 @@
                        objectForInfoDictionaryKey:@"CFBundleVersion"];
 	if (nil == version)
 		version = @"??";
-	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, Benoit Cerrina, and Zachary Bedell.\niphoneebooks.googlecode.com", version];
+	NSString *bodyText = [NSString stringWithFormat:@"Books.app version %@, by Zachary Brewster-Geisz, Chris Born, Benoit Cerrina, and Zachary Bedell.", version];
 	CGRect rect = [defaults fullScreenApplicationContentRect];
 	alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
 	[alertSheet setTitle:@"About Books"];
 	[alertSheet setBodyText:bodyText];
-	[alertSheet addButtonWithTitle:@"Donate"];
+	[alertSheet addButtonWithTitle:@"Website"];
 	[alertSheet addButtonWithTitle:@"OK"];
 	[alertSheet setDelegate: self];
 	[alertSheet popupAlertAnimated:YES];
@@ -564,10 +564,10 @@
 		GSLog(@"%s", _cmd);
 	}
 	[sheet dismissAnimated:YES];
-	if (1 == button) //They wanna donate!  Hooray!  Money for college!
+	if (1 == button)
 	{
-		NSURL *donateURL = [NSURL URLWithString:DONATE_URL_STRING];
-		[controller openURL:donateURL];
+		NSURL *websiteURL = [NSURL URLWithString:WEBSITE_URL_STRING];
+		[controller openURL:websiteURL];
 	}
 }
 

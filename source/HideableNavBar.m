@@ -114,10 +114,12 @@
   NSArray *items = [self navigationItems];
   int itemCount = [items count];
   
+  GSLog(@"Performing selector on %d objects", itemCount);
+  
   for(itemCount = itemCount - 1; itemCount >=0; itemCount--) {
     FileNavigationItem *fni = (FileNavigationItem*)[items objectAtIndex:itemCount];
     UIView *view = [fni view];
-    GSLog(@"Performing %@ on %@", p_sel, view);
+    GSLog(@"Performing %@", view);
     [view performSelector:p_sel withObject:p_obj];
   }
 }

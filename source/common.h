@@ -20,11 +20,11 @@
 
 #ifndef COMMON_H
 #define COMMON_H
-/**
- * appended to the home directory to create the real EBooksPath
- */
+
+/** Stdout will be dumped here if the file exists at startup. */
 #define OUT_FILE @"/var/logs/Books.out"
 
+/** appended to the home directory to create the real EBooksPath. */
 #define EBOOK_PATH_SUFFIX @"Media/EBooks"
 #define LIBRARY_PATH @"Library/Books"
 
@@ -35,6 +35,7 @@
 #define TOOLBAR_HEIGHT 48.0f
 #define PREFS_TABLE_ROW_HEIGHT 48.0f
 
+/* FIXME: It would be rather nice if we could eliminate as much dependence on notifications as possible. */
 #define AUTOMATIC_ENCODING (0)
 #define ENCODINGSELECTED @"encodingSelectedNotification"
 #define NEWFONTSELECTED @"newFontSelectedNotification"
@@ -42,9 +43,11 @@
 
 #define OPENEDTHISFILE @"openedThisFileNotification"
 #define RELOADTOPBROWSER @"reloadTopBrowserNotification"
-#define RELOADALLBROWSERS @"reloadAllBrowsersNotification"
 
-#define DONATE_URL_STRING @"http://tinyurl.com/2quqes"
+/** Notification for rotate/resize events. */
+#define BOUNDSDIDCHANGENOTEIFICATION @"boundsDidChangeNotification"
+
+#define WEBSITE_URL_STRING @"http://iphoneebooks.googlecode.com/"
 
 #endif
 

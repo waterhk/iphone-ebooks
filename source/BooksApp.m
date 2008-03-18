@@ -44,17 +44,16 @@
 #include <stdio.h>
 #import "FileNavigationItem.h"
 
+enum {
+  kFACEUP = 0,
+  kNORMAL = 1,
+  kUPSIDEDOWN = 2,
+  kLANDL = 3,
+  kLANDR = 4,
+  kFACEDOWN = 6
+};
+
 @implementation BooksApp
-/*
-   enum {
-   kFACEUP = 0,
-   kNORMAL = 1,
-   kUPSIDEDOWN = 2,
-   kLANDL = 3,
-   kLANDR = 4,
-   kFACEDOWN = 6
-   };
-   */
 /**
  * Log all notifications.
  */
@@ -86,9 +85,11 @@
   mainView = [[UIView alloc] initWithFrame:[window bounds]];
   [window setContentView:mainView];
   
-  transitionView = [[UITransitionView alloc] initWithFrame:[window bounds]];
-  [mainView addSubview:transitionView];
-	[transitionView setDelegate:self];
+  UITransitionView *tv = [[UITransitionView alloc] initWithFrame:[window bounds]];
+  
+  [self setTransitionView:tv];
+  [mainView addSubview:tv];
+	[tv setDelegate:self];
   
   /*
    * We need to fix up any prefs-weirdness relating to file path before we try to open a document.
@@ -120,12 +121,12 @@
     m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:coverart 
                                                      withFrame:[window bounds] 
                                                    scaleAspect:YES];
-    [transitionView transition:1 toView:m_startupImage];
+    [tv transition:1 toView:m_startupImage];
   } else {
     m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"]
                                                      withFrame:[window bounds] 
                                                    scaleAspect:NO];
-    [transitionView transition:0 toView:m_startupImage];
+    [tv transition:0 toView:m_startupImage];
   }
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
@@ -134,6 +135,8 @@
   [window orderFront: self];
 	[window makeKey: self];
 	[window _setHidden: NO];
+  
+  [tv release];
   
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
   // fire almost immediately.
@@ -513,7 +516,7 @@
 	struct CGRect rect = [mainView bounds];
 	[navBar release]; //BCC in case this is not the first time this method is called
 	navBar = [[HideableNavBar alloc] initWithFrame:
-            CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:transitionView];
+            CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:[self transitionView]];
 
 	[navBar hideButtons];
 
@@ -535,7 +538,7 @@
 	[bottomNavBar release]; //BCC in case this is not the first time this method is called
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
 		CGRectMake(rect.origin.x, rect.size.height - TOOLBAR_HEIGHT, 
-				rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:transitionView];
+				rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:[self transitionView]];
 
 	[bottomNavBar setBarStyle:0];
 
@@ -668,6 +671,7 @@
 //when the top navbar is hidden?  Also I'd prefer to have the status
 //bar white when in the browser view, since the browser is white.
 {
+  /*
 	int lOrientation = 0;
 	if ([defaults isRotate90])
 		lOrientation = 90;
@@ -677,6 +681,7 @@
 	} else {
 		[self setStatusBarMode:0 orientation:lOrientation duration:0.25];
 	}
+   */
 }
 
 - (void)dealloc {
@@ -697,21 +702,74 @@
  */
 - (void) rotateButtonCallback:(UINavBarButton*) button {
 	if (![button isPressed]) {
-		[defaults setRotate90:![defaults isRotate90]];
 		[self rotateApp];
 	}	
 }
-
+/*
+- (void)deviceOrientationChanged:(struct __GSEvent *)fp8 {
+  GSLog(@"Orientation change");
+  int orientation = [UIHardware deviceOrientation: YES];
+  GSLog(@"Orientation: %d", orientation);
+  
+  float angle;
+  int statMode = 4;
+  
+  switch(orientation) {
+    case kFACEUP:
+    case kFACEDOWN:
+      angle = 1000; // Greater than 360 will be error key
+      break;
+    case kUPSIDEDOWN:
+      statMode = 2;
+      angle = 180;
+      break;
+    case kNORMAL:
+      angle = 0;
+      break;
+    case kLANDL:
+      angle = 90;
+      break;
+    case kLANDR:
+      angle = -90;
+      break;
+  }
+  
+  if(angle <= 360) {
+    [self setStatusBarMode:statMode orientation:angle duration:0.5 fenceID:0 animation:NO];
+    [window setTransform:CGAffineTransformIdentity];
+    [window setRotationBy:angle];
+  }
+  
+  [super deviceOrientationChanged:fp8];
+}
+*/
 /**
  * Toggle rotation status.
  */
 - (void)rotateApp {
-  int degrees = 0;
-  if([defaults isRotate90]) {
-    degrees = 90;
+  /*
+  BOOL bWasRotated = [defaults isRotate90];  
+  float rotateDegrees;
+  float statusBarDegrees;
+  
+  if(bWasRotated) {
+    statusBarDegrees = 0.0;
+    rotateDegrees = -90.0f;
+  } else {
+    statusBarDegrees = 90.0f;
+    rotateDegrees = 90.0f;
   }
   
-  [navBar performSelectorOnItemViews:@selector(setRotationBy:) withObject:degrees];
+  [defaults setRotate90:![defaults isRotate90]];
+  
+  GSLog(@"Starting rotate");
+//  [navBar performSelectorOnItemViews:@selector(setRotationBy:) withObject:[NSNumber numberWithFloat:degrees]];
+  [mainView setRotationBy:rotateDegrees];
+  [mainView setFrame:[defaults fullScreenApplicationContentRect]];
+
+  [self setStatusBarMode:0 orientation:statusBarDegrees duration:0 fenceID:nil animation:0];
+  
+	*/
   
   /*
 	CGSize lContentSize = [textView contentSize];	
@@ -749,7 +807,7 @@
 			//[mainView setBounds: rect];
 		}
 
-		[transitionView setFrame: rect];
+		[[self transitionView] setFrame: rect];
     
     
 		[textView setFrame: rect];

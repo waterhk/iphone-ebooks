@@ -100,7 +100,7 @@
 }
 
 - (void)setFrame:(struct CGRect)p_frame {
-  
+  [super setFrame:p_frame];
 }
 
 /**
@@ -414,7 +414,7 @@
    * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
    * and all is well. -ZSB 16-Mar-2008
    */
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:ebv selector:@selector(applyPreferences) userInfo:nil repeats:NO];
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyPreferences) userInfo:nil repeats:NO];
 }
 
 /**

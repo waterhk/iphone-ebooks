@@ -119,6 +119,10 @@
 		F8AFA20C0D831EBF007DC91F /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = source/AGRegex/pcre.c; sourceTree = "<group>"; };
 		F8AFA20D0D831EBF007DC91F /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = source/AGRegex/pcre.h; sourceTree = "<group>"; };
 		F8AFA20E0D831EBF007DC91F /* study.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = study.c; path = source/AGRegex/study.c; sourceTree = "<group>"; };
+		F8D18B7E0D8DD13800B49DA5 /* UIOrientingApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIOrientingApplication.h; path = source/UIOrientingApplication.h; sourceTree = "<group>"; };
+		F8D18B7F0D8DD13800B49DA5 /* UIOrientingApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UIOrientingApplication.m; path = source/UIOrientingApplication.m; sourceTree = "<group>"; };
+		F8D18BB20D8DD67500B49DA5 /* BoundsChangedNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BoundsChangedNotification.h; path = source/BoundsChangedNotification.h; sourceTree = "<group>"; };
+		F8D18BB30D8DD67500B49DA5 /* BoundsChangedNotification.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BoundsChangedNotification.m; path = source/BoundsChangedNotification.m; sourceTree = "<group>"; };
 		F8F3D4A20D87865A00089C63 /* FileNavigationItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FileNavigationItem.h; path = source/FileNavigationItem.h; sourceTree = "<group>"; };
 		F8F3D4A30D87865A00089C63 /* FileNavigationItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FileNavigationItem.m; path = source/FileNavigationItem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -137,6 +141,10 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				F8D18BB20D8DD67500B49DA5 /* BoundsChangedNotification.h */,
+				F8D18BB30D8DD67500B49DA5 /* BoundsChangedNotification.m */,
+				F8D18B7E0D8DD13800B49DA5 /* UIOrientingApplication.h */,
+				F8D18B7F0D8DD13800B49DA5 /* UIOrientingApplication.m */,
 				F8AFA2040D831EAC007DC91F /* AGRegex */,
 				F8214B860D7A0B05006A195D /* BooksApp.h */,
 				F8214B870D7A0B05006A195D /* BooksApp.m */,

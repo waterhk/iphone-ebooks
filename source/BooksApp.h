@@ -18,6 +18,8 @@
  
  */
 
+#import "UIOrientingApplication.h"
+
 @class UIWindow;
 @class UIApplication;
 @class UIView;
@@ -36,11 +38,10 @@
 enum PreferenceAnimationType;
 @class PreferencesController;
 
-@interface BooksApp : UIApplication {
+@interface BooksApp : UIOrientingApplication {
 	UIWindow 	*window;
 	UIView      *mainView;
 	HideableNavBar  *navBar, *bottomNavBar;
-	UITransitionView *transitionView;
   
   EBookImageView *m_startupImage;
   
