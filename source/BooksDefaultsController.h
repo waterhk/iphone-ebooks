@@ -74,6 +74,7 @@
 #define ISROTATELOCKEDKEY      @"isRotateLockedKey"
 #define INVERSENAVZONEKEY      @"inverseNavZoneKey"
 #define ENLARGENAVZONEKEY      @"enlargeNavZoneKey"
+#define UIORIENTATIONKEY       @"orientationKey"
 
 - (id) init;
 - (void) updateOldPreferences;
@@ -98,6 +99,8 @@
 - (void)setEnlargeNavZone:(BOOL)Enlarge;
 - (BOOL)isRotateLocked;
 - (void)setRotateLocked:(BOOL)isRotateLocked;
+- (int)uiOrientation;
+- (void)setUiOrientation:(int)p_o;
 - (NSString *)textFont;
 - (void)setTextFont:(NSString *)font;
 - (BOOL)chapternav;

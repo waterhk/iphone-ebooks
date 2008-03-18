@@ -123,6 +123,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
                                                               boundsWillChangeFrom:oldBounds 
                                                               to:m_fullContentBounds 
                                                               transform:transEnd
+                                                              orientation:o_code
                                                               forObject:transView]];
       
       
@@ -137,6 +138,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
                                                               boundsDidChangeFrom:oldBounds 
                                                               to:m_fullContentBounds 
                                                               transform:transEnd
+                                                              orientation:o_code
                                                               forObject:transView]];
       
       [key setBounds: m_fullKeyBounds];

@@ -25,6 +25,8 @@
   struct CGRect m_newBounds;
   struct CGAffineTransform m_transform;
   
+  int m_orientationCode;
+  
   id m_changedObject;
   NSString *m_name;
 }
@@ -35,18 +37,21 @@
 + (BoundsChangedNotification*)boundsDidChangeFrom:(struct CGRect)p_old 
                                                 to:(struct CGRect)p_new 
                                          transform:(struct CGAffineTransform)p_tform
+                                      orientation:(int)o_code
                                          forObject:(id)p_obj;
 
 
 + (BoundsChangedNotification*)boundsWillChangeFrom:(struct CGRect)p_old 
                                              to:(struct CGRect)p_new 
                                       transform:(struct CGAffineTransform)p_tform
+                                       orientation:(int)o_code
                                       forObject:(id)p_obj;
 
 
 - (id)initWithOldBounds:(struct CGRect)p_old
               newBounds:(struct CGRect)p_new 
               transform:(struct CGAffineTransform)p_tform
+            orientation:(int)o_code
                  object:(id)p_obj
                    name:(NSString*)p_name;
 
@@ -55,6 +60,7 @@
 
 - (NSString*)name;
 - (struct CGAffineTransform)transformation;
+- (int)uiOrientationCode;
 - (id)object;
 - (NSDictionary*)userInfo;
 @end

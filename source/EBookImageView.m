@@ -49,7 +49,10 @@
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
-  GSLog(@"FIXME: EBookImageView doesn't handle rotate correctly yet!"); 
+  GSLog(@"Resetting frame for EBookImageView rotation.");
+  struct CGRect newB = [p_note newBounds];
+  [self setFrame:newB];
+  [_imgView setFrame:newB];
 }
 
 /**

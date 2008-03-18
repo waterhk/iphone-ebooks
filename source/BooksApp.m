@@ -80,6 +80,8 @@
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
   GSLog(@"BooksApp-boundsDidChange");
   
+  [defaults setUiOrientation:[p_note uiOrientationCode]];
+  
   // Fix the transition view's size
   [m_transitionView setFrame:[p_note newBounds]];
   
@@ -104,7 +106,7 @@
   UIView *topView = [navBar topView];
   if([topView respondsToSelector:@selector(numberOfRowsInTable:)]) {
     // FIXME: This selector is a kludgey choice, but it works.
-    [NSTimer scheduledTimerWithTimeInterval:0.1f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
+    [NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
   }
 }
 
@@ -272,6 +274,7 @@
      */
   }
   
+  [self setUIOrientation:[defaults uiOrientation]];
 	//bcc rotation
 	[self rotateApp];
 

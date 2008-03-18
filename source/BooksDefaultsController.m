@@ -62,7 +62,7 @@
     [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
     [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
     [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
-    [temp setObject:@"0" forKey:ISROTATELOCKEDKEY];
+    [temp setObject:@"0" forKey:UIORIENTATIONKEY];
     [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
     [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
     [temp setObject:@"1" forKey:ISROTATELOCKEDKEY];
@@ -340,6 +340,20 @@
   } else {
     [app unlockUIOrientation];
   }
+}
+
+/**
+ * Get the current orientation setting.
+ */
+- (int)uiOrientation {
+  return [_defaults integerForKey:UIORIENTATIONKEY];
+}
+
+/**
+ * Save the current orientation setting.
+ */
+- (void)setUiOrientation:(int)p_o {
+  [_defaults setInteger:p_o forKey:UIORIENTATIONKEY];
 }
 
 - (BOOL)inverseNavZone
