@@ -520,8 +520,6 @@
   } else {
     [self setText:theHTML];
   }
-
-  [self performSelectorOnMainThread:@selector(applyPreferences) withObject:nil waitUntilDone:NO];
   
   m_readyToShow = YES;
   
@@ -771,7 +769,6 @@
     m_pendingScrollPoint = -1.0f;
     GSLog(@"Scrolling book position to %f", pt);
     [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, pt) animated:NO];
-    [self redraw];
     [self stopHeartbeat:@selector(beatIt)];
   }
 }

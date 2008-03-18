@@ -143,6 +143,7 @@
     if([toView respondsToSelector:@selector(isReadyToShow)]) {
       EBookView *ebv = (EBookView*)toView;     
       [ebv hidePleaseWait];
+      [ebv applyPreferences];
     }
     
     [[self delegate] setNavForItem:destItem];
