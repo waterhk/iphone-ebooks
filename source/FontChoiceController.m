@@ -17,6 +17,7 @@
 
 */
 
+#import "common.h"
 #import "FontChoiceController.h"
 
 @implementation FontChoiceController
@@ -25,13 +26,12 @@
 {
 	if (self = [super init])
 	{
-		GSLog(@"Creating font panel!");
 		defaults = [BooksDefaultsController sharedBooksDefaultsController];
 		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 		//    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		//  rect.origin.x = rect.origin.y = 0;
 
-		fontTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-48)];
+		fontTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
 		NSString *fontFolderPath = @"/System/Library/Fonts/";
 		// If Apple ever adds the ability to add fonts to a different
 		// directory, define it here.
@@ -65,7 +65,7 @@
 		[fontTable reloadData];
 		//      defaults = [[BooksDefaultsController alloc] init];
 	}
-	GSLog(@"Created fonts prefs!");
+
 	return self;
 }
 
@@ -96,7 +96,7 @@
 
 - (float)preferencesTable:(id)preferencesTable heightForRow:(int)row inGroup:(int)group withProposedHeight:(float)proposedHeight;
 {
-	return 48.0f;
+	return PREFS_TABLE_ROW_HEIGHT;
 }
 
 -(void)tableRowSelected:(NSNotification *)aNotification
@@ -120,9 +120,9 @@
 	BOOL checked = NO;
 
 	CGRect rect = [defaults fullScreenApplicationContentRect];
-	UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,48)];
+	UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,TOOLBAR_HEIGHT)];
 
-	//UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,48)];
+	//UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,TOOLBAR_HEIGHT)];
 	[theCell setTitle:[[availableFonts objectAtIndex:row] stringByDeletingPathExtension]];
 	[theCell setChecked:([[theCell title] isEqualToString:[defaults textFont]])];
 	return [theCell autorelease];

@@ -18,19 +18,11 @@
 */
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <UIKit/UITextView.h>
-#import <UIKit/UITextTraitsClientProtocol.h>
-//#import "UIKeyboardInputProtocol.h"
-#import <UIKit/UIWebView.h>
-#import <UIKit/UIViewTapInfo.h>
-//#import <UIKit/NSString-UIStringDrawing.h>
-#import <UIKit/UIView-Geometry.h>
 
-#import "BooksDefaultsController.h" //sigh...
-#import "NSString-BooksAppAdditions.h"
-#import "HTMLFixer.h"
-#import "BooksDefaultsController.h"
-#import "ChapteredHTML.h"
+
+@class ChapteredHTML;
+@class BooksDefaultsController;
+@class UITextView;
 
 @class UISliderControl;
 

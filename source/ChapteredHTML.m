@@ -20,8 +20,6 @@
 #import <sys/types.h>
 #import <sys/stat.h>
 #import <unistd.h>
-#import <openssl/sha.h>
-#import <Foundation/NSDictionary.h>
 #import "ChapteredHTML.h"
 #import "Regex.h"
 #import <Foundation/Foundation.h>

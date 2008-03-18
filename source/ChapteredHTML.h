@@ -16,9 +16,8 @@
 
 */
 
-#import <Foundation/NSObject.h>
-#import <Foundation/NSString.h>
-#import <Foundation/NSArray.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 #import <openssl/sha.h>
 
 #define MAX_CHAPTERS  128

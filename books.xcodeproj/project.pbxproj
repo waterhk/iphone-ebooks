@@ -33,8 +33,6 @@
 		F83E51E60D8304E0007EAEEF /* HTMLFixer.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9D0D7A0B05006A195D /* HTMLFixer.h */; };
 		F83E51E70D8304E0007EAEEF /* HTMLFixer.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9E0D7A0B05006A195D /* HTMLFixer.m */; };
 		F83E51E80D8304E0007EAEEF /* mainapp.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214B9F0D7A0B05006A195D /* mainapp.m */; };
-		F83E51E90D8304E0007EAEEF /* NSString-BooksAppAdditions.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA00D7A0B05006A195D /* NSString-BooksAppAdditions.h */; };
-		F83E51EA0D8304E0007EAEEF /* NSString-BooksAppAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BA10D7A0B05006A195D /* NSString-BooksAppAdditions.m */; };
 		F83E51EB0D8304E0007EAEEF /* PreferencesController.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB30D7A0B05006A195D /* PreferencesController.h */; };
 		F83E51EC0D8304E0007EAEEF /* PreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB40D7A0B05006A195D /* PreferencesController.m */; };
 		F83E51ED0D8304E0007EAEEF /* Regex.h in Sources */ = {isa = PBXBuildFile; fileRef = F8214BB50D7A0B05006A195D /* Regex.h */; };
@@ -88,8 +86,6 @@
 		F8214B9D0D7A0B05006A195D /* HTMLFixer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTMLFixer.h; path = source/HTMLFixer.h; sourceTree = "<group>"; };
 		F8214B9E0D7A0B05006A195D /* HTMLFixer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTMLFixer.m; path = source/HTMLFixer.m; sourceTree = "<group>"; };
 		F8214B9F0D7A0B05006A195D /* mainapp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = mainapp.m; path = source/mainapp.m; sourceTree = "<group>"; };
-		F8214BA00D7A0B05006A195D /* NSString-BooksAppAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString-BooksAppAdditions.h"; path = "source/NSString-BooksAppAdditions.h"; sourceTree = "<group>"; };
-		F8214BA10D7A0B05006A195D /* NSString-BooksAppAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString-BooksAppAdditions.m"; path = "source/NSString-BooksAppAdditions.m"; sourceTree = "<group>"; };
 		F8214BA30D7A0B05006A195D /* jconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jconfig.h; sourceTree = "<group>"; };
 		F8214BA40D7A0B05006A195D /* jerror.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jerror.h; sourceTree = "<group>"; };
 		F8214BA50D7A0B05006A195D /* jmorecfg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jmorecfg.h; sourceTree = "<group>"; };
@@ -168,8 +164,6 @@
 				F8214B9D0D7A0B05006A195D /* HTMLFixer.h */,
 				F8214B9E0D7A0B05006A195D /* HTMLFixer.m */,
 				F8214B9F0D7A0B05006A195D /* mainapp.m */,
-				F8214BA00D7A0B05006A195D /* NSString-BooksAppAdditions.h */,
-				F8214BA10D7A0B05006A195D /* NSString-BooksAppAdditions.m */,
 				F8214BB30D7A0B05006A195D /* PreferencesController.h */,
 				F8214BB40D7A0B05006A195D /* PreferencesController.m */,
 				F8214BB50D7A0B05006A195D /* Regex.h */,
@@ -379,8 +373,6 @@
 				F83E51E60D8304E0007EAEEF /* HTMLFixer.h in Sources */,
 				F83E51E70D8304E0007EAEEF /* HTMLFixer.m in Sources */,
 				F83E51E80D8304E0007EAEEF /* mainapp.m in Sources */,
-				F83E51E90D8304E0007EAEEF /* NSString-BooksAppAdditions.h in Sources */,
-				F83E51EA0D8304E0007EAEEF /* NSString-BooksAppAdditions.m in Sources */,
 				F83E51EB0D8304E0007EAEEF /* PreferencesController.h in Sources */,
 				F83E51EC0D8304E0007EAEEF /* PreferencesController.m in Sources */,
 				F83E51ED0D8304E0007EAEEF /* Regex.h in Sources */,

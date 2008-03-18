@@ -67,7 +67,7 @@
                                              contentRect.size.height);
     preferencesView = [[UIView alloc] initWithFrame:offscreenRect];
     
-    navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+    navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, TOOLBAR_HEIGHT)];
     [navigationBar showLeftButton:@"About" withStyle:0 rightButton:@"Done" withStyle:3]; // Blue Done button
     [navigationBar setBarStyle:0];
     [navigationBar setDelegate:self]; 
@@ -75,9 +75,9 @@
     UINavigationItem *title = [[UINavigationItem alloc] 
                                initWithTitle:@"Preferences"];
     [navigationBar pushNavigationItem:[title autorelease]];
-    transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+    transitionView = [[UITransitionView alloc] initWithFrame:CGRectMake(0.0f, TOOLBAR_HEIGHT, contentRect.size.width, contentRect.size.height - TOOLBAR_HEIGHT)];	
     
-    preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];	
+    preferencesTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - TOOLBAR_HEIGHT)];	
     [preferencesTable setDataSource:self];
     [preferencesTable setDelegate:self];
     [preferencesView addSubview:transitionView];
@@ -114,11 +114,11 @@
                                              contentRect.size.width,
                                              contentRect.size.height);
     [preferencesView setFrame:offscreenRect];
-    [navigationBar setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+    [navigationBar setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, TOOLBAR_HEIGHT)];
     [navigationBar setBarStyle:0];
     [navigationBar setDelegate:self]; 
-    [transitionView setFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
-    [preferencesTable setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - 48.0f)];
+    [transitionView setFrame:CGRectMake(0.0f, TOOLBAR_HEIGHT, contentRect.size.width, contentRect.size.height - TOOLBAR_HEIGHT)];
+    [preferencesTable setFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, contentRect.size.height - TOOLBAR_HEIGHT)];
   }
   
   [preferencesTable reloadData];
@@ -267,11 +267,11 @@
    [fontChoiceControl insertSegment:1 withTitle:@"Helvetica" animated:NO];
    [fontChoiceControl insertSegment:2 withTitle:@"Times" animated:NO];
    [fontChoiceControl selectSegment:[self currentFontIndex]];
-   fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+   fontChoicePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
    [fontChoicePreferenceCell setDrawsBackground:NO];
    [fontChoicePreferenceCell addSubview:fontChoiceControl];
    */
-	fontChoicePreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	fontChoicePreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
   
 	NSString *fontString = [defaults textFont];
 	[fontChoicePreferenceCell setTitle:@"Font"];
@@ -279,81 +279,81 @@
 	[fontChoicePreferenceCell setShowDisclosure:YES];
   
 	// Text Display
-	fontSizePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
+	fontSizePreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, PREFS_TABLE_ROW_HEIGHT, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	NSString	*str = [NSString stringWithFormat:@"%d",[defaults textSize]];
 	[fontSizePreferenceCell setValue:str];
 	[fontSizePreferenceCell setTitle:@"Font Size"];
   
-	//	fontSizePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 48.0f, contentRect.size.width, 48.0f)];
+	//	fontSizePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, PREFS_TABLE_ROW_HEIGHT, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	//	UIPopup *popup = [[UIPopup alloc] initWithFrame:CGRectMake(0,0,40,40)];
 	//	[fontSizePreferenceCell setControl:popup];
   
-	invertPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	invertPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL inverted = [defaults inverted];
 	[invertPreferenceCell setTitle:@"Invert Color"];
-	UISwitchControl *invertSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *invertSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[invertSwitchControl setValue:inverted];
 	[invertPreferenceCell setControl:invertSwitchControl];
   
 	// Auto-Hide
-	showNavbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	showNavbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL navbar = [defaults navbar];
 	[showNavbarPreferenceCell setTitle:@"Navigation Bar"];
-	UISwitchControl *showNavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *showNavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[showNavSitchControl setValue:navbar];
 	[showNavbarPreferenceCell setControl:showNavSitchControl];
   
-	showToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	showToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL toolbar = [defaults toolbar];
 	[showToolbarPreferenceCell setTitle:@"Bottom Toolbar"];
-	UISwitchControl *showToolbarSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *showToolbarSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[showToolbarSitchControl setValue:toolbar];
 	[showToolbarPreferenceCell setControl:showToolbarSitchControl];
   
 	// Toolbar Options
-	chapterButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	chapterButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL chapternav = [defaults chapternav];
 	[chapterButtonsPreferenceCell setTitle:@"Chapter Navigation"];
-	UISwitchControl *showChapternavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *showChapternavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[showChapternavSitchControl setValue:chapternav];
 	[showChapternavSitchControl setAlternateColors:YES];
 	[chapterButtonsPreferenceCell setControl:showChapternavSitchControl];
   
-	pageButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	pageButtonsPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL pagenav = [defaults pagenav];
 	[pageButtonsPreferenceCell setTitle:@"Page Navigation"];
-	UISwitchControl *showPagenavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *showPagenavSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[showPagenavSitchControl setValue:pagenav];
 	[showPagenavSitchControl setAlternateColors:YES];
 	[pageButtonsPreferenceCell setControl:showPagenavSitchControl];
   
-	flippedToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	flippedToolbarPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL flipped = [defaults flipped];
 	[flippedToolbarPreferenceCell setTitle:@"Left Handed"];
-	UISwitchControl *flippedSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *flippedSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[flippedSitchControl setValue:flipped];
 	[flippedSitchControl setAlternateColors:YES];
 	[flippedToolbarPreferenceCell setControl:flippedSitchControl];	
   
-	invNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	invNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL invertedZones = [defaults inverseNavZone];
 	[invNavZonePreferenceCell setTitle:@"invert nav zone"];
-	UISwitchControl *invNavZoneSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *invNavZoneSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[invNavZoneSitchControl setValue:invertedZones];
 	[invNavZoneSitchControl setAlternateColors:YES];
 	[invNavZonePreferenceCell setControl:invNavZoneSitchControl];	
   
-	enlargeNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	enlargeNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL enlargedZones = [defaults enlargeNavZone];
 	[enlargeNavZonePreferenceCell setTitle:@"enlarge nav zone"];
-	UISwitchControl *enlargeNavZoneSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *enlargeNavZoneSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[enlargeNavZoneSwitchControl setValue:enlargedZones];
 	[enlargeNavZoneSwitchControl setAlternateColors:YES];
 	[enlargeNavZonePreferenceCell setControl:enlargeNavZoneSwitchControl];	
   
 	//CHANGED: Zach's additions 9/6/07
   
-	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	defaultEncodingPreferenceCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
   
 	NSString *encString;
 	/*	switch ([defaults defaultTextEncoding])
@@ -400,19 +400,19 @@
 	smartConversionPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	NSString *smartconvwithquotes = [NSString stringWithFormat:@"%CSmart%C conversion", 0x201C, 0x201D];  // because I love me some curly quotes
 	[smartConversionPreferenceCell setTitle:smartconvwithquotes];
-	UISwitchControl *smartConversionSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *smartConversionSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[smartConversionSitchControl setValue:[defaults smartConversion]];
 	[smartConversionPreferenceCell setControl:smartConversionSitchControl];
   
 	renderTablesPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	[renderTablesPreferenceCell setTitle:@"Render HTML tables"];
-	UISwitchControl *renderTablesSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *renderTablesSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[renderTablesSitchControl setValue:[defaults renderTables]];
 	[renderTablesPreferenceCell setControl:renderTablesSitchControl];
   
 	subchapteringPreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(20.0f, 3.0f, 280.0f, 55.0f)];
 	[subchapteringPreferenceCell setTitle:@"Subchapter HTML"];
-	UISwitchControl *subchapteringSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, 48.0f)] autorelease];
+	UISwitchControl *subchapteringSitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[subchapteringSitchControl setValue:[defaults subchapteringEnabled]];
 	[subchapteringPreferenceCell setControl:subchapteringSitchControl];
   
@@ -421,21 +421,21 @@
 	[scrollSpeedControl insertSegment:1 withTitle:@"Fast" animated:NO];
 	[scrollSpeedControl insertSegment:2 withTitle:@"Instant" animated:NO];
 	[scrollSpeedControl selectSegment:[defaults scrollSpeedIndex]];
-	scrollSpeedPreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, 48.0f)];
+	scrollSpeedPreferenceCell = [[UIPreferencesTextTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	[scrollSpeedPreferenceCell setDrawsBackground:NO];
 	[scrollSpeedPreferenceCell addSubview:scrollSpeedControl];
   
   
   
-	markCurrentBookAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	markCurrentBookAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	[markCurrentBookAsNewCell setTitle:@"Mark Current Folder as New"];
 	[markCurrentBookAsNewCell setShowDisclosure:NO];
   
-	markAllBooksAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, 48)];
+	markAllBooksAsNewCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0, 0, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	[markAllBooksAsNewCell setTitle:@"Mark All Books as New"];
 	[markAllBooksAsNewCell setShowDisclosure:NO];
   
-	toBeAnnouncedCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,contentRect.size.width, 48)];
+	toBeAnnouncedCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	[toBeAnnouncedCell setTitle:@"Coming soon"];
 	[toBeAnnouncedCell setShowDisclosure:NO];
 }

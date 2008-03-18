@@ -180,7 +180,7 @@
 		NSString *bodyText = [NSString stringWithFormat:@"The last visited directory was %@ this is not a subdirectory of the Books directory (%@) this is typically the sign of a 1.1.2 to 1.1.3 migration.\n  Current path reset to the default one.  If you haven't recently migrated you may have a corrupt preference file.", path, lDefaultPath];
 		path = lDefaultPath;
 		CGRect rect = [self fullScreenApplicationContentRect];
-		UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 48, rect.size.width,240)];
+		UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
 		[alertSheet setTitle:@"Path reset"];
 		[alertSheet setBodyText:bodyText];
 		[alertSheet addButtonWithTitle:@"OK"];

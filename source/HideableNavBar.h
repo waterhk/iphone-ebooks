@@ -20,20 +20,15 @@
 
 */
 
-
-
-#import <Foundation/Foundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import <UIKit/UINavigationBar.h>
-#import <UIKit/UITransformAnimation.h>
-#import <UIKit/UIAnimator.h>
-#import <UIKit/UITransitionView.h>
-#import <UIKit/UINavigationItem.h>
-#import "FileBrowser.h"
-#import "BooksDefaultsController.h"
-#import "common.h"
+@class UINavigationBar;
+@class UITransformAnimation;
+@class UIAnimator;
+@class UITransitionView;
+@class UIView;
 
 @class FileNavigationItem;
+@class BooksDefaultsController;
+
 
 @interface HideableNavBar : UINavigationBar {
   BOOL hidden;

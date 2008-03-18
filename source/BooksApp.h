@@ -17,27 +17,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
-#import <CoreFoundation/CoreFoundation.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/UIWindow.h>
-#import <UIKit/UIView-Hierarchy.h>
-#import <UIKit/UIHardware.h>
-#import <UIKit/UIKit.h>
-#import <UIKit/UIApplication.h>
-#import <UIKit/UITextView.h>
-#import <UIKit/UIView.h>
-#import <UIKit/UIKeyboard.h>
-#import <UIKit/UITransitionView.h>
-#import <UIKit/UINavigationItem.h>
-#import <UIKit/UINavBarButton.h>
-#import <UIKit/UIFontChooser.h>
-#import <UIKit/UIProgressIndicator.h>
-#import "EBookView.h"
-#import "EBookImageView.h"
-#import "FileBrowser.h"
-#import "BooksDefaultsController.h"
-#import "HideableNavBar.h"
-#import "common.h"
+
+@class UIWindow;
+@class UIApplication;
+@class UIView;
+@class UITextView;
+@class UITransitionView;
+@class UINavBarButton;
+@class UIProgressIndicator;
+
+@class HideableNavBar;
+@class FileBrowser;
+@class EBookView;
+@class EBookImageView;
+@class BooksDefaultsController;
+@class FileNavigationItem;
 
 enum PreferenceAnimationType;
 @class PreferencesController;

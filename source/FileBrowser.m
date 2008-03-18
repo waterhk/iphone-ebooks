@@ -33,7 +33,7 @@
 		float components[4] = {1.0, 1.0, 1.0, 1.0};
 		struct CGColor *white = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
 		[self setBackgroundColor:white];
-		_table = [[FileTable alloc] initWithFrame: CGRectMake(0, 48.0f, frame.size.width, frame.size.height - 48.0f)]; 
+		_table = [[FileTable alloc] initWithFrame: CGRectMake(0, TOOLBAR_HEIGHT, frame.size.width, frame.size.height - TOOLBAR_HEIGHT)]; 
 		[_table addTableColumn: col];
 		[_table setSeparatorStyle: 1];
 		[_table setDelegate: self];

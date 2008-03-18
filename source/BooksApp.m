@@ -16,9 +16,32 @@
 
 */
 
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIWindow.h>
+#import <UIKit/UIView-Hierarchy.h>
+#import <UIKit/UIView-Geometry.h>
+#import <UIKit/UIHardware.h>
+#import <UIKit/UIKit.h>
+#import <UIKit/UIApplication.h>
+#import <UIKit/UITextView.h>
+#import <UIKit/UIView.h>
+#import <UIKit/UIKeyboard.h>
+#import <UIKit/UITransitionView.h>
+#import <UIKit/UINavigationItem.h>
+#import <UIKit/UINavBarButton.h>
+#import <UIKit/UIFontChooser.h>
+#import <UIKit/UIProgressIndicator.h>
+#import "EBookView.h"
+#import "EBookImageView.h"
+#import "FileBrowser.h"
+#import "BooksDefaultsController.h"
+#import "HideableNavBar.h"
+#import "common.h"
+
 #import "BooksApp.h"
 #import "PreferencesController.h"
-#import <UIKit/UIView-Geometry.h>
+
 #include <stdio.h>
 #import "FileNavigationItem.h"
 
@@ -502,7 +525,7 @@
 	struct CGRect rect = [mainView bounds];
 	[navBar release]; //BCC in case this is not the first time this method is called
 	navBar = [[HideableNavBar alloc] initWithFrame:
-            CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f) delegate:self transitionView:transitionView];
+            CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:transitionView];
 
 	[navBar hideButtons];
 
@@ -523,8 +546,8 @@
 	struct CGRect rect = [mainView bounds];
 	[bottomNavBar release]; //BCC in case this is not the first time this method is called
 	bottomNavBar = [[HideableNavBar alloc] initWithFrame:
-		CGRectMake(rect.origin.x, rect.size.height - 48.0f, 
-				rect.size.width, 48.0f) delegate:self transitionView:transitionView];
+		CGRectMake(rect.origin.x, rect.size.height - TOOLBAR_HEIGHT, 
+				rect.size.width, TOOLBAR_HEIGHT) delegate:self transitionView:transitionView];
 
 	[bottomNavBar setBarStyle:0];
 
@@ -609,7 +632,7 @@
 
 - (void)updateNavbar {
 	CGRect rect = [defaults fullScreenApplicationContentRect];
-	[navBar setFrame: 	CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 48.0f)];
+	[navBar setFrame: 	CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, TOOLBAR_HEIGHT)];
 	float lMargin = 45.0f;
 	[prefsButton setFrame:CGRectMake(rect.size.width-lMargin,9,40,30) ];
 }

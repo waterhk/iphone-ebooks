@@ -27,9 +27,13 @@
 
 #define EBOOK_PATH_SUFFIX @"Media/EBooks"
 #define LIBRARY_PATH @"Library/Books"
-#define DEFAULT_REAL_PATH @"Library/Books/Default.png"
-#define MIN_FONT_SIZE (10)
-#define MAX_FONT_SIZE (36)
+
+#define MIN_FONT_SIZE 10.0f
+#define MAX_FONT_SIZE 36.0f
+
+#define TOOLBAR_FUDGE 20.0f
+#define TOOLBAR_HEIGHT 48.0f
+#define PREFS_TABLE_ROW_HEIGHT 48.0f
 
 #define AUTOMATIC_ENCODING (0)
 #define ENCODINGSELECTED @"encodingSelectedNotification"

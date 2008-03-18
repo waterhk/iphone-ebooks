@@ -15,6 +15,7 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
@@ -23,6 +24,13 @@
 #import <UIKit/UISliderControl.h>
 #import <UIKit/UIAlphaAnimation.h>
 
+#import <UIKit/UITextView.h>
+#import <UIKit/UITextTraitsClientProtocol.h>
+#import <UIKit/UIWebView.h>
+#import <UIKit/UIViewTapInfo.h>
+#import <UIKit/UIView-Geometry.h>
+
+#import "HTMLFixer.h"
 #import "EBookView.h"
 #import "BooksDefaultsController.h"
 #import "palm/palmconvert.h"
@@ -77,7 +85,7 @@
     [self scrollSpeedDidChange:nil];
     
     [self setDelegate:p_del];
-    CGRect scrollerRect = CGRectMake(0, 48, [self bounds].size.width, 48);
+    CGRect scrollerRect = CGRectMake(0, TOOLBAR_HEIGHT, [self bounds].size.width, TOOLBAR_HEIGHT);
     m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
 
     [p_par addSubview:m_scrollerSlider];
@@ -205,7 +213,7 @@
  * "A noble spirit embiggens the smallest man." -- Jebediah Springfield
  */
 - (void)embiggenText {
-	if ([self textSize] < 36.0f) {
+	if ([self textSize] < MAX_FONT_SIZE) {
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
@@ -230,7 +238,7 @@
  * "What the f--- does ensmallen mean?" -- Zach Brewster-Geisz
  */
 - (void)ensmallenText {
-	if ([self textSize] > 10.0f) {
+	if ([self textSize] > MIN_FONT_SIZE) {
 		struct CGRect oldRect = [self visibleRect];
 		struct CGRect totalRect = [[self _webView] frame];
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
@@ -289,7 +297,7 @@
 
 	struct CGRect newRect = [self visibleRect];
 	struct CGRect contentRect = [self bounds];
-	int lZoneHeight = [defaults enlargeNavZone] ? 75 : 48;
+	int lZoneHeight = [defaults enlargeNavZone] ? TOOLBAR_HEIGHT+30 : TOOLBAR_HEIGHT;
 
 	struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
 	struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
@@ -332,7 +340,7 @@
 - (void)pageDownWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
 	struct CGRect contentRect = [self bounds];
 	float scrollness = contentRect.size.height;
-	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
+	scrollness -= (((hasTopBar) ? TOOLBAR_HEIGHT : 0) + ((hasBotBar) ? TOOLBAR_HEIGHT : 0));
 	scrollness /= [self textSize];
 	scrollness = floor(scrollness - 1.0f);
 	scrollness *= [self textSize];
@@ -350,7 +358,7 @@
 -(void)pageUpWithTopBar:(BOOL)hasTopBar bottomBar:(BOOL)hasBotBar {
 	struct CGRect contentRect = [self bounds];
 	float  scrollness = contentRect.size.height;
-	scrollness -= (((hasTopBar) ? 48 : 0) + ((hasBotBar) ? 48 : 0));
+	scrollness -= (((hasTopBar) ? TOOLBAR_HEIGHT : 0) + ((hasBotBar) ? TOOLBAR_HEIGHT : 0));
 	scrollness /= [self textSize];
 	scrollness = floor(scrollness - 1.0f);
 	scrollness *= [self textSize];
@@ -656,13 +664,13 @@
 
   // FIXME: This toolbar/navbar stuff needs to react to hide/show
 	if (![defaults navbar]) {
-		[self setMarginTop:48];
+		[self setMarginTop:TOOLBAR_HEIGHT];
   } else {
 		[self setMarginTop:0];
   }
   
 	if (![defaults toolbar]) {
-		[self setBottomBufferHeight:48];
+		[self setBottomBufferHeight:TOOLBAR_HEIGHT];
 	} else {
 		[self setBottomBufferHeight:0];
   }

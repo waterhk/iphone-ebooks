@@ -18,6 +18,18 @@
 
 */
 
+
+#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UINavigationBar.h>
+#import <UIKit/UITransformAnimation.h>
+#import <UIKit/UIAnimator.h>
+#import <UIKit/UITransitionView.h>
+#import <UIKit/UINavigationItem.h>
+#import "FileBrowser.h"
+#import "BooksDefaultsController.h"
+#import "common.h"
+
 #import <UIKit/UIHardware.h>
 #import "HideableNavBar.h"
 #import "FileBrowser.h"
@@ -158,13 +170,13 @@
     struct CGAffineTransform endTrans;
     
 		if (isTop) {
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, 48.0f)];      
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, TOOLBAR_HEIGHT)];      
       startTrans = CGAffineTransformMake(1,0,0,1,0,0);
-      endTrans = CGAffineTransformMakeTranslation(0, -68.0);
+      endTrans = CGAffineTransformMakeTranslation(0, -(TOOLBAR_HEIGHT+TOOLBAR_FUDGE));
 		} else {
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - 48.0f, hardwareRect.size.width, 48.0f)];
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - TOOLBAR_HEIGHT, hardwareRect.size.width, TOOLBAR_HEIGHT)];
       startTrans = CGAffineTransformMake(1,0,0,1,0,0);
-      endTrans = CGAffineTransformMakeTranslation(0, 48);
+      endTrans = CGAffineTransformMakeTranslation(0, TOOLBAR_HEIGHT);
 		}
     [translate setStartTransform:startTrans];
     [translate setEndTransform:endTrans];
@@ -185,12 +197,12 @@
 		if (isTop) {
       //CHANGED: The "68" comes from SummerBoard--if we just use 48, 
       // the top nav bar shows under the status bar.
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - 68.0f, hardwareRect.size.width, 48.0f)];
-      startTrans = CGAffineTransformMakeTranslation(0,-68);
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      startTrans = CGAffineTransformMakeTranslation(0,-(TOOLBAR_FUDGE+TOOLBAR_HEIGHT));
       endTrans = CGAffineTransformIdentity;
     } else {
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, 48.0f)];
-      startTrans = CGAffineTransformMakeTranslation(0, 48);
+      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      startTrans = CGAffineTransformMakeTranslation(0, TOOLBAR_HEIGHT);
       endTrans = CGAffineTransformMake(1,0,0,1,0,0);
     }
     

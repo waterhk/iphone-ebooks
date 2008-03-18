@@ -29,7 +29,7 @@
       GSLog(@"Creating encoding prefs!");
       struct CGRect rect = [defaults fullScreenApplicationContentRect];
 
-      encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-48)];
+      encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
       [encodingTable setDelegate:self];
       [encodingTable setDataSource:self];
       [encodingTable reloadData];
@@ -94,7 +94,7 @@ int unsignedCompare(id x, id y, void *context)
 
 - (float)preferencesTable:(id)preferencesTable heightForRow:(int)row inGroup:(int)group withProposedHeight:(float)proposedHeight;
 {
-  return 48.0f;
+  return PREFS_TABLE_ROW_HEIGHT;
 }
 
 -(void)tableRowSelected:(NSNotification *)aNotification
@@ -137,7 +137,7 @@ int unsignedCompare(id x, id y, void *context)
 		 == [defaults defaultTextEncoding]);
     }
   CGRect rect = [defaults fullScreenApplicationContentRect];
-  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,48)];
+  UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,PREFS_TABLE_ROW_HEIGHT)];
   [theCell setTitle:title];
   [theCell setChecked:checked];
   return [theCell autorelease];
