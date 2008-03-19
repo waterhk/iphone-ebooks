@@ -275,7 +275,6 @@
   [arPathComponents addObject:lastBrowserPath];
   lastBrowserPath = [lastBrowserPath stringByDeletingLastPathComponent]; // prime for loop
   
-  // FIXME: Taking the bottom path from the pref's file probably causes problems when upgrading.
   NSString *stopAtPath = [[BooksDefaultsController defaultEBookPath] stringByDeletingLastPathComponent];
   while(![lastBrowserPath isEqualToString:stopAtPath] && ![lastBrowserPath isEqualToString:@"/"]) {
     [arPathComponents addObject:lastBrowserPath];
@@ -510,7 +509,6 @@
 	[self cleanUpBeforeQuit];
 }
 
-// FIXME: Seems like this text stuff should be purely in the EBookView class.
 - (void)embiggenText:(UINavBarButton *)button {
 	if (![button isPressed]) {// mouse up events only, kids!
 		[(EBookView*)[navBar topView] embiggenText];
