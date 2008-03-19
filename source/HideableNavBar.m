@@ -114,12 +114,12 @@
   NSArray *items = [self navigationItems];
   int itemCount = [items count];
   
-  GSLog(@"Performing selector on %d objects", itemCount);
+  //GSLog(@"Performing selector on %d objects", itemCount);
   
   for(itemCount = itemCount - 1; itemCount >=0; itemCount--) {
     FileNavigationItem *fni = (FileNavigationItem*)[items objectAtIndex:itemCount];
     UIView *view = [fni view];
-    GSLog(@"Performing %@", view);
+    //GSLog(@"Performing %@", view);
     [view performSelector:p_sel withObject:p_obj];
   }
 }
@@ -202,7 +202,7 @@
   [super popNavigationItem];
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
   
-  GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
+  //GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
   
   if([self isAnimationEnabled]) {
     [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[topFi view] destItem:topFi transition:2]];
@@ -222,7 +222,7 @@
   FileNavigationItem *topFi = (FileNavigationItem*)[self topItem];
   [super pushNavigationItem:p_item];
   
-  GSLog(@"Pushing %@ %@", ([pushedFi isDocument] ? @"Document" : @"Directory"), [pushedFi path]);
+  //GSLog(@"Pushing %@ %@", ([pushedFi isDocument] ? @"Document" : @"Directory"), [pushedFi path]);
   
   if([self isAnimationEnabled]) {
     UIView *fromView = [topFi view];

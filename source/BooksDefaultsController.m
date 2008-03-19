@@ -453,10 +453,11 @@
 {
 	NSDictionary *perFileData = [_defaults objectForKey:FILESPECIFICDATAKEY];
 
-	if ([perFileData objectForKey:filename] == nil)
-		return FALSE;
-
-	return TRUE;
+	if ([perFileData objectForKey:filename] == nil) {
+    return FALSE;
+  } else {
+   	return TRUE; 
+  }
 }
 
 - (BOOL) subchapteringEnabledForFile: (NSString *) filename
@@ -556,16 +557,14 @@
 	NSEnumerator        *enumerator     = [keys objectEnumerator];
 	NSRange              directoryRange = { 0, [directory length] };
 	NSString            *filename;
-	GSLog(@"BooksDefaultsController removePerFileDataForDirectory:%@", directory);
+
 	while (filename = [enumerator nextObject])
 	{
-		GSLog(@"current filename: %@", filename);
 		if ([filename compare:directory
 					  options:NSLiteralSearch
 						range:directoryRange] == NSOrderedSame)
 		{
 			[perFileData removeObjectForKey:filename];
-			GSLog(@"removing key");
 		}
 	}
 
