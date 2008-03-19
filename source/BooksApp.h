@@ -87,7 +87,7 @@ enum PreferenceAnimationType;
 - (UIImage *)navBarImage:(NSString *)name flipped:(BOOL)flipped;
 - (void)showPrefs:(UINavBarButton *)button;
 - (UIWindow *)appsMainWindow;
-- (void)toggleStatusBarColor;
+- (void)adjustStatusBarColorWithUiOrientation:(int)p_orientation;
 - (NSString *)currentBrowserPath;
 - (void)cleanUpBeforeQuit;
 - (void)cleanupStartupImage;

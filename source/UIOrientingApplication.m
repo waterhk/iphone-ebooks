@@ -155,6 +155,17 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	orientations[o_code] = degrees;
 }
 
+/**
+ * Get the angle for the given orientation.
+ */
+- (int)angleForOrientation:(int)o_code {
+  if (o_code > 6)  {
+    return 0;
+  } else {
+    return orientations[o_code];
+  }
+}
+
 - (CGRect) windowBounds {
 	return m_fullKeyBounds;
 }

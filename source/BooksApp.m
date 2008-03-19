@@ -147,6 +147,8 @@
     // FIXME: This selector is a kludgey choice, but it works.
     [NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
   }
+  
+  [self adjustStatusBarColorWithUiOrientation:[p_note uiOrientationCode]];
 }
 
 - (void)applicationDidFinishLaunching:(id)unused {  
@@ -212,7 +214,7 @@
 
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
 
-  [self toggleStatusBarColor];
+  [self adjustStatusBarColorWithUiOrientation:-1];
   
   [window orderFront: self];
 	[window makeKey: self];
@@ -528,7 +530,7 @@
 		textInverted = !textInverted;
 		[(EBookView*)[navBar topView] invertText:textInverted];
 		[defaults setInverted:textInverted];
-		[self toggleStatusBarColor];
+		[self adjustStatusBarColorWithUiOrientation:-1];
 //		struct CGRect rect = [defaults fullScreenApplicationContentRect];
 //		[(EBookView*)[navBar topView] setFrame:rect];
 	}	
@@ -759,23 +761,24 @@
 	return [[navBar topBrowser] path];
 }
 
-- (void)toggleStatusBarColor 	// Thought this might be a nice touch
-//TODO: This looks weird with the navbars down.  Perhaps we should change
-//the navbars to the black type?  Or have the status bar be black only
-//when the top navbar is hidden?  Also I'd prefer to have the status
-//bar white when in the browser view, since the browser is white.
-{
-  /*
-	int lOrientation = 0;
-	if ([defaults isRotate90])
-		lOrientation = 90;
-	//GSLog(@"toggleStatusBarColor Orientation =%d", lOrientation);
+/**
+ * Adjust toolbar to match current inversion status.
+ *
+ * @param p_orientation UI Orientation - pass -1 to use the current hardware orientation.
+ */
+- (void)adjustStatusBarColorWithUiOrientation:(int)p_orientation {
+  int ori = p_orientation;
+  if(p_orientation == -1) {
+    ori = [defaults uiOrientation];
+  }
+  
+  int angle = [self angleForOrientation:ori];
+
 	if ([defaults inverted]) {
-		[self setStatusBarMode:3 orientation:lOrientation duration:0.25];
+		[self setStatusBarMode:3 orientation:angle duration:0.25];
 	} else {
-		[self setStatusBarMode:0 orientation:lOrientation duration:0.25];
+		[self setStatusBarMode:0 orientation:angle duration:0.25];
 	}
-   */
 }
 
 - (void)dealloc {
@@ -838,7 +841,7 @@
 	//GSLog(@"rotateApp");
 	CGRect rect = [window frame];
 	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
-	[self toggleStatusBarColor];
+	[self adjustStatusBarColorWithUiOrientation:-1];
   
 	if ([defaults isRotate90]) {
 		int degree = 90;
