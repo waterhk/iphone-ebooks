@@ -957,7 +957,7 @@
   } else {
     // Take a screen shot of the top view.
     // FIXME: This doesn't currently get the nav bar for file browsers.
-    ret = [[navBar topView] createSnapshotWithRect:CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT)];
+    ret = [mainView createSnapshotWithRect:CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT)];
     CGImageRetain(ret);
   }
   
