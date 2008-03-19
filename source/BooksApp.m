@@ -325,11 +325,16 @@
      */
   }
   
-  [self setUIOrientation:[defaults uiOrientation]];
-	//bcc rotation
-	[self rotateApp];
-
 	[arPathComponents release];
+  
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
+}
+
+/**
+ * Apply the app rotation at startup - but we need to do it from the main thread after a runloop.
+ */
+- (void)applyOrientationLater {
+  [self setUIOrientation:[defaults uiOrientation]];
 }
 
 /**
