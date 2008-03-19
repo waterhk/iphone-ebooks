@@ -514,6 +514,8 @@
   [path release];
   path = p_path;
   subchapter = p_chap;
+  
+  [defaults setLastSubchapter:p_chap forFile:p_path]; // Update 'read' indicator
 }
 
 /**
@@ -548,6 +550,9 @@
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
   m_readyToShow = NO;
   GSLog(@"Loading book %@", thePath);
+  
+  // Update the 'read' indicator for the file browser
+  [defaults setLastSubchapter:theSubchapter forFile:thePath];
   
 	NSMutableString *theHTML = nil;
   
@@ -823,7 +828,7 @@
  * Scrolls to the given point by waking up the heartbeat for one pulse.
  */
 - (void)scrollToPoint:(float)p_pt {
-  GSLog(@"Scrolling book position to %f", p_pt);
+//  GSLog(@"Scrolling book position to %f", p_pt);
   [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, p_pt) animated:NO];
 }
 
@@ -833,7 +838,7 @@
 - (void)saveBookPosition {
   if(path) {
     float pt = [self visibleRect].origin.y;
-    GSLog(@"EBookView saving position %f for book %@", pt, path);
+//    GSLog(@"EBookView saving position %f for book %@", pt, path);
     [defaults setLastScrollPoint:pt
                    forSubchapter:[self getSubchapter]
                          forFile:[self currentPath]];

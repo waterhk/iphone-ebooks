@@ -126,7 +126,6 @@
   
   // Fix the position of the prefs button.
   struct CGSize newSize = [p_note newBounds].size;
-  GSLog(@"Tweaking prefs button for width %f", newSize.width);
   float lMargin = 45.0f;
   [prefsButton retain];
   [prefsButton removeFromSuperview];
