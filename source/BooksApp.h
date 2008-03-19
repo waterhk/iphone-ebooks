@@ -95,5 +95,7 @@ enum PreferenceAnimationType;
 - (void)rotateButtonCallback:(UINavBarButton*) button;
 - (void)applicationDidFinishLaunching: (id) unused;
 - (void)finishUpLaunch;
-- (void)preferenceAnimationDidFinish;
+- (void) preferenceAnimationDidFinish;
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button ;
+- (void)alertCrashDetected;
 @end

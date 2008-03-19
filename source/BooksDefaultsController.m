@@ -135,6 +135,22 @@
 	return;
 }
 
+
+- (NSString *)appStatus
+{
+	NSString *appStatus = [_defaults objectForKey:APPSTATUSKEY];
+
+	GSLog (@"[_defaults appStatus] = %s", [appStatus cString]);
+	return appStatus;
+}
+
+- (void)setAppStatus:(NSString *)appStatus
+{
+	GSLog (@"[_defaults %s %@]",_cmd, appStatus);
+	[_defaults setObject:appStatus forKey:APPSTATUSKEY];
+	[self synchronize]; //appstatus must always be writethrough
+}
+
 - (int)textSize
 {
 	int textSize = [_defaults integerForKey:TEXTSIZEKEY];
@@ -623,5 +639,14 @@ static BooksDefaultsController *sharedBooksDefaultsController = nil;
 
 - (id)autorelease {
 	return self;
+}
+
+- (void)reset
+{
+	BooksDefaultsController* lDefault = [BooksDefaultsController sharedBooksDefaultsController];
+	[NSUserDefaults resetStandardUserDefaults];
+	//bcc do not release _defaults on purpose it is broken after resetStandardUserDefaults
+	_defaults = [[NSUserDefaults standardUserDefaults] retain];
+
 }
 @end

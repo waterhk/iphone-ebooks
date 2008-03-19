@@ -256,7 +256,6 @@
 	_bodyRange.location   = 0;
 	_bodyRange.length     = [bodyIdentifier length];
 
-	GSLog(@"%s:%d %s ._bodyRange.length %d",__FILE__, __LINE__, _cmd, _bodyRange.length);
 	/*
 	 * Find "<body" within the HTML text.
 	 */
@@ -283,7 +282,6 @@
 		return;
 	}
 
-	GSLog(@"%s:%d %s ._bodyRange.location %d",__FILE__, __LINE__, _cmd, _bodyRange.location);
 
 	/*
 	 * Look for the end of the <body...> block.
@@ -362,7 +360,6 @@
 	int      index;
 	Regex   *regexArray[2];
 	int      regexIndex;
-	GSLog(@"%s:%d %s self: %@",__FILE__, __LINE__, _cmd, self);
 	if (_bodyRange.length == 0)
 	{
 		_chapterRange[0].location = 0;

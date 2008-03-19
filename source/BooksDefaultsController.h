@@ -45,6 +45,9 @@
  * Application stored data
  */
 #define BROWSERFILESKEY        @"browserPathsKey"
+#define APPSTATUSKEY       		@"appStatusKey"
+#define APPOPENVALUE 			@"Opened"
+#define APPCLOSEDVALUE 			@"Closed"
 
 /*
  * New per-book data storage
@@ -78,7 +81,14 @@
 
 - (id) init;
 - (void) updateOldPreferences;
-
+/**
+ * preference used to detect if the exit was done correctly or if a crash occured
+ */
+- (NSString *)appStatus;
+/**
+ * writeThrough preference used to detect crashes
+ */
+- (void)setAppStatus:(NSString *)file;
 - (int)textSize;
 - (void)setTextSize:(int)size;
 - (BOOL)inverted;
@@ -146,8 +156,17 @@
 + (BooksDefaultsController*)sharedBooksDefaultsController;
 
 /**
+ * allocation method prevents creating more than one default controller.
+ */
++ (id)allocWithZone:(NSZone *)zone;
+/**
  * delegate method for the alert sheet.
  */
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button; 
+/**
+ * reset the value of the default.
+ * The internal default object will be reloaded so the sharedBooksDefaultsController can still be used
+ */
+- (void)reset;
 @end
 

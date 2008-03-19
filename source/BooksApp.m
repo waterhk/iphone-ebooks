@@ -20,6 +20,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIWindow.h>
 #import <UIKit/UIView-Hierarchy.h>
+#import <UIKit/UIAlertSheet.h>
 #import <UIKit/UIView-Geometry.h>
 #import <UIKit/UIHardware.h>
 #import <UIKit/UIKit.h>
@@ -51,6 +52,44 @@
  */
 + (void)debugNotification:(NSNotification*)p_note {
   GSLog(@"NOTIFICATION: %@", [p_note name]);
+}
+/*
+   enum {
+   kFACEUP = 0,
+   kNORMAL = 1,
+   kUPSIDEDOWN = 2,
+   kLANDL = 3,
+   kLANDR = 4,
+   kFACEDOWN = 6
+   };
+   */
+// Delegate methods
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button 
+{
+	GSLog(@"%s .", _cmd);
+	[sheet dismissAnimated:YES];
+	if (1 == button)  //reset prefs
+	{
+		[defaults reset];
+	}
+	//reset the status as if the app had previously closed correctly
+	[defaults setAppStatus:APPCLOSEDVALUE];
+	//continue where we were before we opened the alert
+	[self applicationDidFinishLaunching:nil];
+}
+- (void)alertCrashDetected
+{
+	GSLog(@"%s .", _cmd);
+	GSLog(@"alertcrashdetected");
+	NSString *bodyText = @"Prior crash detected, do you want to reset preferences";
+	CGRect rect = [[UIWindow keyWindow] bounds];
+	UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
+	[alertSheet setTitle:@"Error opening books"];
+	[alertSheet setBodyText:bodyText];
+	[alertSheet addButtonWithTitle:@"YES"];
+	[alertSheet addButtonWithTitle:@"NO"];
+	[alertSheet setDelegate: self];
+	[alertSheet popupAlertAnimated:YES];
 }
 
 /**
@@ -117,6 +156,17 @@
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
   [defaults setRotateLocked:[defaults isRotateLocked]];
 	//bcc rect to change for rotate90
+	NSString *lAppStatus = [defaults appStatus];
+	GSLog(@"appstatus: %@", lAppStatus);
+	if ([lAppStatus isEqualToString: APPOPENVALUE])
+	{
+		//bcc need error handling now.
+		//should be able to revert to previously known to be ok prefs, lets just say we erase them
+		[self alertCrashDetected];
+	}
+	//now set the app status to open
+	[defaults setAppStatus:APPOPENVALUE];
+
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
@@ -204,6 +254,7 @@
  * last read file.  Takes down splash image if it was present.
  */
 - (void)finishUpLaunch {
+	GSLog(@"%s .", _cmd);
   NSString *recentFile = [defaults lastBrowserPath];
 
   [self setupNavbar];
@@ -309,6 +360,16 @@
 - (void)hideNavbars {
 	[navBar hide];
 	[bottomNavBar hide];
+	/*
+	 //bcc, it used to be:
+	GSLog(@"%s .", _cmd);
+	struct CGRect rect = [defaults fullScreenApplicationContentRect];
+	[textView setFrame:rect];
+	[navBar hide:NO];
+	[bottomNavBar hide:NO];
+	[self hideSlider];
+	//are we sure of this change
+	*/
 }
 
 /**
@@ -323,6 +384,7 @@
  * Toggle visibility of the navigation bars.
  */
 - (void)toggleNavbars {
+	GSLog(@"%s .", _cmd);
 	[navBar toggle];
 	[bottomNavBar toggle];
 }
@@ -343,7 +405,6 @@
   UIView *ret = nil;
   
   [defaults setLastBrowserPath:p_path];
-
   if (isPicture) {
     ret = [[[EBookImageView alloc] initWithContentsOfFile:p_path withFrame:[mainView bounds] scaleAspect:YES] autorelease];
   } else { 
@@ -386,7 +447,6 @@
 
   return ret;
 }
-
 /**
  * Called by the file browser objects when a user taps a file or folder.  Calls to navBar
  * to push whatever was tapped.  Navbar will call us back to actually open something.
@@ -420,7 +480,6 @@
   [tempItem release];
 }
 
-
 - (void)cleanUpBeforeQuit {
   FileNavigationItem *topItem = [navBar topItem];
 	NSString *filename = [topItem path];
@@ -434,8 +493,8 @@
     [eb saveBookPosition];
   }
   
-	[defaults synchronize];
   
+	[defaults setAppStatus:APPCLOSEDVALUE];
   GSLog(@"Books is terminating.");
   GSLog(@"========================================================");
 }
@@ -716,7 +775,6 @@
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];

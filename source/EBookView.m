@@ -275,9 +275,9 @@
 }
 -(void)reflowBook
 {
-			[self recalculateStyle];
-			[self webViewDidChange:self];
-			[self setNeedsDisplay];
+	[self recalculateStyle];
+	[self webViewDidChange:self];
+	[self setNeedsDisplay];
 }
 /**
  * Increase on-screen text size.
@@ -317,7 +317,6 @@
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
  		[self setTextSize:[self textSize] - 2.0f];
-
     [self recalculateStyle];
     [self webViewDidChange:nil];
 		[self setNeedsDisplay];
@@ -697,9 +696,9 @@
  * logic from readTextFile:.
  */
 - (NSMutableString *)readHtmlFile:(NSString *)thePath {
-	NSMutableString *originalText = [self readTextFile:thePath];
-	[HTMLFixer fixHTMLString:originalText filePath:thePath imageOnly:NO];
-	return originalText;
+										   NSMutableString *originalText = [self readTextFile:thePath];
+										   [HTMLFixer fixHTMLString:originalText filePath:thePath imageOnly:NO];
+										   return originalText;
 }
 
 #pragma mark File Reading Methods END
