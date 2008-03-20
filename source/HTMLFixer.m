@@ -69,15 +69,17 @@ AGRegex *STYLE_REGEX;
   NSString *srcString = nil;
   unsigned int width = MAXWIDTH;
   unsigned int height = 0;
-  
+  GSLog(@"%s: aStr:%@ path:%@", _cmd, aStr, path); 
   // Use a regex to find the src attribute.
   AGRegexMatch *srcMatch = [SRC_REGEX findInString:aStr];
   if(srcMatch == nil || [srcMatch count] != 2) {
     // We didn't find a match, or we found MULTIPLE matches.  Just bail...
+	  GSLog(@"%s: src not found or found too many times", _cmd);
     return @"";
   } else {
     srcString = [srcMatch groupAtIndex:1];
     if([srcString length] == 0) {
+		GSLog(@"%s: path is empty", _cmd);
       return @"";
     }
   }
@@ -96,6 +98,7 @@ AGRegex *STYLE_REGEX;
   // Try to read the URL off the filesystem to get its height and width.
   UIImage *img = [UIImage imageAtPath:imgPath];
   if (nil != img) {
+	  GSLog(@"%s: opened image at path %@", _cmd, imgPath);
     CGImageRef imgRef = [img imageRef];
     height = CGImageGetHeight(imgRef);
     width = CGImageGetWidth(imgRef);
@@ -110,14 +113,16 @@ AGRegex *STYLE_REGEX;
     }
     
     finalImgTag = [NSString stringWithFormat:@"<img src=\"%@\" height=\"%d\" width=\"%d\"/>", absoluteURLString, height, width];
+	GSLog(@"%s: finalImgTag:%@", _cmd, finalImgTag);
   } else {
+	  GSLog(@"%s: can't open image at path %@", _cmd, imgPath);
     // If we can't open the image, leave the tag as-is
     // It might be better to expunge the tag -- maybe it's an HTTP URL or something?  Not sure about this....
     finalImgTag = @"";
     *returnHeight = 0;
   }
   
-  //GSLog(@"returning str: %@", finalImgTag);
+  GSLog(@"%s: returning str: %@", _cmd, finalImgTag);
   return finalImgTag;
 }
 
@@ -250,7 +255,6 @@ AGRegex *STYLE_REGEX;
 + (NSString*)trEndReplacement {
   return @"<hr style=\"height: 1px;\"/>";
 }
-
 + (NSString*)thEndReplacement {
   return @"</b><br/><br/>";
 }
