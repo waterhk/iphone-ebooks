@@ -338,7 +338,13 @@
  */
 - (void)mouseDown:(struct __GSEvent*)event {
 	CGPoint clicked = GSEventGetLocationInWindow(event);
-	_MouseDownX = clicked.x;
+	//bcc first convert into the content view coordinates
+	clicked = [self convertPoint:clicked fromView:nil];
+	//bcc then translate to take into account the scroll amount
+	CGPoint lOffset = [self offset];
+	clicked.x -= lOffset.x;
+	clicked.y -= lOffset.y;
+	_MouseDownX = clicked.x ;
 	_MouseDownY = clicked.y;
 	[super mouseDown:event];
   lastVisibleRect = [self visibleRect];
@@ -349,6 +355,12 @@
  */
 - (void)mouseUp:(struct __GSEvent *)event {
 	CGPoint clicked = GSEventGetLocationInWindow(event);
+	//bcc first convert into the content view coordinates
+	clicked = [self convertPoint:clicked fromView:nil];
+	//bcc then translate to take into account the scroll amount
+	CGPoint lOffset = [self offset];
+	clicked.x -= lOffset.x;
+	clicked.y -= lOffset.y;
 	//BCC: swipe detection
 	BOOL lChangeChapter = NO;
 	if (clicked.y - _MouseDownY < 20 && clicked.y - _MouseDownY > -20)

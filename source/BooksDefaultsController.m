@@ -151,6 +151,7 @@
 	[self synchronize]; //appstatus must always be writethrough
 }
 
+
 - (int)textSize
 {
 	int textSize = [_defaults integerForKey:TEXTSIZEKEY];

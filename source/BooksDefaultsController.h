@@ -160,6 +160,10 @@
  */
 + (id)allocWithZone:(NSZone *)zone;
 /**
+ * allocation method prevents creating more than one default controller.
+ */
++ (id)allocWithZone:(NSZone *)zone;
+/**
  * delegate method for the alert sheet.
  */
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button; 

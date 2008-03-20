@@ -168,7 +168,6 @@
 	//now set the app status to open
 	[defaults setAppStatus:APPOPENVALUE];
 
-
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(updateToolbar:)
 												 name:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION
