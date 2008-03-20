@@ -58,15 +58,16 @@ AGRegex *STYLE_REGEX;
 }
 
 /**
- * Returns an image tag for which the image has been shrunk to 300 pixels wide.
+ * Returns an image tag for which the image has been shrunk to MAXWIDTH pixels wide.
  * Changes the local file URL to an absolute URL since that's what the UITextView seems to like.
- * Does nothing if the image is already under 300 px wide.
+ * Does nothing if the image is already under MAXWIDTH px wide.
  * Assumes a local URL as the "src" element.
  */
+#define MAXWIDTH 250
 +(NSString *)fixedImageTagForString:(NSString *)aStr basePath:(NSString *)path returnImageHeight:(int *)returnHeight {
   // Build the final image tag from these:
   NSString *srcString = nil;
-  unsigned int width = 300;
+  unsigned int width = MAXWIDTH;
   unsigned int height = 0;
   
   // Use a regex to find the src attribute.
@@ -99,16 +100,16 @@ AGRegex *STYLE_REGEX;
     height = CGImageGetHeight(imgRef);
     width = CGImageGetWidth(imgRef);
     //GSLog(@"image's width: %d height: %d", width, height);
-    if (width <= 300) {
+    if (width <= MAXWIDTH) {
       *returnHeight = (int)height;
     } else {
       float aspectRatio = (float)height / (float)width;
-      width = 300;
-      height = (unsigned int)(300.0 * aspectRatio);
+      width = MAXWIDTH;
+      height = (unsigned int)((float)MAXWIDTH * aspectRatio);
       *returnHeight = (int)height;
     }
     
-    NSString *finalImgTag = [NSString stringWithFormat:@"<img src=\"%@\" height=\"%d\" width=\"%d\"/>", absoluteURLString, height, width];
+    finalImgTag = [NSString stringWithFormat:@"<img src=\"%@\" height=\"%d\" width=\"%d\"/>", absoluteURLString, height, width];
   } else {
     // If we can't open the image, leave the tag as-is
     // It might be better to expunge the tag -- maybe it's an HTTP URL or something?  Not sure about this....
