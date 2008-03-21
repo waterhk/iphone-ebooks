@@ -16,20 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import <GraphicsServices/GraphicsServices.h>
+#import <UIKit/CDStructures.h>
+#import <UIKit/UIView-Gestures.h>
+#import <UIKit/UIViewTapInfo.h>
+#import <UIKit/UIView-Geometry.h>
 
 #import "EBookImageView.h"
 #import "BooksDefaultsController.h"
 #import "BoundsChangedNotification.h"
+#import "BooksApp.h"
 
 @implementation EBookImageView
 /**
  * Init with image to show and frame to draw in.
  */
-- (EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect{
+- (EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect {
   struct CGSize size = p_frame.size;
   
   if(self = [super initWithFrame:p_frame]) {
     [self setAllowsFourWayRubberBanding:YES];
+    
+    m_showingToolbars = NO;
     
     float components[4] = { 0.0, 0.0, 0.0, 0.0 };
     CGColorRef transparent = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
@@ -53,6 +64,68 @@
   struct CGRect newB = [p_note newBounds];
   [self setFrame:newB];
   [_imgView setFrame:newB];
+}
+
+/**
+ * Save the lastVisibleRect.
+ *
+ * This takes the place of a constant heartbeat, at least for purposes
+ * of getting scrolling and tapping to work.
+ */
+- (void)mouseDown:(struct __GSEvent*)event {
+	CGPoint clicked = GSEventGetLocationInWindow(event);
+	//bcc first convert into the content view coordinates
+	clicked = [self convertPoint:clicked fromView:nil];
+	//bcc then translate to take into account the scroll amount
+	CGPoint lOffset = [self offset];
+	clicked.x -= lOffset.x;
+	clicked.y -= lOffset.y;
+	_MouseDownX = clicked.x ;
+	_MouseDownY = clicked.y;
+	[super mouseDown:event];
+}
+
+/**
+ * Show navbar in response to click.
+ */
+- (void)mouseUp:(struct __GSEvent *)event {
+  
+  CGPoint clicked = GSEventGetLocationInWindow(event);
+	//bcc first convert into the content view coordinates
+	clicked = [self convertPoint:clicked fromView:nil];
+	//bcc then translate to take into account the scroll amount
+	CGPoint lOffset = [self offset];
+	clicked.x -= lOffset.x;
+	clicked.y -= lOffset.y;
+	//BCC: swipe detection
+	BOOL lChangeChapter = NO;
+	if (clicked.y - _MouseDownY < 20 && clicked.y - _MouseDownY > -20)
+	{
+		if (clicked.x - _MouseDownX > 100 )
+		{
+      [(BooksApp*)UIApp chapForward:nil];
+			lChangeChapter = YES;
+		}
+		else if (clicked.x - _MouseDownX < -100)
+		{
+      [(BooksApp*)UIApp chapBack:nil];
+			lChangeChapter = YES;
+		}
+	}
+  
+  if(!lChangeChapter) {
+    if([self isScrolling] || m_showingToolbars) {
+      [(BooksApp*)UIApp hideNavbars];
+      m_showingToolbars = NO;
+    } else {
+      [(BooksApp*)UIApp showTopNav];
+      m_showingToolbars = YES;
+    }
+  }
+  
+  [self releaseRubberBandIfNecessary];
+  
+  [super mouseUp:event];
 }
 
 /**

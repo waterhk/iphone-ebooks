@@ -97,4 +97,8 @@ enum PreferenceAnimationType;
 - (void) preferenceAnimationDidFinish;
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button ;
 - (void)alertCrashDetected;
+
+- (void)chapBack:(UINavBarButton *)button;
+- (void)chapForward:(UINavBarButton *)button;
+- (void)showTopNav;
 @end

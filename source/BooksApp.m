@@ -366,6 +366,14 @@
 }
 
 /**
+ * Show just the top nav bar.
+ */
+- (void)showTopNav {
+  [navBar show];
+  [bottomNavBar hide];
+}
+
+/**
  * Hide the navigation bars.
  */
 - (void)hideNavbars {

@@ -26,6 +26,18 @@
 
 @interface EBookImageView : UIScroller {
   UIImageView *_imgView;
+  
+  /**
+	 * stores the X coordinate of the last mouse down event for swipe detection
+	 */
+	float _MouseDownX;
+	/**
+	 * stores the Y coordinate of the last mouse down event for swipe detection
+	 */
+	float _MouseDownY;
+  
+  BOOL m_showingToolbars;
+  
 }
 
 - (EBookImageView *)initWithContentsOfFile:(NSString *)file withFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect;
