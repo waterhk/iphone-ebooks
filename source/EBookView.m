@@ -744,6 +744,8 @@
 		[self setScrollerIndicatorStyle:0];
 	}
 
+  [self recalculateStyle];
+//  [self updateWebViewObjects];
 	[self setNeedsDisplay];
 }
 
