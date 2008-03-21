@@ -744,8 +744,8 @@
 		[self setScrollerIndicatorStyle:0];
 	}
 
-  [self recalculateStyle];
-//  [self updateWebViewObjects];
+  // setFrame makes the colors reverse properly.
+  [self setFrame:[self frame]];
 	[self setNeedsDisplay];
 }
 
