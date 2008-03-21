@@ -475,15 +475,18 @@
  * Show the please wait / progress spinner view.
  */
 - (void)showPleaseWait:(UIView*)p_parent {
-  const int progHeight = 120;
-  const int progWidth = 180;
-  struct CGRect progRect = CGRectMake(([p_parent bounds].size.width - progWidth) / 2,
-                                      ([p_parent bounds].size.height - progHeight) / 2,
+  const int PROG_SIZE = 32;
+  const int progHeight = 70;
+  const int progWidth = 64;
+  struct CGRect progRect = CGRectMake([p_parent bounds].size.width - (progWidth + 10),
+                                      [p_parent bounds].size.height - (progHeight + 10),
                                       progWidth, 
                                       progHeight);
   
   m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
-  [m_progressIndicator setText:@"Loading..."];
+//  [[m_progressIndicator _progressIndicator] setFrame:CGRectMake(0, 0, PROG_SIZE, PROG_SIZE)];
+  [m_progressIndicator setFontSize:6];
+  [m_progressIndicator setText:@" "];
   [p_parent addSubview:m_progressIndicator];
   [m_progressIndicator show:YES];
 }
