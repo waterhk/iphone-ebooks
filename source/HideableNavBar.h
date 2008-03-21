@@ -39,6 +39,7 @@
   BooksDefaultsController	*defaults;
   
   UIView *m_offViewKludge;
+  BOOL m_bSkipNextTransition;
 }
 
 - (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
@@ -52,6 +53,7 @@
 
 - (void)replaceTopNavigationItem:(UINavigationItem*)p_item;
 - (void)setTransitionOffView:(UIView*)p_view;
+- (void)skipNextTransition;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;
 - (FileBrowser*)topBrowser;
 - (UIView*)topView;

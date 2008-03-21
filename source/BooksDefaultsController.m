@@ -66,6 +66,7 @@
     [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
     [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
     [temp setObject:@"1" forKey:ISROTATELOCKEDKEY];
+    [temp setObject:@"1" forKey:STARTUPISCOVERKEY];
     
 
     [_defaults registerDefaults:temp];
@@ -395,7 +396,19 @@
 	[_defaults setBool:enlarged forKey:ENLARGENAVZONEKEY];
 }
 
+/**
+ * Set if saved startup image is a cover (as opposed to a screenshot).
+ */
+- (void)setStartupIsCover:(BOOL)p_cover {
+  [_defaults setBool:p_cover forKey:STARTUPISCOVERKEY];
+}
 
+/**
+ * Is saved startup image a cover (as opposed to a screenshot).
+ */
+- (BOOL)startupIsCover {
+  [_defaults boolForKey:STARTUPISCOVERKEY];
+}
 
 
 - (BOOL)chapternav

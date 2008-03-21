@@ -57,6 +57,7 @@
 	animator = [[UIAnimator alloc] init];
 	hidden = NO;
 	_transView = nil;
+  m_bSkipNextTransition = NO;
 
   [self disableAnimation];
  
@@ -166,7 +167,12 @@
   if(bCanShow) {
     // Do the transition        
     [[self delegate] setNavForItem:destItem];
-    [_transView transition:[transition intValue] fromView:fromView toView:toView];
+    if(m_bSkipNextTransition) {
+      [_transView transition:0 toView:toView];
+      [fromView removeFromSuperview];
+    } else {
+      [_transView transition:[transition intValue] fromView:fromView toView:toView];
+    }
     
     // If it's a book, call cleanup on the progress bar and also get the book prefs loaded.
     if([toView respondsToSelector:@selector(isReadyToShow)]) {
@@ -192,6 +198,13 @@
                        p_item, READY_DEST_NAV,
                        [NSNumber numberWithInt:p_trans], READY_TRANSITION,
                        nil];
+}
+
+/**
+ * Make the next transition be no transition.
+ */
+- (void)skipNextTransition {
+  m_bSkipNextTransition = YES;
 }
 
 /**

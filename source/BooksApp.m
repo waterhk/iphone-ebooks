@@ -289,6 +289,7 @@
        */
       [self transitionNavbarAnimation];
       [navBar setTransitionOffView:m_startupImage];
+      [navBar skipNextTransition];
     }
     
     NSString *curPath = [arPathComponents objectAtIndex:pathCount];
@@ -310,8 +311,14 @@
      */
     [self transitionNavbarAnimation];
     
-    // Pushing the file onto the toolbar will trigger it being opened.
+    
+    // We don't want a transition if we already have an image of text on the screen.
+    if(![defaults startupIsCover]) {
+      [navBar skipNextTransition];
+    }
     [navBar setTransitionOffView:m_startupImage];
+    
+    // Pushing the file onto the toolbar will trigger it being opened.
     UIView *view = [self showDocumentAtPath:recentFile];    
     FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile view:view];
     [navBar pushNavigationItem:fni];
@@ -800,119 +807,6 @@
 	}	
 }
 
-
-/**
- * Toggle rotation status.
- */
-- (void)rotateApp {
-  // Note most of the rotate code is in UIOrientingApplication.
-  // The rest is in the various objects which respond to rotation notifications.
-  /*
-  BOOL bWasRotated = [defaults isRotate90];  
-  float rotateDegrees;
-  float statusBarDegrees;
-  
-  if(bWasRotated) {
-    statusBarDegrees = 0.0;
-    rotateDegrees = -90.0f;
-  } else {
-    statusBarDegrees = 90.0f;
-    rotateDegrees = 90.0f;
-  }
-  
-  [defaults setRotate90:![defaults isRotate90]];
-  
-  GSLog(@"Starting rotate");
-//  [navBar performSelectorOnItemViews:@selector(setRotationBy:) withObject:[NSNumber numberWithFloat:degrees]];
-  [mainView setRotationBy:rotateDegrees];
-  [mainView setFrame:[defaults fullScreenApplicationContentRect]];
-
-  [self setStatusBarMode:0 orientation:statusBarDegrees duration:0 fenceID:nil animation:0];
-  
-	*/
-  
-  /*
-	CGSize lContentSize = [textView contentSize];	
-	//GSLog(@"contentSize:w=%f, h=%f", lContentSize.width, lContentSize.height);
-	//GSLog(@"rotateApp");
-	CGRect rect = [window frame];
-	CGAffineTransform lTransform = CGAffineTransformMakeTranslation(0,0);
-	[self adjustStatusBarColorWithUiOrientation:-1];
-  
-	if ([defaults isRotate90]) {
-		int degree = 90;
-		CGAffineTransform lTransform2  = CGAffineTransformMake(0, 1, -1, 0, 0, 0);
-		//BCC: translate to have the center of rotation (top left corner) in the middle of the view
-		lTransform = CGAffineTransformTranslate(lTransform, -1*rect.size.width/2, -1*rect.size.height/2);
-		//BCC: perform the actual rotation
-		lTransform = CGAffineTransformConcat(lTransform2, lTransform);
-		//BCC: translate back so the bottom right corner of the view is at the bottom left of the phone
-		//BCC: translate back so the top left corner of the view is at the top right of the phone
-		lTransform = CGAffineTransformTranslate(lTransform, rect.size.width/2, -rect.size.height/2);
-	} 
-
-	struct CGAffineTransform lMatrixprev = [window transform];
-
-	if(!CGAffineTransformEqualToTransform(lTransform,lMatrixprev)) {
-		//remember the previous position
-		struct CGRect overallRect = [[textView _webView] frame];
-		//GSLog(@"overall height: %f", overallRect.size.height);
-		struct CGRect visRect = [textView visibleRect];
-		float scrollPercentage = visRect.origin.y / overallRect.size.height;
-		if ([defaults isRotate90]) {
-			[window setFrame: rect];
-			//[window setBounds: rect];
-      
-			[mainView setFrame: rect];
-			//[mainView setBounds: rect];
-		}
-
-		[m_transitionView setFrame: rect];
-    
-    
-		[textView setFrame: rect];
-		[self refreshTextViewFromDefaultsToolbarsOnly];
-		[textView setDelegate:self];
-		int            subchapter = [textView getSubchapter];
-		NSString      *recentFile   = [textView currentPath];
-
-
-		overallRect = [[textView _webView] frame];
-		//		GSLog(@"new overall height: %f", overallRect.size.height);
-		float scrollPoint = (float) scrollPercentage * overallRect.size.height;
-
-    // FIXME: There's probably a better way to do this than reloading the whole book
-//		[textView loadBookWithPath:recentFile subchapter:subchapter];
-		[textView scrollPointVisibleAtTopLeft:CGPointMake (0.0f, scrollPoint) animated:NO];
-    
-        
-		[window setTransform: lTransform];
-
-		if (![defaults isRotate90]) {
-			rect.origin.y+=20; //to take into account the status bar
-			[window setFrame: rect];
-		}
-		[UIView endAnimations];
-		[self updateToolbar: 0];
-		[self updateNavbar];
-
-		//[navBar showTopNavBar:NO];
-		//[navBar show];
-		[bottomNavBar hide];
-	}
-*/
-
-	//BCC: animate this
-	/*	
-		UITransformAnimation *scaleAnim = [[UITransformAnimation alloc] initWithTarget: window];
-		struct CGAffineTransform lMatrixprev = [window transform];
-		[scaleAnim setStartTransform: lMatrixprev];
-		[scaleAnim setEndTransform: lTransform];
-		[anim addAnimation:scaleAnim withDuration:5.0f start:YES]; 
-		[anim autorelease];	//should we do this, it continues to leave for the duration of the animation
-		*/
-}
-
 /**
  * Ensure that the preferences screen can't be shown multiple times while the animation is in progress.
  */
@@ -944,19 +838,27 @@
     // to Sean Heber.  (Thanks Sean!!!)
     
     // Create a new image of the right size (startup code is picky about the Default image size)
+    
+    CGColorSpaceRef space = CGImageGetColorSpace(imageRef);
+    if(CGColorSpaceGetModel(space) == 5) {
+      GSLog(@"Indexed color image detected");
+    }
+    
     CGContextRef bitmap = CGBitmapContextCreate(
       NULL, SHOT_WIDTH, SHOT_HEIGHT, CGImageGetBitsPerComponent(imageRef),
-      BYTES_PER_PIXEL*SHOT_WIDTH, CGImageGetColorSpace(imageRef), CGImageGetBitmapInfo(imageRef)
+      BYTES_PER_PIXEL*SHOT_WIDTH, space, CGImageGetBitmapInfo(imageRef)
     );
     
     // Scale it and set for return.
     CGContextDrawImage( bitmap, CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT), imageRef );
     ret = CGBitmapContextCreateImage( bitmap );
     CGContextRelease(bitmap);
+    [defaults setStartupIsCover:YES];
   } else {
     // Take a screen shot of the top view.
     ret = [mainView createSnapshotWithRect:CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT)];
     CGImageRetain(ret);
+    [defaults setStartupIsCover:NO];
   }
   
   return ret;

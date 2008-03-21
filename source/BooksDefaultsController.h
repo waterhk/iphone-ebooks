@@ -78,6 +78,8 @@
 #define INVERSENAVZONEKEY      @"inverseNavZoneKey"
 #define ENLARGENAVZONEKEY      @"enlargeNavZoneKey"
 #define UIORIENTATIONKEY       @"orientationKey"
+#define STARTUPISCOVERKEY      @"startupIsCover"
+
 
 - (id) init;
 - (void) updateOldPreferences;
@@ -140,6 +142,9 @@
 - (void) removePerFileDataForFile: (NSString *) file;
 - (void) removePerFileDataForDirectory: (NSString *) directory;
 - (void) removePerFileData;
+
+- (void)setStartupIsCover:(BOOL)p_cover;
+- (BOOL)startupIsCover;
 
 /**
  * retrieve the apps default location for EBooks.
