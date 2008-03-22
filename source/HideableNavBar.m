@@ -176,7 +176,8 @@
     
     // If it's a book, call cleanup on the progress bar and also get the book prefs loaded.
     if([toView respondsToSelector:@selector(isReadyToShow)]) {
-      EBookView *ebv = (EBookView*)toView;     
+      EBookView *ebv = (EBookView*)toView;    
+	 [ebv applyTextDisplayPreferences]; 
       [ebv hidePleaseWait];
     }
     

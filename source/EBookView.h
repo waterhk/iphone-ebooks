@@ -100,7 +100,8 @@ typedef enum
 //-(void) afterRotate: (NSTimer*) timer;
 -(void)reflowBook;
 - (void)saveBookPosition;
-- (void)applyPreferences;
+- (void)applyTextDisplayPreferences;
+- (void)applyBarPreferences;
 
 - (void)showSlider;
 - (void)hideSlider;

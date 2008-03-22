@@ -507,7 +507,7 @@
    * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
    * and all is well. -ZSB 16-Mar-2008
    */
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyPreferences) userInfo:nil repeats:NO];
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyBarPreferences) userInfo:nil repeats:NO];
 }
 
 /**
@@ -815,14 +815,16 @@
 {
 	return YES;
 }
+- (void)applyTextDisplayPreferences {
+  [self setTextSize:[defaults textSize]];
+  [self invertText:[defaults inverted]];
+  [self setTextFont:[defaults textFont]];
+}
 
 /**
  * Apply various defaults to the given EBookView.
  */
-- (void)applyPreferences {
-  [self setTextSize:[defaults textSize]];
-  [self invertText:[defaults inverted]];
-  [self setTextFont:[defaults textFont]];
+- (void)applyBarPreferences {
 
   // FIXME: This toolbar/navbar stuff needs to react to hide/show
 	if (![defaults navbar]) {
