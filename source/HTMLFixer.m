@@ -3,6 +3,17 @@
  from some of the methods appear on compile.  They're probably unused.
  */
 
+#ifndef DESKTOP
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
+#import "BooksDefaultsController.h"
+#else
+#import <Cocoa/Cocoa.h>
+#define UIImage NSImage
+#define GSLog NSLog
+
+#endif
+
 #include "HTMLFixer.h"
 #import "AGRegex/AGRegex.h"
 
@@ -29,6 +40,8 @@ AGRegex *THCL_REGEX;
 
 // Assorted problematic block elements
 AGRegex *STYLE_REGEX;
+AGRegex *SCRIPT_REGEX;
+AGRegex *OBJECT_REGEX;
 
 @implementation HTMLFixer
 
@@ -53,8 +66,10 @@ AGRegex *STYLE_REGEX;
   THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]+>" options:AGRegexCaseInsensitive];
   
   // Assorted problematic block elements
-  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"<(?:style|script|object|embed)[^<]+</(?:style|script|object|embed)>" 
+  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"<(?:style|object|embed)[^<]+</(?:style|object|embed)>" 
                                                   options:AGRegexCaseInsensitive]; 
+  SCRIPT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*script[^>]*>.*?<[ \n\r]*/script[^>]*>" options:AGRegexCaseInsensitive];
+  OBJECT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*object[^>]*>.*?<[ \n\r]*/object[^>]*>" options:AGRegexCaseInsensitive];
 }
 
 /**
@@ -96,12 +111,23 @@ AGRegex *STYLE_REGEX;
   NSString *finalImgTag;
   
   // Try to read the URL off the filesystem to get its height and width.
-  UIImage *img = [UIImage imageAtPath:imgPath];
+  UIImage *img = 
+#ifndef DESKTOP
+  [UIImage imageAtPath:imgPath];
+#else
+  [[[UIImage alloc] initByReferencingFile:imgPath] autorelease];
+#endif
+  
   if (nil != img) {
 	  GSLog(@"%s: opened image at path %@", _cmd, imgPath);
+#ifndef DESKTOP    
     CGImageRef imgRef = [img imageRef];
     height = CGImageGetHeight(imgRef);
     width = CGImageGetWidth(imgRef);
+#else
+    height = [img size].height;
+    width = [img size].width;
+#endif
     //GSLog(@"image's width: %d height: %d", width, height);
     if (width <= MAXWIDTH) {
       *returnHeight = (int)height;
@@ -123,7 +149,13 @@ AGRegex *STYLE_REGEX;
   }
   
   GSLog(@"%s: returning str: %@", _cmd, finalImgTag);
-  return finalImgTag;
+  
+  if(height > 0 || width > 0) {
+    return finalImgTag;
+  } else {
+    return @"";
+  }
+  
 }
 
 /**
@@ -140,6 +172,34 @@ AGRegex *STYLE_REGEX;
   int i;
 
   NSString *basePath = [thePath stringByDeletingLastPathComponent];
+  
+  
+  // If we came from a simplified HTML format (Plucker), we don't need to do most of this stuff.
+  if(!p_imgOnly) {
+    // Kill any styles or other difficult block elements (do this instead of just the @imports)
+    i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:SCRIPT_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:OBJECT_REGEX withString:@"" inMutableString:theHTML];
+    // GSLog(@"Done-Replacing block tags (%d tags)", i);
+    
+    // Adjust tables if desired.
+    if(![HTMLFixer isRenderTables]) {
+      // Use regex's to replace all table related tags with reasonably small-screen equivalents.
+      // (Tip o' the hat to the Plucker folks for showing how to do it!)
+      i=0;
+      i += [HTMLFixer replaceRegex:TABLE_REGEX withString:[HTMLFixer tableStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TR_REGEX withString:[HTMLFixer trStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TD_REGEX withString:[HTMLFixer tdStartReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TH_REGEX withString:[HTMLFixer thStartReplacement] inMutableString:theHTML];
+      
+      i += [HTMLFixer replaceRegex:TABLECL_REGEX withString:[HTMLFixer tableEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TRCL_REGEX withString:[HTMLFixer trEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:TDCL_REGEX withString:[HTMLFixer tdEndReplacement] inMutableString:theHTML];
+      i += [HTMLFixer replaceRegex:THCL_REGEX withString:[HTMLFixer thEndReplacement] inMutableString:theHTML];
+      // GSLog(@"Done-Replacing table tags. (%d tags)", i);
+    }
+  }  
+  
   
   // Regex to find all img tags
   NSArray *imgTagMatches = [IMGTAG_REGEX findAllInString:theHTML];
@@ -160,30 +220,6 @@ AGRegex *STYLE_REGEX;
   //
   // There...  Image tags dealt with...
   //
-  
-  // If we came from a simplified HTML format (Plucker), we don't need to do most of this stuff.
-  if(!p_imgOnly) {
-    // Kill any styles or other difficult block elements (do this instead of just the @imports)
-    i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
-    // GSLog(@"Done-Replacing block tags (%d tags)", i);
-
-    // Adjust tables if desired.
-    if(![HTMLFixer isRenderTables]) {
-      // Use regex's to replace all table related tags with reasonably small-screen equivalents.
-      // (Tip o' the hat to the Plucker folks for showing how to do it!)
-      i=0;
-      i += [HTMLFixer replaceRegex:TABLE_REGEX withString:[HTMLFixer tableStartReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:TR_REGEX withString:[HTMLFixer trStartReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:TD_REGEX withString:[HTMLFixer tdStartReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:TH_REGEX withString:[HTMLFixer thStartReplacement] inMutableString:theHTML];
-      
-      i += [HTMLFixer replaceRegex:TABLECL_REGEX withString:[HTMLFixer tableEndReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:TRCL_REGEX withString:[HTMLFixer trEndReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:TDCL_REGEX withString:[HTMLFixer tdEndReplacement] inMutableString:theHTML];
-      i += [HTMLFixer replaceRegex:THCL_REGEX withString:[HTMLFixer thEndReplacement] inMutableString:theHTML];
-      // GSLog(@"Done-Replacing table tags. (%d tags)", i);
-    }
-  }  
   
   // Add a DIV object with a set height to make up for the images' height.
   // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
@@ -225,7 +261,11 @@ AGRegex *STYLE_REGEX;
  * Return NO if we need special table handling.
  */
 + (BOOL)isRenderTables {
+#ifndef DESKTOP
   return [[BooksDefaultsController sharedBooksDefaultsController] renderTables];
+#else
+  return NO;
+#endif
 }
 
 + (NSString*)tableStartReplacement {

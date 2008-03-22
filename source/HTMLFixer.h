@@ -1,9 +1,7 @@
 // HTMLFixer.h, for Books.app by Zachary Brewster-Geisz
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import "BooksDefaultsController.h"
+
 
 @class AGRegex;
 

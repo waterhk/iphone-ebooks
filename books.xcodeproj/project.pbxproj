@@ -109,6 +109,7 @@
 		F8214BB70D7A0B05006A195D /* UIViewHeartbeat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIViewHeartbeat.h; path = source/UIViewHeartbeat.h; sourceTree = "<group>"; };
 		F83E51C90D8304A0007EAEEF /* Dummy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dummy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83E51CB0D8304A0007EAEEF /* Dummy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Dummy-Info.plist"; sourceTree = "<group>"; };
+		F883B8770D9493EA00172A80 /* HTMLFixerTester.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTMLFixerTester.m; path = test/HTMLFixerTester.m; sourceTree = "<group>"; };
 		F8AFA2050D831EBF007DC91F /* AGRegex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AGRegex.h; path = source/AGRegex/AGRegex.h; sourceTree = "<group>"; };
 		F8AFA2060D831EBF007DC91F /* AGRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AGRegex.m; path = source/AGRegex/AGRegex.m; sourceTree = "<group>"; };
 		F8AFA2070D831EBF007DC91F /* chartables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chartables.c; path = source/AGRegex/chartables.c; sourceTree = "<group>"; };
@@ -180,6 +181,7 @@
 				F8214BA20D7A0B05006A195D /* palm */,
 				F8F3D4A20D87865A00089C63 /* FileNavigationItem.h */,
 				F8F3D4A30D87865A00089C63 /* FileNavigationItem.m */,
+				F883B8770D9493EA00172A80 /* HTMLFixerTester.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";

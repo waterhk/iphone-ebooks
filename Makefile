@@ -130,6 +130,8 @@ obj/%.o:    source/AGRegex/%.c
 	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
 	@rm -f obj/$*.d.tmp
 
+htmltest: test/HTMLFixerTester.m source/HTMLFixer.m
+	gcc -DDESKTOP=1 -framework CoreFoundation -framework AppKit -framework Cocoa -lobjc test/HTMLFixerTester.m source/AGRegex/*.c source/AGRegex/*.m source/HTMLFixer.m -o test/htmltest
 
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
