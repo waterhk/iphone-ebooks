@@ -577,7 +577,7 @@
 			if(nextFile != nil) {
         UIView *newView = [self showDocumentAtPath:nextFile];
 				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:nextFile view:newView];
-				[navBar replaceTopNavigationItem:tempItem];
+				[navBar replaceTopNavigationItem:tempItem transition: 1];
 				[tempItem release];
 			}
 		}
@@ -599,7 +599,7 @@
 			if(nil != prevFile) {
         UIView *newView = [self showDocumentAtPath:prevFile];
 				FileNavigationItem *tempItem = [[FileNavigationItem alloc] initWithDocument:prevFile view:newView];
-				[navBar replaceTopNavigationItem:tempItem];
+				[navBar replaceTopNavigationItem:tempItem transition: 2];
         [tempItem release];
 			}
 		}

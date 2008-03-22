@@ -51,7 +51,7 @@
 
 - (void)performSelectorOnItemViews:(SEL)p_sel withObject:(id)p_obj;
 
-- (void)replaceTopNavigationItem:(UINavigationItem*)p_item;
+- (void)replaceTopNavigationItem:(UINavigationItem*)p_item transition: (int)iTrans;
 - (void)setTransitionOffView:(UIView*)p_view;
 - (void)skipNextTransition;
 - (void)shouldReloadTopBrowser:(NSNotification *)notification;

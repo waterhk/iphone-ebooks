@@ -255,7 +255,7 @@
  * 
  * Intended for chapter navigation from one document to another.
  */
-- (void)replaceTopNavigationItem:(UINavigationItem*)p_item {
+- (void)replaceTopNavigationItem:(UINavigationItem*)p_item transition: (int)iTrans {
   [self disableAnimation];
   FileNavigationItem *poppedFi = (FileNavigationItem*)[[self topItem] retain];
   FileNavigationItem *newFi = (FileNavigationItem*)p_item;
@@ -264,7 +264,7 @@
   [super pushNavigationItem:newFi];
   [self enableAnimation];
   
-  [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[newFi view] destItem:newFi transition:1]];
+  [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[newFi view] destItem:newFi transition:iTrans]];
   
   [poppedFi release];
 }
