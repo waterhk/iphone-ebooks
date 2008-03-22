@@ -367,12 +367,12 @@
 	{
 		if (clicked.x - _MouseDownX > 100 )
 		{
-      [[self delegate] chapForward:nil];
+      [[self delegate] chapBack:nil];
 			lChangeChapter = YES;
 		}
 		else if (clicked.x - _MouseDownX < -100)
 		{
-      [[self delegate] chapBack:nil];
+      [[self delegate] chapForward:nil];
 			lChangeChapter = YES;
 		}
 	}
