@@ -25,12 +25,8 @@
 #define SHOULDDELETEFILE @"FileBrowserShouldDeleteFile"
 #define PATHTODELETE @"FileBrowserFullPathToDelete"
 
-@interface FileTable : UITable
-{
-  UIImage *_backgroundImage;
-  struct CGRect _backgroundImageDestRect, _backgroundImageSourceRect;
-
-    BOOL _allowDelete;
+@interface FileTable : UITable {
+  BOOL _allowDelete;
 }
 
 - (void)allowDelete:(BOOL)allow;
@@ -38,8 +34,7 @@
 @end
 
 
-@interface DeletableCell : UIImageAndTextTableCell 
-{
+@interface DeletableCell : UIImageAndTextTableCell {
     FileTable *_table;
     NSString *_path;
     NSMutableArray *_files; 

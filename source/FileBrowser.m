@@ -182,6 +182,7 @@ int numberCompare(id firstString, id secondString, void *context)
       break;
     }
   }
+  // FIXME: This is the cause of issue #89 I think.
   if (underscoreFound) //avoid MutableString overhead if possible
   {
     //Here's a lovely little kludge to make Baen Books' HTML
@@ -337,32 +338,31 @@ int numberCompare(id firstString, id secondString, void *context)
           [_files objectAtIndex: theRow + 1]];
 }
 
+/**
+ * Triggered by notification from the FilTable.  Deletes the file
+ * and updates the table datasource to match.
+ */
 - (void)shouldDeleteFileFromCell:(NSNotification *)aNotification {
-  BOOL isDir = NO;
   DeletableCell *theCell = (DeletableCell *)[aNotification object];
   NSString *path = [theCell path];
-  //  GSLog(@"Cell path: %@", path);
-  if ([_files containsObject:[path lastPathComponent]])
-    //FIXME:This could cause side effects in the rare case where a
-    //FileBrowser contains cells with the same name!!!!
-  {
-    //      GSLog(@"_files contains %@", [path lastPathComponent]);
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir)
-    {
+  BOOL isDir = [(NSNumber*)[[aNotification userInfo] objectForKey:@"wasDirectory"] boolValue];
+  
+  if([_files containsObject:[path lastPathComponent]]) {
+    // FIXME:This could cause side effects in the rare case where a
+    // FileBrowser contains cells with the same name!!!!
+    
+    // Clean up settings for the file/directory
+    if(isDir) {
       [defaults removePerFileDataForDirectory:path];
-    }
-    else
+    } else {
       [defaults removePerFileDataForFile:path];
-    //      GSLog(@"_files before: %@", _files);
-    BOOL success = [[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
-    if (success)
-    {
-      [_files removeObject:[path lastPathComponent]];
-      _rowCount--;
-      //[_table reloadData]; //erg...
-      //	  GSLog(@"_files after: %@", _files);
     }
   }
+  
+  // Remove it from the list
+  [_files removeObject:[path lastPathComponent]];
+  _rowCount--;
+  // FIXME: Need a reloadData here?
 }
 
 @end

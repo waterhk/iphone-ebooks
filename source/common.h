@@ -46,6 +46,7 @@
 #define TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION @"toolbarDefaultsChanged"
 
 #define WEBSITE_URL_STRING @"http://iphoneebooks.googlecode.com/"
+#define PERMISSION_HELP_URL_STRING @"http://code.google.com/p/iphoneebooks/wiki/Troubleshooting113"
 
 #endif
 
