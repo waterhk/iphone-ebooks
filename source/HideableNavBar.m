@@ -168,6 +168,7 @@
     // Do the transition        
     [[self delegate] setNavForItem:destItem];
     if(m_bSkipNextTransition) {
+      m_bSkipNextTransition = NO;
       [_transView transition:0 toView:toView];
       [fromView removeFromSuperview];
     } else {
