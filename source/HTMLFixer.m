@@ -173,7 +173,6 @@ AGRegex *OBJECT_REGEX;
 
   NSString *basePath = [thePath stringByDeletingLastPathComponent];
   
-  
   // If we came from a simplified HTML format (Plucker), we don't need to do most of this stuff.
   if(!p_imgOnly) {
     // Kill any styles or other difficult block elements (do this instead of just the @imports)
@@ -197,6 +196,40 @@ AGRegex *OBJECT_REGEX;
       i += [HTMLFixer replaceRegex:TDCL_REGEX withString:[HTMLFixer tdEndReplacement] inMutableString:theHTML];
       i += [HTMLFixer replaceRegex:THCL_REGEX withString:[HTMLFixer thEndReplacement] inMutableString:theHTML];
       // GSLog(@"Done-Replacing table tags. (%d tags)", i);
+    }
+    
+    // Check for missing opening html & body tags
+    NSRange htmlRange = [theHTML rangeOfString:@"<html" options:NSCaseInsensitiveSearch];
+    BOOL hasHtml = (htmlRange.location == NSNotFound);
+    BOOL hasBody = ([theHTML rangeOfString:@"<body" options:NSCaseInsensitiveSearch].location == NSNotFound);
+            
+    if(!hasBody) {
+      if(!hasHtml) {
+        [theHTML insertString:@"<html><body>" atIndex:0];
+      } else {
+        // Ugh....  Has HTML but no BODY.  Do we really need to deal with garbage html like this?
+        // We'll assume the tag is <html> with no extra characters or attributed.  If that's not the case, 
+        // this will probably make a horrible mess of things.  There's only so much we can do with invalid HTML...
+        [theHTML insertString:@"<body>" atIndex:htmlRange.location+2]; // 1 for the close bracket we didn't search for above +  1 for the next char
+      }
+    } else if(!hasHtml) {
+      [theHTML insertString:@"<html>" atIndex:0];
+    }
+    
+    // Check for missing closing html & body tags
+    NSRange cHtmlRange = [theHTML rangeOfString:@"</html" options:NSCaseInsensitiveSearch];
+    BOOL hascBody = ([theHTML rangeOfString:@"</body" options:NSCaseInsensitiveSearch].location == NSNotFound);
+    BOOL hascHtml = (cHtmlRange.location == NSNotFound);
+    
+    if(!hascHtml) {
+      if(!hascBody) {
+        [theHTML appendString:@"</body></html>"];
+      } else {
+        [theHTML appendString:@"</html>"];
+      }
+    } else if(!hascBody) {
+      // It has an html but no body.
+      [theHTML insertString:@"</body>" atIndex:cHtmlRange.location];
     }
   }  
   
