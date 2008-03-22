@@ -200,8 +200,8 @@ AGRegex *OBJECT_REGEX;
     
     // Check for missing opening html & body tags
     NSRange htmlRange = [theHTML rangeOfString:@"<html" options:NSCaseInsensitiveSearch];
-    BOOL hasHtml = (htmlRange.location == NSNotFound);
-    BOOL hasBody = ([theHTML rangeOfString:@"<body" options:NSCaseInsensitiveSearch].location == NSNotFound);
+    BOOL hasHtml = !(htmlRange.location == NSNotFound);
+    BOOL hasBody = !([theHTML rangeOfString:@"<body" options:NSCaseInsensitiveSearch].location == NSNotFound);
             
     if(!hasBody) {
       if(!hasHtml) {
@@ -218,8 +218,8 @@ AGRegex *OBJECT_REGEX;
     
     // Check for missing closing html & body tags
     NSRange cHtmlRange = [theHTML rangeOfString:@"</html" options:NSCaseInsensitiveSearch];
-    BOOL hascBody = ([theHTML rangeOfString:@"</body" options:NSCaseInsensitiveSearch].location == NSNotFound);
-    BOOL hascHtml = (cHtmlRange.location == NSNotFound);
+    BOOL hascBody = !([theHTML rangeOfString:@"</body" options:NSCaseInsensitiveSearch].location == NSNotFound);
+    BOOL hascHtml = !(cHtmlRange.location == NSNotFound);
     
     if(!hascHtml) {
       if(!hascBody) {
@@ -254,15 +254,18 @@ AGRegex *OBJECT_REGEX;
   // There...  Image tags dealt with...
   //
   
+  NSRange cBodyRange = [theHTML rangeOfString:@"</body" options:NSCaseInsensitiveSearch];
+  
   // Add a DIV object with a set height to make up for the images' height.
   // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
   if(height > 0) {
     // GSLog(@"Inserting %d of filler height for images.", height);
-    [theHTML appendFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
+    NSString *sHeightFix = [NSString stringWithFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
+    [theHTML insertString:sHeightFix atIndex:cBodyRange.location];
   }
   
   // Fix for truncated files (usually caused by invalid HTML).
-  [theHTML appendString:@"<p>&nbsp;</p><p>&nbsp;</p>"];
+  [theHTML insertString:@"<p>&nbsp;</p><p>&nbsp;</p>" atIndex:cBodyRange.location];
 }
 
 /**
