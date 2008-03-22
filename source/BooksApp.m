@@ -444,8 +444,6 @@
       progView = [navBar topView];
     }
     
-    GSLog(@"TopView: %@", progView);
-    
     [ebv loadSetDocumentWithProgressOnView:progView];
     
     ret = ebv;
