@@ -42,7 +42,7 @@
     
     m_showingToolbars = NO;
     
-    float components[4] = { 0.0, 0.0, 0.0, 0.0 };
+    float components[4] = { 0.0, 0.0, 0.0, 0.75 };
     CGColorRef transparent = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
     [self setBackgroundColor:transparent];
     
@@ -132,6 +132,10 @@
  * Set the image and frame.
  */
 - (void)showImage:(NSString*)p_path inFrame:(struct CGRect)p_frame scaleAspect:(BOOL)p_aspect {
+  
+  // Images don't exactly have subchapters, but this is what we need to do to get the "read" indicator to work.
+  [[BooksDefaultsController sharedBooksDefaultsController] setLastSubchapter:0 forFile:p_path];
+  
   struct CGSize size = p_frame.size;
   
   UIImage *img = [UIImage imageAtPath:p_path];
