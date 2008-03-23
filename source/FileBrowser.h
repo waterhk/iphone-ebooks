@@ -40,6 +40,7 @@
 int numberCompare(id, id, void *);
 
 - (id)initWithFrame:(CGRect)rect;
+- (void)setEnabled:(BOOL)p_enabled;
 - (NSString *)path;
 - (void)setPath: (NSString *)path;
 - (void)reloadData;

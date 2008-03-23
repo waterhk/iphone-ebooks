@@ -40,6 +40,8 @@
 		[_table setDelegate: self];
 		[_table setDataSource: self];
 		[_table allowDelete:YES];
+    [_table setAllowSelectionDuringRowDeletion:NO];
+    
 		_extensions = [[NSMutableArray alloc] init];
 		_files = [[NSMutableArray alloc] init];
 		_rowCount = 0;
@@ -68,6 +70,17 @@
     
 	}
 	return self;
+}
+
+/**
+ * Enable or disable interaction with the table.
+ */
+- (void)setEnabled:(BOOL)p_enabled {
+  if(p_enabled) {
+    [_table _enableInteraction];
+  } else {
+    [_table _disableInteraction];
+  }
 }
 
 /**

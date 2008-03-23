@@ -395,6 +395,9 @@
  * Show the please wait / progress spinner view.
  */
 - (void)showPleaseWait {
+  FileBrowser *topB = [navBar topBrowser];
+  [topB setEnabled:NO];
+  
   if(m_progressIndicator == nil) {
     // We might already be showing the progressHUD if this is startup.
     // Don't show it again if it's already there.
@@ -430,6 +433,9 @@
   [m_progressIndicator removeFromSuperview];
   [m_progressIndicator release];
   m_progressIndicator = nil;
+  
+  FileBrowser *topB = [navBar topBrowser];
+  [topB setEnabled:YES];
 }
 
 /**
