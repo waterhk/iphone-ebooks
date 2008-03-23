@@ -36,11 +36,15 @@ AGRegex *TRCL_REGEX;
 AGRegex *TDCL_REGEX;
 AGRegex *THCL_REGEX;
 
+AGRegex *STYLEATT_REGEX;
+AGRegex *EMBEDSRCATT_REGEX;
+
 // Assorted problematic block elements
 AGRegex *STYLE_REGEX;
 AGRegex *SCRIPT_REGEX;
 AGRegex *OBJECT_REGEX;
 AGRegex *FRAMESET_REGEX;
+AGRegex *LINK_REGEX;
 
 @implementation HTMLFixer
 
@@ -64,11 +68,16 @@ AGRegex *FRAMESET_REGEX;
   TDCL_REGEX = [[AGRegex alloc] initWithPattern:@"</td[^>]+>" options:AGRegexCaseInsensitive];
   THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]+>" options:AGRegexCaseInsensitive];
   
+  // Attributes that need to be removed
+  STYLEATT_REGEX = [[AGRegex alloc] initWithPattern:@"style=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
+  EMBEDSRCATT_REGEX = [[AGRegex alloc] initWithPattern:@"embedsrc=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
+  
   // Assorted problematic block elements
-  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"<(?:style|object|embed)[^<]+</(?:style|object|embed)>" options:AGRegexCaseInsensitive]; 
+  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*(?:style|object|embed)[^<]+<[ \n\r]*/(?:style|object|embed)[^>]*>" options:AGRegexCaseInsensitive]; 
   SCRIPT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*script[^>]*>.*?<[ \n\r]*/script[^>]*>" options:AGRegexCaseInsensitive];
   OBJECT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*object[^>]*>.*?<[ \n\r]*/object[^>]*>" options:AGRegexCaseInsensitive];
   FRAMESET_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*frameset[^>]*>.*?<[ \n\r]*/frameset[^>]*>" options:AGRegexCaseInsensitive];
+  LINK_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*link[^>]*>[^>]*>" options:AGRegexCaseInsensitive];
 }
 
 /**
@@ -176,9 +185,15 @@ AGRegex *FRAMESET_REGEX;
     i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:SCRIPT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:OBJECT_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:LINK_REGEX withString:@"" inMutableString:theHTML];
+    
     
     // FIXME: This kills any noframes section too, but it keeps Books from crashing.
     i += [HTMLFixer replaceRegex:FRAMESET_REGEX withString:@"" inMutableString:theHTML];
+    
+    // Kill style attributes - they can contain widths.
+    i += [HTMLFixer replaceRegex:STYLEATT_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:EMBEDSRCATT_REGEX withString:@"" inMutableString:theHTML];    
     
     // Adjust tables if desired.
     if(![HTMLFixer isRenderTables]) {
