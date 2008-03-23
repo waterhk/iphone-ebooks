@@ -93,7 +93,8 @@
     //reset the status as if the app had previously closed correctly
     [defaults setAppStatus:APPCLOSEDVALUE];
     //continue where we were before we opened the alert
-    [self applicationDidFinishLaunching:nil];
+    [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applicationDidFinishLaunching:) userInfo:nil repeats:NO];
+//    [self applicationDidFinishLaunching:nil];
   }
 }
 
@@ -173,6 +174,7 @@
 	  //bcc need error handling now.
 	  //should be able to revert to previously known to be ok prefs, lets just say we erase them
 	  [self alertCrashDetected];
+    return;
   }
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
