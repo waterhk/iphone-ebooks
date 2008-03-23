@@ -4,14 +4,12 @@
  */
 
 #ifndef DESKTOP
-#import <UIKit/UIKit.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import "BooksDefaultsController.h"
+# import <UIKit/UIKit.h>
+# import <CoreGraphics/CoreGraphics.h>
+# import "BooksDefaultsController.h"
 #else
-#import <Cocoa/Cocoa.h>
-#define UIImage NSImage
-#define GSLog NSLog
-
+# import <Cocoa/Cocoa.h>
+# define UIImage NSImage
 #endif
 
 #include "HTMLFixer.h"
@@ -84,17 +82,15 @@ AGRegex *OBJECT_REGEX;
   NSString *srcString = nil;
   unsigned int width = MAXWIDTH;
   unsigned int height = 0;
-  GSLog(@"%s: aStr:%@ path:%@", _cmd, aStr, path); 
+  
   // Use a regex to find the src attribute.
   AGRegexMatch *srcMatch = [SRC_REGEX findInString:aStr];
   if(srcMatch == nil || [srcMatch count] != 2) {
     // We didn't find a match, or we found MULTIPLE matches.  Just bail...
-	  GSLog(@"%s: src not found or found too many times", _cmd);
     return @"";
   } else {
     srcString = [srcMatch groupAtIndex:1];
     if([srcString length] == 0) {
-		GSLog(@"%s: path is empty", _cmd);
       return @"";
     }
   }
@@ -105,8 +101,6 @@ AGRegex *OBJECT_REGEX;
   NSString *imgPath = [[path stringByAppendingPathComponent:noPercentString] stringByStandardizingPath];
   NSURL *pathURL = [NSURL fileURLWithPath:imgPath];
   NSString *absoluteURLString = [pathURL absoluteString];
-  
-  //GSLog(@"absoluteURLString: %@", absoluteURLString);
   
   NSString *finalImgTag;
   
@@ -119,7 +113,6 @@ AGRegex *OBJECT_REGEX;
 #endif
   
   if (nil != img) {
-	  GSLog(@"%s: opened image at path %@", _cmd, imgPath);
 #ifndef DESKTOP    
     CGImageRef imgRef = [img imageRef];
     height = CGImageGetHeight(imgRef);
@@ -128,7 +121,6 @@ AGRegex *OBJECT_REGEX;
     height = [img size].height;
     width = [img size].width;
 #endif
-    //GSLog(@"image's width: %d height: %d", width, height);
     if (width <= MAXWIDTH) {
       *returnHeight = (int)height;
     } else {
@@ -138,18 +130,14 @@ AGRegex *OBJECT_REGEX;
       *returnHeight = (int)height;
     }
     
-    finalImgTag = [NSString stringWithFormat:@"<img src=\"%@\" height=\"%d\" width=\"%d\"/>", absoluteURLString, height, width];
-	GSLog(@"%s: finalImgTag:%@", _cmd, finalImgTag);
+    finalImgTag = [NSString stringWithFormat:@"<img src=\"%@\" width=\"%d\" height=\"%d\" />", absoluteURLString, width, height];
   } else {
-	  GSLog(@"%s: can't open image at path %@", _cmd, imgPath);
     // If we can't open the image, leave the tag as-is
     // It might be better to expunge the tag -- maybe it's an HTTP URL or something?  Not sure about this....
     finalImgTag = @"";
     *returnHeight = 0;
   }
-  
-  GSLog(@"%s: returning str: %@", _cmd, finalImgTag);
-  
+   
   if(height > 0 || width > 0) {
     return finalImgTag;
   } else {
@@ -258,11 +246,14 @@ AGRegex *OBJECT_REGEX;
   
   // Add a DIV object with a set height to make up for the images' height.
   // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
+  // They appear to have a clue now. -ZSB 23-Mar-2008
+  /*
   if(height > 0) {
     // GSLog(@"Inserting %d of filler height for images.", height);
     NSString *sHeightFix = [NSString stringWithFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
     [theHTML insertString:sHeightFix atIndex:cBodyRange.location];
   }
+   */
   
   // Fix for truncated files (usually caused by invalid HTML).
   [theHTML insertString:@"<p>&nbsp;</p><p>&nbsp;</p>" atIndex:cBodyRange.location];

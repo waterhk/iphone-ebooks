@@ -61,7 +61,7 @@
     m_navBarsVisible = NO;
     m_readyToShow = NO;
     
-    [self setAdjustForContentSizeChange:NO];
+    [self setAdjustForContentSizeChange:YES];
     [self setEditable:NO];
 
     [self setTextSize:16.0f];
@@ -588,26 +588,8 @@
 			m_bDocIsHtml = NO;
 		}
 	}
-
-  if(m_bDocIsHtml) {
-    if ([defaults subchapteringEnabled] == NO) {
-      [self setHTML:theHTML];
-      subchapter = 0;
-    } else {
-      [chapteredHTML setHTML:theHTML];
-      
-      if (theSubchapter < [chapteredHTML chapterCount])
-        subchapter = theSubchapter;
-      else
-        subchapter = 0;
-      
-      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-    }
-  } else {
-    [self setText:theHTML];
-  }
- 
-  m_readyToShow = YES;
+  
+  [self performSelectorOnMainThread:@selector(setContent:) withObject:theHTML waitUntilDone:NO];
   
 	/* This code doesn't work.  Sorry, charlie.
 	   if (1) //replace with a defaults check
@@ -621,6 +603,37 @@
 	//[ebookPath release];
 	}
 	*/
+}
+
+/**
+ * HTML Loading needs to happen on the main thread.  This callback fires from -loadBookWithPath:subchapter:.
+ *
+ * This function assumes that m_bDocIsHtml is set properly and access defaults for chapter settings.
+ * 
+ * @param p_content text or html content for the book.
+ */
+- (void)setContent:(NSString*)p_content {
+  if(m_bDocIsHtml) {
+    if ([defaults subchapteringEnabled] == NO) {
+      [self setHTML:p_content];
+      subchapter = 0;
+    } else {
+      int theSubchapter = [defaults lastSubchapterForFile:path];
+      
+      [chapteredHTML setHTML:p_content];
+      
+      if (theSubchapter < [chapteredHTML chapterCount])
+        subchapter = theSubchapter;
+      else
+        subchapter = 0;
+      
+      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+    }
+  } else {
+    [self setText:p_content];
+  }
+  
+  m_readyToShow = YES;
 }
 
 /**
