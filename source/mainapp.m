@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
   // Only log if the log file already exists!
   if([[NSFileManager defaultManager] fileExistsAtPath:OUT_FILE]) {
     // Do this here instead of in BooksApp so we can get the UIApp startup stuff too.
-    freopen([OUT_FILE fileSystemRepresentation], "a", stderr);
-    freopen([OUT_FILE fileSystemRepresentation], "a", stdout);
+    freopen([OUT_FILE fileSystemRepresentation], "w", stderr);
+    freopen([OUT_FILE fileSystemRepresentation], "w", stdout);
     
     //[[NSNotificationCenter defaultCenter] addObserver:[BooksApp class] selector:@selector(debugNotification:) name:nil object:nil];
   }

@@ -679,12 +679,31 @@
 /**
  * Return a pre-configured toolbar button with _up and _down images setup.
  */
-- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped {
+- (UINavBarButton *)toolbarButtonWithName:(NSString *)name rect:(struct CGRect)rect selector:(SEL)selector flipped:(BOOL)flipped 
+{
 	UINavBarButton	*button = [[UINavBarButton alloc] initWithFrame:rect];
 
 	[button setAutosizesToFit:NO];
+	if ([name isEqualToString: @"rotate"])
+	{
+		BOOL lLockState = [defaults isRotateLocked];
+			GSLog(@"%s: lockstate:%d", _cmd, lLockState);
+		if (lLockState)
+		{
+			[button setImage:[self navBarImage:@"rotate_lock_up" flipped:flipped] forState:0];
+			[button setImage:[self navBarImage:@"rotate_lock_down" flipped:flipped] forState:1];
+		}
+		else
+		{
+			[button setImage:[self navBarImage:@"rotate_up" flipped:flipped] forState:0];
+			[button setImage:[self navBarImage:@"rotate_down" flipped:flipped] forState:1];
+		}
+	}
+	else
+	{
 	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
 	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
+	}
 	[button setDrawContentsCentered:YES];
 	[button addTarget:self action:selector forEvents: (255)];
 	[button setNavBarButtonStyle:0];
@@ -787,7 +806,22 @@
  */
 - (void) rotateButtonCallback:(UINavBarButton*) button {
 	if (![button isPressed]) {
-		[defaults setRotateLocked:![defaults isRotateLocked]];
+		BOOL lLockState = [defaults isRotateLocked];
+		[defaults setRotateLocked:!lLockState];
+		lLockState = !lLockState;	//bcc prefs was change the line above
+		BOOL flipped = NO;
+			GSLog(@"%s: lockstate:%d", _cmd, lLockState);
+		if (lLockState)
+		{
+			[button setImage:[self navBarImage:@"rotate_lock_up" flipped:flipped] forState:0];
+			[button setImage:[self navBarImage:@"rotate_lock_down" flipped:flipped] forState:1];
+		}
+		else
+		{
+			[button setImage:[self navBarImage:@"rotate_up" flipped:flipped] forState:0];
+			[button setImage:[self navBarImage:@"rotate_down" flipped:flipped] forState:1];
+		}
+
 	}	
 }
 
@@ -842,13 +876,13 @@
 		CFShow(space);
 		if (bitmap)
 		{
-		//	GSLog(@"%s: bitmap=%d", _cmd, (int)bitmap);
+			//	GSLog(@"%s: bitmap=%d", _cmd, (int)bitmap);
 			// Scale it and set for return.
 			CGContextDrawImage( bitmap, CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT), imageRef );
 			ret = CGBitmapContextCreateImage( bitmap );
 			if (ret)
 			{
-			//	GSLog(@"%s: ret=%d", _cmd, (int)ret);
+				//	GSLog(@"%s: ret=%d", _cmd, (int)ret);
 				[defaults setStartupIsCover:YES];
 				bGotShot = YES;
 			}
