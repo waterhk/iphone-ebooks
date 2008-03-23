@@ -145,7 +145,9 @@
   m_scrollerSlider = nil;
   [self setupScrollerWithFrame:newB parent:scrollParent];
   [scrollParent release];
-    
+  
+//  [self scrollToPoint:lastVisibleRect.origin.y * (oldB.size.height / newB.size.height)];
+  
   // Setup to fix the visibleRect
   [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(afterRotate) userInfo:nil repeats:NO];
 }

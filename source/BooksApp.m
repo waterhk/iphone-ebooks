@@ -53,16 +53,7 @@
 + (void)debugNotification:(NSNotification*)p_note {
   GSLog(@"NOTIFICATION: %@", [p_note name]);
 }
-/*
-   enum {
-   kFACEUP = 0,
-   kNORMAL = 1,
-   kUPSIDEDOWN = 2,
-   kLANDL = 3,
-   kLANDR = 4,
-   kFACEDOWN = 6
-   };
-   */
+
 // Delegate methods
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button 
 {
@@ -77,6 +68,7 @@
 	//continue where we were before we opened the alert
 	[self applicationDidFinishLaunching:nil];
 }
+
 - (void)alertCrashDetected
 {
 	GSLog(@"%s .", _cmd);
@@ -132,12 +124,6 @@
   [prefsButton setFrame:CGRectMake(newSize.width - lMargin, 9, 40, 30)];
   [navBar addSubview:prefsButton];
   [prefsButton release];
-  
-  //[navBar setTransform:[p_note transformation]];
-  //[bottomNavBar setTransform:[p_note transformation]];
-  
-  //[self setupNavbar];
-  //[self setupToolbar];
   
   [self hideNavbars];
   
@@ -295,13 +281,6 @@
     NSString *curPath = [arPathComponents objectAtIndex:pathCount];
     // Add the current path to the toolbar
     [self fileBrowser:nil fileSelected:curPath];
-    
-    // Need to show the navbar after the last transition if we're not reading.
-    /*
-    if(!readingText && pathCount == 0) {
-      [navBar show];
-    }
-     */
   }
       
 	if(readingText) {
@@ -323,12 +302,6 @@
     FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile view:view];
     [navBar pushNavigationItem:fni];
     [fni release];
-    
-    // If reading, hide the nav bars (but they need to be added to the view first)
-    /*
-    [navBar hide];
-    [bottomNavBar hide];
-     */
   }
   
 	[arPathComponents release];
@@ -449,15 +422,17 @@
     ret = ebv;
   }  
   
-  if (isPicture) {
-    [navBar show];
-    [bottomNavBar hide];
-  } else {
-    [navBar hide];
-    if (![defaults toolbar]) {
-      [bottomNavBar show];
-    } else {
+  if(m_startupImage != nil) {
+    if (isPicture) {
+      [navBar show];
       [bottomNavBar hide];
+    } else {
+      [navBar hide];
+      if (![defaults toolbar]) {
+        [bottomNavBar show];
+      } else {
+        [bottomNavBar hide];
+      }
     }
   }
   
@@ -466,6 +441,7 @@
 
   return ret;
 }
+
 /**
  * Called by the file browser objects when a user taps a file or folder.  Calls to navBar
  * to push whatever was tapped.  Navbar will call us back to actually open something.
@@ -542,8 +518,6 @@
 		[(EBookView*)[navBar topView] invertText:textInverted];
 		[defaults setInverted:textInverted];
 		[self adjustStatusBarColorWithUiOrientation:-1];
-//		struct CGRect rect = [defaults fullScreenApplicationContentRect];
-//		[(EBookView*)[navBar topView] setFrame:rect];
 	}	
 }
 
@@ -625,17 +599,7 @@
     
     [navBar addSubview:prefsButton];
     
-  } else {
-    /*
-    [navBar retain];
-    [navBar removeFromSuperview];
-    [navBar setFrame:frameRect];
-    float lMargin = 45.0f;
-    [prefsButton setFrame:CGRectMake(frameRect.size.width-lMargin,9,40,30) ];
-    [mainView addSubview:navBar];
-    [navBar release];
-     */
-  }	
+  }
 }
 
 /**
