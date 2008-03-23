@@ -132,17 +132,72 @@
         );
 */
   [self setFrame:newB];
+  
+/*
+//  [[self _webView] _setParentTextView:self];
+  [[self _webView] _updateSize];
+  [[self _webView] _webCoreNeedsDisplay];
+  
+  struct CGSize cSize = [self contentSize];
+
+  
+  GSLog(@"Before: scroller things contentSize is %f x %f", [self contentSize].width, [self contentSize].height);
+
+  
   if(newB.size.width <= newB.size.height) {
     // Portrait mode
-    struct CGSize cSize = [[[self _webView] webView] contentSize];
-    cSize.width = newB.size.width;
-    [[[self _webView] webView] setContentSize:cSize];
+    GSLog(@"Triggered Landscape->Portrait mode hacks");
+    
+    struct CGRect cRect = [self bounds];
+    cRect.size.width = cSize.width;
+    cRect.size.height = cSize.height;
+    [[self _webView] setFrame:cRect];
+    
+    
+    //[[self _webView] _setDocumentScale:1.0f];
+
+    struct CGSize scSize = [self contentSize];
+    scSize.width = newB.size.width;
+    [self setContentSize:scSize];
+    
+//    struct CGSize cSize = [[[self _webView] webView] contentSize];
+//    cSize.width = newB.size.width;
+//    [[self _webView]  setContentSize:cSize];
 //    [[self _webView]setFrame:[self bounds]];
-//    [self recalculateStyle];
-//    [self updateWebViewObjects];
+    //[[[self _webView] webView] setFrame:[self bounds]];
+    
+    [self recalculateStyle];
+    [self updateWebViewObjects];
+    [self webViewDidChange:nil];
+    
+    //[[self _webView] layoutBeforeDraw];
+    //[[self _webView] layoutSubviews];
+    //[[self _webView] redrawScaledDocument];
+    
+    
+    //[[self _webView] setNeedsDisplay];
+    //[[self _webView] setViewportSize:[self bounds].size forDocumentTypes:INT_MAX];
+     
+//    [[self _webView] _WAKViewSizeDidChange:nil];
+  //  [[self _webView] _didMoveFromWindow:[UIWindow keyWindow] toWindow:[UIWindow keyWindow]];
+//    [[self _webView] _resetForNewPage];
+//    [self setEditable:YES];
+//    [self setMarginTop:0];
 //    [self webViewDidChange:nil];
-//    [self setNeedsDisplay];
+    //[((WAKView*)[self _webView]) setNeedsLayout:YES];
+    //[((WAKView*)[self _webView]) setScale:1.0f];
+//    [[self _webView] redrawScaledDocument];
+//    [[self _webView] redrawScaledDocument];
+    
+    [self setContentSize:cSize];
+    
+    [self setNeedsDisplay];
   }
+  
+  //[self setContentSize:cSize];
+  
+  GSLog(@"After: scroller thinks contentSize is %f x %f", [self contentSize].width, [self contentSize].height);
+
 //  
   //UIWebView *webV = [self _webView];
   
@@ -152,12 +207,19 @@
     //[[[webV webView] mainFrame] reload:nil];
 
   //[webV layoutBeforeDraw]; // This lets us get wider on landscape, but not smaller on portrait.
-/*
-  id html = [[self HTML] retain];
-  [self setHTML:html];
-  [html release];
  */
   
+//  if(newB.size.width <= newB.size.height) {
+  if(m_bDocIsHtml) {
+    id html = [[self HTML] retain];
+    [self setHTML:html];
+    [html release]; 
+  } else {
+    id txt = [[self text] retain];
+    [self setText:txt];
+    [txt release];
+  }
+ // }
   
   // Recreate the slider
   UIView *scrollParent = [[m_scrollerSlider superview] retain];
@@ -577,13 +639,11 @@
 
 	NSString *pathExt = [[thePath pathExtension] lowercaseString];
 
-	BOOL bIsHtml;
-
 	if ([pathExt isEqualToString:@"txt"]) {
-		bIsHtml = NO;
+		m_bDocIsHtml = NO;
 		theHTML = [self readTextFile:thePath];
 	} else if ([pathExt isEqualToString:@"html"] || [pathExt isEqualToString:@"htm"]) {
-		bIsHtml = YES;
+		m_bDocIsHtml = YES;
 		theHTML = [self readHtmlFile:thePath];
 	}	else if ([pathExt isEqualToString:@"pdb"]) { 
 		// This could be PalmDOC, Plucker, iSilo, Mobidoc, or something completely different
@@ -604,13 +664,13 @@
 		// Plain text types don't need to go through all the HTML conversion leg work.
 		if([@"htm" isEqualToString:retType]) {
 		  [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
-		  bIsHtml = YES;
+		  m_bDocIsHtml = YES;
 		} else {
-			bIsHtml = NO;
+			m_bDocIsHtml = NO;
 		}
 	}
 
-  if(bIsHtml) {
+  if(m_bDocIsHtml) {
     if ([defaults subchapteringEnabled] == NO) {
       [self setHTML:theHTML];
       subchapter = 0;

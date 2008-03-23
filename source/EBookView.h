@@ -54,6 +54,8 @@
   UIProgressHUD *m_progressIndicator;
   
   BOOL m_readyToShow;
+  
+  BOOL m_bDocIsHtml;
 }
 typedef enum
 {
