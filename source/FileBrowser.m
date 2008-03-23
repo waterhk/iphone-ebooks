@@ -153,32 +153,12 @@
   [_files removeAllObjects];
 
   if ([fileManager fileExistsAtPath: _path] == NO) {
-    CGRect rect = [[UIWindow keyWindow] bounds];
-    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
-    // NOTE: Leave this retained - we'll release it in the delegate callback.
-    [alertSheet setTitle:@"Folder not found"];
-    [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", _path]];
-    [alertSheet addButtonWithTitle:@"OK"];
-    [alertSheet setDelegate: self];
-    [alertSheet popupAlertAnimated:YES];
-		return;
-	}
-  
-  if(![fileManager isReadableFileAtPath:_path]) {
-    CGRect rect = [[UIWindow keyWindow] bounds];
-    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
-    // NOTE: Leave this retained - we'll release it in the delegate callback.
-    [alertSheet setTitle:@"Access Denied"];
-    [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", _path]];
-    [alertSheet addButtonWithTitle:@"OK"]; // buttonIdx == 1
-    [alertSheet addButtonWithTitle:@"Help (Wiki)"];
-    [alertSheet setDelegate: self];
-    [alertSheet popupAlertAnimated:YES];
+    // This should already be caught before we get here!
+    GSLog(@"Tried to open non-existant path: %", _path);
     return;
-  }
-  
+	}
+    
   NSArray *tempArray = [fileManager directoryContentsAtPath:_path];
-  GSLog(@"directoryContents returned: %@", tempArray);
  	
   [_files removeAllObjects];
     

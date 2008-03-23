@@ -67,23 +67,39 @@
 // Delegate methods
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button 
 {
-	GSLog(@"%s .", _cmd);
+  BOOL bIsWarningSheet = NO;
+  if([[[[sheet buttons] objectAtIndex:0] title] isEqualToString:@"OK"]) {
+    bIsWarningSheet = YES;
+  }
+  
 	[sheet dismissAnimated:YES];
-	if (1 == button)  //reset prefs
-	{
-		[defaults reset];
-	}
-	//reset the status as if the app had previously closed correctly
-	[defaults setAppStatus:APPCLOSEDVALUE];
-	//continue where we were before we opened the alert
-	[self applicationDidFinishLaunching:nil];
+  [sheet release];
+  
+  if(bIsWarningSheet) {
+    // It's a warning dialog for file access problems
+    if(button != 1) {
+      // Help button for warning dialog: show website.
+      NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
+      [UIApp openURL:websiteURL];
+    } 
+  } else {
+    // It's the "crashed last time" dialog
+    if (1 == button)  //reset prefs
+    {
+      [defaults reset];
+    }
+    
+    //reset the status as if the app had previously closed correctly
+    [defaults setAppStatus:APPCLOSEDVALUE];
+    //continue where we were before we opened the alert
+    [self applicationDidFinishLaunching:nil];
+  }
 }
 
 - (void)alertCrashDetected
 {
-	GSLog(@"%s .", _cmd);
 	GSLog(@"alertcrashdetected");
-	NSString *bodyText = @"Prior crash detected, do you want to reset preferences";
+	NSString *bodyText = @"Prior crash detected, do you want to reset preferences?";
 	CGRect rect = [[UIWindow keyWindow] bounds];
 	UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
 	[alertSheet setTitle:@"Error opening books"];
@@ -98,8 +114,6 @@
  * Hide the navbars before we rotate.
  */
 - (void)boundsWillChange:(BoundsChangedNotification*)p_note {
-	GSLog(@"BooksApp-boundsWillChange");
-
 	// Hide the nav bars.
 	[self hideNavbars];
 
@@ -119,8 +133,6 @@
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
-	GSLog(@"BooksApp-boundsDidChange");
-
 	[defaults setUiOrientation:[p_note uiOrientationCode]];
 
 	// Fix the transition view's size
@@ -152,7 +164,7 @@
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
   [defaults setRotateLocked:[defaults isRotateLocked]];
-  //bcc rect to change for rotate90
+  
   NSString *lAppStatus = [defaults appStatus];
   GSLog(@"appstatus: %@", lAppStatus);
   if ([lAppStatus isEqualToString: APPOPENVALUE])
@@ -510,9 +522,31 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if(![fileManager fileExistsAtPath:file isDirectory:&isDir]) {
-		GSLog(@"Tried to open non-existant path at %@", file);
+		CGRect rect = [[UIWindow keyWindow] bounds];
+    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+    // NOTE: Leave this retained - we'll release it in the delegate callback.
+    [alertSheet setTitle:@"Folder not found"];
+    [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", file]];
+    [alertSheet addButtonWithTitle:@"OK"];
+    [alertSheet setDelegate: self];
+    [alertSheet popupAlertAnimated:YES];
 		return;
 	}
+  
+  if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
+    CGRect rect = [[UIWindow keyWindow] bounds];
+    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+    // NOTE: Leave this retained - we'll release it in the delegate callback.
+    [alertSheet setTitle:@"Access Denied"];
+    [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", file]];
+    [alertSheet addButtonWithTitle:@"OK"]; // buttonIdx == 1
+    [alertSheet addButtonWithTitle:@"Help (Wiki)"];
+    [alertSheet setDelegate: self];
+    [alertSheet popupAlertAnimated:YES];
+    return;
+  } else {
+    GSLog(@"%@ appears readable.", file);
+  }
 
 	[defaults setLastBrowserPath:file];
 
