@@ -28,7 +28,7 @@
 
 @interface FileBrowser : UIView 
 {
-	NSMutableArray *_extensions;
+	NSArray *_extensions;
 	NSMutableArray *_files;
 	FileTable *_table;
 	NSString *_path;

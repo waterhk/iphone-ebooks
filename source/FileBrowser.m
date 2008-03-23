@@ -19,12 +19,12 @@
 #import <UIKit/UIImageAndTextTableCell.h>
 
 #import "FileBrowser.h"
+#import "HTMLFixer.h"
 #import "BoundsChangedNotification.h"
 #import "common.h"
 
 @implementation FileBrowser 
-- (id)initWithFrame:(struct CGRect)frame{
-  //	GSLog(@"FileBrowser initWithFrame x:%f, y:%f, w:%f, h:%f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+- (id)initWithFrame:(struct CGRect)frame {
 	if ((self == [super initWithFrame: frame]) != nil) {
 		UITableColumn *col = [[UITableColumn alloc]
                           initWithTitle: @"FileName"
@@ -34,6 +34,7 @@
 		float components[4] = {1.0, 1.0, 1.0, 1.0};
 		struct CGColor *white = CGColorCreate(CGColorSpaceCreateDeviceRGB(), components);
 		[self setBackgroundColor:white];
+    
 		_table = [[FileTable alloc] initWithFrame: CGRectMake(0, TOOLBAR_HEIGHT, frame.size.width, frame.size.height - TOOLBAR_HEIGHT)]; 
 		[_table addTableColumn: col];
 		[_table setSeparatorStyle: 1];
@@ -42,7 +43,6 @@
 		[_table allowDelete:YES];
     [_table setAllowSelectionDuringRowDeletion:NO];
     
-		_extensions = [[NSMutableArray alloc] init];
 		_files = [[NSMutableArray alloc] init];
 		_rowCount = 0;
     
@@ -120,44 +120,20 @@
 	[self reloadData];
 }
 
-- (void)addExtension: (NSString *)extension {
-	if (![_extensions containsObject:[extension lowercaseString]]) {
-		[_extensions addObject: [extension lowercaseString]];
-	}
-}
-
+/**
+ * Set the file extensions that will be displayed in this table.
+ */
 - (void)setExtensions: (NSArray *)extensions {
-	[_extensions setArray: extensions];
+	[extensions retain];
+  [_extensions release];
+  _extensions = extensions;
 }
 
 /**
- * Button delegate method for warning sheet on file access errors.
+ * Re-read the current path and setup data for the datasource accordingly.
  */
-- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
-	[sheet dismissAnimated:YES];
-  [sheet release];
-  
-  if(button == 1) {
-    // OK
-  } else {
-    // Help
-    NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
-		[UIApp openURL:websiteURL];
-  }
-}
-
 - (void)reloadData {
-  BOOL isDir;
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-  
-  [_files removeAllObjects];
-
-  if ([fileManager fileExistsAtPath: _path] == NO) {
-    // This should already be caught before we get here!
-    GSLog(@"Tried to open non-existant path: %", _path);
-    return;
-	}
-    
+	NSFileManager *fileManager = [NSFileManager defaultManager];    
   NSArray *tempArray = [fileManager directoryContentsAtPath:_path];
  	
   [_files removeAllObjects];
@@ -165,21 +141,20 @@
   NSString *file;
   NSEnumerator *dirEnum = [tempArray objectEnumerator];
 	while (file = [dirEnum nextObject]) {
-	  if ([file characterAtIndex:0] != (unichar)'.')
-    {  // Skip invisibles, like .DS_Store
-      BOOL isDir, unused;
-      unused = [fileManager fileExistsAtPath:[_path stringByAppendingPathComponent:file] isDirectory:&isDir];
-      if (isDir)
-      {
-        [_files addObject:file];  //Always add visible directories!
-      }
-      else if (_extensions != nil && [_extensions count] > 0) {
-        NSString *extension = [[file pathExtension] lowercaseString];
-        if ([_extensions containsObject: extension]) {
+	  if ([file characterAtIndex:0] != (unichar)'.') {
+      // Skip invisibles, like .DS_Store
+      BOOL isDir = NO;
+      if([fileManager fileExistsAtPath:[_path stringByAppendingPathComponent:file] isDirectory:&isDir]) {
+        if(isDir) {
+          [_files addObject:file];  //Always add visible directories!
+        } else if(_extensions != nil) {
+          NSString *extension = [[file pathExtension] lowercaseString];
+          if ([_extensions containsObject:extension]) {
+            [_files addObject: file];
+          }
+        } else {
           [_files addObject: file];
         }
-      } else {
-        [_files addObject: file];
       }
     }
  	}
@@ -189,60 +164,21 @@
 	[_table reloadData];
 }
 
-int numberCompare(id firstString, id secondString, void *context)
-{
-  int ret;
-  BOOL underscoreFound = NO;
-  BOOL firstFileIsPicture, secondFileIsPicture;
-  unsigned int i;
-  
+/**
+ * Custom comparator to sort images below document files.
+ */
+int numberCompare(id firstString, id secondString, void *context) {
   // Texts should always come before pictures in the list.
-  
-  NSString *firstExt = [[firstString pathExtension] lowercaseString];
-  NSString *secondExt = [[secondString pathExtension] lowercaseString];
-  firstFileIsPicture = ([firstExt isEqualToString:@"jpg"] ||
-                        [firstExt isEqualToString:@"png"] ||
-                        [firstExt isEqualToString:@"gif"]);
-  secondFileIsPicture = ([secondExt isEqualToString:@"jpg"] ||
-                         [secondExt isEqualToString:@"png"] ||
-                         [secondExt isEqualToString:@"gif"]);
-  if (firstFileIsPicture && !secondFileIsPicture)
+  BOOL firstFileIsPicture = [HTMLFixer isDocumentImage:firstString];
+  BOOL secondFileIsPicture = [HTMLFixer isDocumentImage:secondString];
+
+  if (firstFileIsPicture && !secondFileIsPicture) {
     return NSOrderedDescending;
-  if (!firstFileIsPicture && secondFileIsPicture)
+  } else if (!firstFileIsPicture && secondFileIsPicture) {
     return NSOrderedAscending;
-  
-  //Now, if the two items are both texts or both pictures.
-  //This for loop is here because rangeOfString: was segfaulting
-  for (i = ([firstString length]-1); i >= 0; i--)
-  {
-    if ([firstString characterAtIndex:i] == (unichar)'_')
-    {
-      //GSLog(@"underscore at index: %d", i);       
-      underscoreFound = YES;
-      break;
-    }
+  } else {
+    return [firstString compare:secondString options:(NSNumericSearch | NSCaseInsensitiveSearch)];
   }
-  // FIXME: This is the cause of issue #89 I think.
-  if (underscoreFound) //avoid MutableString overhead if possible
-  {
-    //Here's a lovely little kludge to make Baen Books' HTML
-    //filenames sort correctly.
-    unsigned int firstLength = [firstString length];
-    unsigned int secondLength = [secondString length];
-    NSMutableString *firstMutable = [[NSMutableString alloc] initWithString:firstString];
-    NSMutableString *secondMutable = [[NSMutableString alloc] initWithString:secondString];
-    [firstMutable replaceOccurrencesOfString:@"_" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, firstLength)];
-    [secondMutable replaceOccurrencesOfString:@"_" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, secondLength)];
-    
-    ret = [firstMutable compare:secondMutable options:(NSNumericSearch | NSCaseInsensitiveSearch)];
-    [firstMutable release];
-    [secondMutable release];
-  }
-  else
-  {
-    ret = [firstString compare:secondString options:(NSNumericSearch | NSCaseInsensitiveSearch)];
-  }
-  return ret;
 }
 
 
@@ -288,10 +224,10 @@ int numberCompare(id firstString, id secondString, void *context)
     }
   }
 	else if (![defaults dataExistsForFile:fullPath])
-	  //FIXME: It'd be great to have unread indicators for directories,
+  {
+    //FIXME: It'd be great to have unread indicators for directories,
 	  //a la podcast dirs & episodes.  For now, unread indicators only
 	  //apply for text/HTML files.
-  {
     [cell setTitle: [[_files objectAtIndex: row] stringByDeletingPathExtension]];
     UIImage *img = [UIImage applicationImageNamed:@"UnreadIndicator.png"];
     [cell setImage:img];
@@ -308,7 +244,6 @@ int numberCompare(id firstString, id secondString, void *context)
 }
 
 - (void)tableRowSelected:(NSNotification *)notification {
-  //GSLog(@"tableRowSelected!");
 	if( [_delegate respondsToSelector:@selector( fileBrowser:fileSelected: )] )
 		[_delegate fileBrowser:self fileSelected:[self selectedFile]];
 }
