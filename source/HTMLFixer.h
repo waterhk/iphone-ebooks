@@ -14,6 +14,7 @@
 + (int)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut;
 
 + (BOOL)isRenderTables;
++ (BOOL)isDocumentImage:(NSString*)p_path;
 
 + (NSString*)tableStartReplacement;
 + (NSString*)tdStartReplacement;

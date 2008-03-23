@@ -40,6 +40,7 @@ AGRegex *THCL_REGEX;
 AGRegex *STYLE_REGEX;
 AGRegex *SCRIPT_REGEX;
 AGRegex *OBJECT_REGEX;
+AGRegex *FRAMESET_REGEX;
 
 @implementation HTMLFixer
 
@@ -64,10 +65,18 @@ AGRegex *OBJECT_REGEX;
   THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]+>" options:AGRegexCaseInsensitive];
   
   // Assorted problematic block elements
-  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"<(?:style|object|embed)[^<]+</(?:style|object|embed)>" 
-                                                  options:AGRegexCaseInsensitive]; 
+  STYLE_REGEX = [[AGRegex alloc] initWithPattern:@"<(?:style|object|embed)[^<]+</(?:style|object|embed)>" options:AGRegexCaseInsensitive]; 
   SCRIPT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*script[^>]*>.*?<[ \n\r]*/script[^>]*>" options:AGRegexCaseInsensitive];
   OBJECT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*object[^>]*>.*?<[ \n\r]*/object[^>]*>" options:AGRegexCaseInsensitive];
+  FRAMESET_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*frameset[^>]*>.*?<[ \n\r]*/frameset[^>]*>" options:AGRegexCaseInsensitive];
+}
+
+/**
+ * Return YES if the image at the given path is an image.
+ */
++ (BOOL)isDocumentImage:(NSString*)p_path {
+	NSString *ext = [p_path pathExtension];
+	return ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
 }
 
 /**
@@ -167,7 +176,9 @@ AGRegex *OBJECT_REGEX;
     i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:SCRIPT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:OBJECT_REGEX withString:@"" inMutableString:theHTML];
-    // GSLog(@"Done-Replacing block tags (%d tags)", i);
+    
+    // FIXME: This kills any noframes section too, but it keeps Books from crashing.
+    i += [HTMLFixer replaceRegex:FRAMESET_REGEX withString:@"" inMutableString:theHTML];
     
     // Adjust tables if desired.
     if(![HTMLFixer isRenderTables]) {
@@ -243,17 +254,6 @@ AGRegex *OBJECT_REGEX;
   //
   
   NSRange cBodyRange = [theHTML rangeOfString:@"</body" options:NSCaseInsensitiveSearch];
-  
-  // Add a DIV object with a set height to make up for the images' height.
-  // Is this still necessary under the newer firmwares, or does UIWebView have a clue now?
-  // They appear to have a clue now. -ZSB 23-Mar-2008
-  /*
-  if(height > 0) {
-    // GSLog(@"Inserting %d of filler height for images.", height);
-    NSString *sHeightFix = [NSString stringWithFormat:@"<div style=\"height: %dpx;\">&nbsp;<br/>&nbsp;<br/>&nbsp;<br/><br/>", height];
-    [theHTML insertString:sHeightFix atIndex:cBodyRange.location];
-  }
-   */
   
   // Fix for truncated files (usually caused by invalid HTML).
   [theHTML insertString:@"<p>&nbsp;</p><p>&nbsp;</p>" atIndex:cBodyRange.location];
