@@ -20,6 +20,7 @@
 
 #import "FileBrowser.h"
 #import "BoundsChangedNotification.h"
+#import "common.h"
 
 @implementation FileBrowser 
 - (id)initWithFrame:(struct CGRect)frame{
@@ -72,8 +73,12 @@
 /**
  * Notification when our bounds change - we probably rotated.
  */
-- (void)boundsDidChange:(BoundsChangedNotification*)p_note {  
-  [self setFrame:[p_note newBounds]];
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+  struct CGRect newRect = [p_note newBounds];
+  newRect.origin.y += TOOLBAR_HEIGHT;
+  newRect.size.height -= TOOLBAR_HEIGHT;
+  
+  [self setFrame:newRect];
   [_table setFrame:[self bounds]];
 }
 
