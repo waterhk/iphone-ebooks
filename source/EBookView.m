@@ -656,9 +656,12 @@
  * logic from readTextFile:.
  */
 - (NSMutableString *)readHtmlFile:(NSString *)thePath {
-										   NSMutableString *originalText = [self readTextFile:thePath];
-										   [HTMLFixer fixHTMLString:originalText filePath:thePath imageOnly:NO];
-										   return originalText;
+  GSLog(@"Reading HTML file at %@", thePath);
+  NSMutableString *originalText = [self readTextFile:thePath];
+  GSLog(@"Fixing HTML file at %@", thePath);
+  [HTMLFixer fixHTMLString:originalText filePath:thePath imageOnly:NO];
+  GSLog(@"File fixed at %@", thePath);
+  return originalText;
 }
 
 #pragma mark File Reading Methods END
