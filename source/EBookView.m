@@ -125,91 +125,9 @@
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
   struct CGRect oldB = [p_note oldBounds];
   struct CGRect newB = [p_note newBounds];
-  /*
-  GSLog(@"EBookView changing from %f x %f @ (%f, %f) to %f x %f @ (%f, %f)",
-        oldB.size.width, oldB.size.height, oldB.origin.x, oldB.origin.y,
-        newB.size.width, newB.size.height, newB.origin.x, newB.origin.y
-        );
-*/
+  
   [self setFrame:newB];
   
-/*
-//  [[self _webView] _setParentTextView:self];
-  [[self _webView] _updateSize];
-  [[self _webView] _webCoreNeedsDisplay];
-  
-  struct CGSize cSize = [self contentSize];
-
-  
-  GSLog(@"Before: scroller things contentSize is %f x %f", [self contentSize].width, [self contentSize].height);
-
-  
-  if(newB.size.width <= newB.size.height) {
-    // Portrait mode
-    GSLog(@"Triggered Landscape->Portrait mode hacks");
-    
-    struct CGRect cRect = [self bounds];
-    cRect.size.width = cSize.width;
-    cRect.size.height = cSize.height;
-    [[self _webView] setFrame:cRect];
-    
-    
-    //[[self _webView] _setDocumentScale:1.0f];
-
-    struct CGSize scSize = [self contentSize];
-    scSize.width = newB.size.width;
-    [self setContentSize:scSize];
-    
-//    struct CGSize cSize = [[[self _webView] webView] contentSize];
-//    cSize.width = newB.size.width;
-//    [[self _webView]  setContentSize:cSize];
-//    [[self _webView]setFrame:[self bounds]];
-    //[[[self _webView] webView] setFrame:[self bounds]];
-    
-    [self recalculateStyle];
-    [self updateWebViewObjects];
-    [self webViewDidChange:nil];
-    
-    //[[self _webView] layoutBeforeDraw];
-    //[[self _webView] layoutSubviews];
-    //[[self _webView] redrawScaledDocument];
-    
-    
-    //[[self _webView] setNeedsDisplay];
-    //[[self _webView] setViewportSize:[self bounds].size forDocumentTypes:INT_MAX];
-     
-//    [[self _webView] _WAKViewSizeDidChange:nil];
-  //  [[self _webView] _didMoveFromWindow:[UIWindow keyWindow] toWindow:[UIWindow keyWindow]];
-//    [[self _webView] _resetForNewPage];
-//    [self setEditable:YES];
-//    [self setMarginTop:0];
-//    [self webViewDidChange:nil];
-    //[((WAKView*)[self _webView]) setNeedsLayout:YES];
-    //[((WAKView*)[self _webView]) setScale:1.0f];
-//    [[self _webView] redrawScaledDocument];
-//    [[self _webView] redrawScaledDocument];
-    
-    [self setContentSize:cSize];
-    
-    [self setNeedsDisplay];
-  }
-  
-  //[self setContentSize:cSize];
-  
-  GSLog(@"After: scroller thinks contentSize is %f x %f", [self contentSize].width, [self contentSize].height);
-
-//  
-  //UIWebView *webV = [self _webView];
-  
-//  struct CGRect innerRect = [[webV webView] frame];
-  //innerRect.size.width = newB.size.width;
-  
-    //[[[webV webView] mainFrame] reload:nil];
-
-  //[webV layoutBeforeDraw]; // This lets us get wider on landscape, but not smaller on portrait.
- */
-  
-//  if(newB.size.width <= newB.size.height) {
   if(m_bDocIsHtml) {
     id html = [[self HTML] retain];
     [self setHTML:html];
@@ -219,7 +137,6 @@
     [self setText:txt];
     [txt release];
   }
- // }
   
   // Recreate the slider
   UIView *scrollParent = [[m_scrollerSlider superview] retain];
