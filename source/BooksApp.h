@@ -72,7 +72,6 @@ enum PreferenceAnimationType;
 + (void)debugNotification:(NSNotification*)p_note;
 - (void)showPleaseWait;
 - (void)hidePleaseWait;
-- (BOOL)isDocumentImage:(NSString*)p_path;
 - (UIView*)showDocumentAtPath:(NSString*)p_path;
 - (void)fileBrowser: (FileBrowser *)browser fileSelected:(NSString *)file;
 - (void)setNavForItem:(FileNavigationItem*)p_item;

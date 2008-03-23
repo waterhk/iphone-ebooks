@@ -40,6 +40,7 @@
 #import "HideableNavBar.h"
 #import "common.h"
 #import "BoundsChangedNotification.h"
+#import "HTMLFixer.h"
 
 #import "BooksApp.h"
 #import "PreferencesController.h"
@@ -452,18 +453,10 @@
 }
 
 /**
- * Return YES if the image at the given path is an image.
- */
-- (BOOL)isDocumentImage:(NSString*)p_path {
-	NSString *ext = [p_path pathExtension];
-	return ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"png"] || [ext isEqualToString:@"gif"]);
-}
-
-/**
  * Show the document and return the view used to allow for transition.
  */
 - (UIView*)showDocumentAtPath:(NSString*)p_path {
-  BOOL isPicture = [self isDocumentImage:p_path];
+  BOOL isPicture = [HTMLFixer isDocumentImage:p_path];
   UIView *ret = nil;
 
   [defaults setLastBrowserPath:p_path];
@@ -544,8 +537,6 @@
     [alertSheet setDelegate: self];
     [alertSheet popupAlertAnimated:YES];
     return;
-  } else {
-    GSLog(@"%@ appears readable.", file);
   }
 
 	[defaults setLastBrowserPath:file];
@@ -553,9 +544,9 @@
 	FileNavigationItem *tempItem;
 	if (isDir) {
 		FileBrowser *browser = [[FileBrowser alloc] initWithFrame:[mainView bounds]];
+		[browser setExtensions:m_documentExtensions]; // Important: Set extensions before path!
 		[browser setPath:file];
 		[browser setDelegate:self];
-		[browser setExtensions:m_documentExtensions];
 		tempItem = [[FileNavigationItem alloc] initWithPath:file browser:browser];
 		[browser release];
 	} else {
