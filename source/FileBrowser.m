@@ -110,12 +110,13 @@
 }
 
 - (NSString *)path {
-	return [[_path retain] autorelease];
+	return _path;
 }
 
 - (void)setPath: (NSString *)path {
+  [path retain];
 	[_path release];
-	_path = [path copy];
+	_path = path;
 	[self reloadData];
 }
 
@@ -129,17 +130,58 @@
 	[_extensions setArray: extensions];
 }
 
+/**
+ * Button delegate method for warning sheet on file access errors.
+ */
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
+	[sheet dismissAnimated:YES];
+  [sheet release];
+  
+  if(button == 1) {
+    // OK
+  } else {
+    // Help
+    NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
+		[UIApp openURL:websiteURL];
+  }
+}
+
 - (void)reloadData {
   BOOL isDir;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSArray *tempArray = [[NSArray alloc] initWithArray:[fileManager directoryContentsAtPath:_path]];
   
-	if ([fileManager fileExistsAtPath: _path] == NO) {
+  [_files removeAllObjects];
+
+  if ([fileManager fileExistsAtPath: _path] == NO) {
+    CGRect rect = [[UIWindow keyWindow] bounds];
+    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+    // NOTE: Leave this retained - we'll release it in the delegate callback.
+    [alertSheet setTitle:@"Folder not found"];
+    [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", _path]];
+    [alertSheet addButtonWithTitle:@"OK"];
+    [alertSheet setDelegate: self];
+    [alertSheet popupAlertAnimated:YES];
 		return;
 	}
   
-	[_files removeAllObjects];
+  if(![fileManager isReadableFileAtPath:_path]) {
+    CGRect rect = [[UIWindow keyWindow] bounds];
+    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+    // NOTE: Leave this retained - we'll release it in the delegate callback.
+    [alertSheet setTitle:@"Access Denied"];
+    [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", _path]];
+    [alertSheet addButtonWithTitle:@"OK"]; // buttonIdx == 1
+    [alertSheet addButtonWithTitle:@"Help (Wiki)"];
+    [alertSheet setDelegate: self];
+    [alertSheet popupAlertAnimated:YES];
+    return;
+  }
   
+  NSArray *tempArray = [fileManager directoryContentsAtPath:_path];
+  GSLog(@"directoryContents returned: %@", tempArray);
+ 	
+  [_files removeAllObjects];
+    
   NSString *file;
   NSEnumerator *dirEnum = [tempArray objectEnumerator];
 	while (file = [dirEnum nextObject]) {
@@ -165,7 +207,6 @@
 	[_files sortUsingFunction:&numberCompare context:NULL];
 	_rowCount = [_files count];
 	[_table reloadData];
-	[tempArray release];
 }
 
 int numberCompare(id firstString, id secondString, void *context)
