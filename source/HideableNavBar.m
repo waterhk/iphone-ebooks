@@ -162,12 +162,13 @@
   
   // If it's a book and it's not ready, then we're not ready.  Otherwise, we are.
   if([toView respondsToSelector:@selector(isReadyToShow)]) {
+    // Note: Use the selector here instead of the class type.  Maybe the other view types will get ready indicators at some point.
     EBookView *ebv = (EBookView*)toView;
     bCanShow = [ebv isReadyToShow];
   } 
   
   if(bCanShow) {
-    // Do the transition        
+    // Do the transition
     [[self delegate] setNavForItem:destItem];
     if(m_bSkipNextTransition) {
       m_bSkipNextTransition = NO;
