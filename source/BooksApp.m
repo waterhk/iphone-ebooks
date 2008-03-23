@@ -354,6 +354,7 @@
 	} else {
 		// Set nav bars for a file browser
 		[bottomNavBar hide];
+    [navBar show];
 	}
 }
 
