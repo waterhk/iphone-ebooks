@@ -836,7 +836,8 @@
   const float SHOT_WIDTH  = 320;
   const float SHOT_HEIGHT = 460;
   const int BYTES_PER_PIXEL = 4;
-  
+
+  BOOL bGotShot = NO;
   if([sCover length] > 0) {
     UIImage *img = [UIImage imageAtPath:sCover];
     struct CGImage *imageRef = [img imageRef];
@@ -850,20 +851,26 @@
     CGColorSpaceRef space = CGImageGetColorSpace(imageRef);
     if(CGColorSpaceGetModel(space) == 5) {
       GSLog(@"Indexed color image detected");
+      
+    } else {
+      CGContextRef bitmap = CGBitmapContextCreate(
+        NULL, SHOT_WIDTH, SHOT_HEIGHT, CGImageGetBitsPerComponent(imageRef),
+        BYTES_PER_PIXEL*SHOT_WIDTH, space, CGImageGetBitmapInfo(imageRef)
+      );
+      
+      // Scale it and set for return.
+      CGContextDrawImage( bitmap, CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT), imageRef );
+      ret = CGBitmapContextCreateImage( bitmap );
+      CGContextRelease(bitmap);
+      [defaults setStartupIsCover:YES];
+      bGotShot = YES;
     }
-    
-    CGContextRef bitmap = CGBitmapContextCreate(
-      NULL, SHOT_WIDTH, SHOT_HEIGHT, CGImageGetBitsPerComponent(imageRef),
-      BYTES_PER_PIXEL*SHOT_WIDTH, space, CGImageGetBitmapInfo(imageRef)
-    );
-    
-    // Scale it and set for return.
-    CGContextDrawImage( bitmap, CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT), imageRef );
-    ret = CGBitmapContextCreateImage( bitmap );
-    CGContextRelease(bitmap);
-    [defaults setStartupIsCover:YES];
-  } else {
+  }
+  
+  if(!bGotShot) {
     // Take a screen shot of the top view.
+    // We want this if we don't have a cover OR if the cover scaling failed and we're falling back to 
+    // a screen shot.
     ret = [mainView createSnapshotWithRect:CGRectMake(0, 0, SHOT_WIDTH, SHOT_HEIGHT)];
     CGImageRetain(ret);
     [defaults setStartupIsCover:NO];
