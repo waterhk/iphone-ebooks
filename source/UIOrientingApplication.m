@@ -143,8 +143,13 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
       
       [key setBounds: m_fullKeyBounds];
 			[UIView endAnimations];
-		} else [key setBounds: m_fullKeyBounds];
-	} else [self setStatusBarMode: [self statusBarMode] orientation: (degrees == 180) ? 0 : degrees duration:0.0f];
+		} else {
+      [key setBounds: m_fullKeyBounds];
+    }
+	} else {
+    [self setStatusBarMode: [self statusBarMode] orientation: (degrees == 180) ? 0 : degrees duration:0.0f];
+  }
+  
 	orientationDegrees = degrees;
 	[super setUIOrientation: o_code];
 }

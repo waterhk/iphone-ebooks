@@ -153,7 +153,6 @@
 
 	UIView *topView = [navBar topView];
 	if([topView isKindOfClass:[FileBrowser class]]) {
-		// FIXME: This selector is a kludgey choice, but it works.
     [NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
 	}
 

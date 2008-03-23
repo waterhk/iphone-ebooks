@@ -50,6 +50,9 @@
     
 		defaults = [BooksDefaultsController sharedBooksDefaultsController];
 		[self addSubview: _table];
+    
+    [self setAutoresizesSubviews:NO];
+    
 		[[NSNotificationCenter defaultCenter] 
      addObserver:self
      selector:@selector(shouldDeleteFileFromCell:)
@@ -87,12 +90,9 @@
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
-  struct CGRect newRect = [p_note newBounds];
-  newRect.origin.y += TOOLBAR_HEIGHT;
-  newRect.size.height -= TOOLBAR_HEIGHT;
-  
+  struct CGRect newRect = [p_note newBounds];  
   [self setFrame:newRect];
-  [_table setFrame:[self bounds]];
+  [_table setFrame:CGRectMake(0, TOOLBAR_HEIGHT, newRect.size.width, newRect.size.height - TOOLBAR_HEIGHT)];
 }
 
 /**
