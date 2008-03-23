@@ -143,7 +143,6 @@
  */
 - (void)transitionViewsWhenReady:(id)p_tmr {
   NSDictionary *info;
-  //GSLog(@"%s: %d", _cmd); 
   // We can either get a timer w/ user info, or just pass the dictionary directly.
   if([p_tmr respondsToSelector:@selector(userInfo)]) {
     NSTimer *tmr = (NSTimer*)p_tmr;
@@ -299,7 +298,6 @@
  * Hide this navigation bar.
  */
 - (void)hide {
-  GSLog(@"%@ nav hide", (isTop ? @"Top" : @"Bottom"));
 	if (!hidden) {	
     struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
@@ -325,7 +323,6 @@
  * Show the navigation bar.
  */
 - (void)show {
-  GSLog(@"%@ nav show", (isTop ? @"Top" : @"Bottom"));
 	if (hidden) {
     struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
