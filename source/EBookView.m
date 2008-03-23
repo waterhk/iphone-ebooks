@@ -589,6 +589,7 @@
 		}
 	}
   
+  // Need to set the text or html on the main thread, otherwise images don't load
   [self performSelectorOnMainThread:@selector(setContent:) withObject:theHTML waitUntilDone:NO];
   
 	/* This code doesn't work.  Sorry, charlie.
