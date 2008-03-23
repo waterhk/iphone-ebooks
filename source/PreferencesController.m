@@ -28,7 +28,7 @@
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note
 {
-	GSLog(@"%s: [%s:%d]", _cmd, __FILE__, __LINE__);
+	//GSLog(@"%s: [%s:%d]", _cmd, __FILE__, __LINE__);
 	contentRect = [[[UIWindow keyWindow] contentView] bounds];
 	CGRect oldFrame = [preferencesView frame];
 	struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
@@ -110,7 +110,7 @@
 	contentRect = [[[UIWindow keyWindow] contentView] bounds];
 	if (nil == preferencesView)
 	{
-		GSLog(@"%s: [%s:%d] contentRect: x:%f, y:%f, w:%f, h:%f", _cmd, __FILE__, __LINE__, contentRect.origin.x, contentRect.origin.y, contentRect.size.width, contentRect.size.height);
+		//GSLog(@"%s: [%s:%d] contentRect: x:%f, y:%f, w:%f, h:%f", _cmd, __FILE__, __LINE__, contentRect.origin.x, contentRect.origin.y, contentRect.size.width, contentRect.size.height);
 
 		//Bcc the view is created bellow the screen so as to smoothly appear
 		struct CGRect offscreenRect = CGRectMake(contentRect.origin.x,
@@ -158,7 +158,7 @@
 			   selector:@selector(shouldTransitionBackToPrefsView:)
 				   name:NEWFONTSELECTED
 				 object:nil];
-		GSLog(@"%s: [%s:%d] registerign for notification change", _cmd, __FILE__, __LINE__);
+		//GSLog(@"%s: [%s:%d] registerign for notification change", _cmd, __FILE__, __LINE__);
 		[[NSNotificationCenter defaultCenter] 
 			addObserver:self
 			   selector:@selector(boundsDidChange:)
@@ -375,7 +375,7 @@
 
 	invNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL invertedZones = [defaults inverseNavZone];
-	[invNavZonePreferenceCell setTitle:@"invert nav zone"];
+	[invNavZonePreferenceCell setTitle:@"Reverse Direction"];
 	UISwitchControl *invNavZoneSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[invNavZoneSwitchControl setValue:invertedZones];
 	[invNavZoneSwitchControl setAlternateColors:YES];
@@ -383,7 +383,7 @@
 
 	enlargeNavZonePreferenceCell = [[UIPreferencesControlTableCell alloc] initWithFrame:CGRectMake(0.0f, 0.0f, contentRect.size.width, PREFS_TABLE_ROW_HEIGHT)];
 	BOOL enlargedZones = [defaults enlargeNavZone];
-	[enlargeNavZonePreferenceCell setTitle:@"enlarge nav zone"];
+	[enlargeNavZonePreferenceCell setTitle:@"Enlarge Tap Zone"];
 	UISwitchControl *enlargeNavZoneSwitchControl = [[[UISwitchControl alloc] initWithFrame:CGRectMake(contentRect.size.width - 114.0, 11.0f, 114.0f, PREFS_TABLE_ROW_HEIGHT)] autorelease];
 	[enlargeNavZoneSwitchControl setValue:enlargedZones];
 	[enlargeNavZoneSwitchControl setAlternateColors:YES];
@@ -450,7 +450,7 @@
 - (void)tableRowSelected:(NSNotification *)notification 
 {
 	int i = [preferencesTable selectedRow];
-	GSLog(@"Selected!Prefs! Row %d!", i);
+	//GSLog(@"Selected!Prefs! Row %d!", i);
 	switch (i)
 	{
 		case 1: // font
@@ -460,14 +460,14 @@
 			[self makeEncodingPrefsPane];
 			break;
 		case 21: // mark current book as new
-			GSLog(@"mark current book as new");
+			//GSLog(@"mark current book as new");
 			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
 			[markCurrentBookAsNewCell setEnabled:NO];
 			[markCurrentBookAsNewCell setSelected:NO withFade:YES];
 			break;
 		case 22: // mark all books as new
-			GSLog(@"mark all book as new");
+			//GSLog(@"mark all book as new");
 			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 			[defaults removePerFileData];
 			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
@@ -558,18 +558,20 @@
 			font = [NSString stringWithString:@"TimesNewRoman"];
 			break;	
 	}
-	GSLog(@"%s Font selected is %@", _cmd, font);
+	//GSLog(@"%s Font selected is %@", _cmd, font);
 	return font;
 }
 
 
 // Delegate methods
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
+  /*
 	if (sheet == alertSheet) {
 		GSLog(@"%s", _cmd);
 	} else {
 		GSLog(@"%s", _cmd);
 	}
+   */
 	[sheet dismissAnimated:YES];
 	if (1 == button)
 	{
@@ -599,7 +601,7 @@
 
 - (int)numberOfGroupsInPreferencesTable:(id)preferencesTable
 {
-	return 6;
+	return 7;
 }
 
 - (int)preferencesTable:(id)preferencesTable numberOfRowsInGroup:(int)group
@@ -614,15 +616,18 @@
 			rowCount = 2;
 			break;
 		case 2: //toolbar options
-			rowCount = 5;
+			rowCount = 3;
 			break;
-		case 3: //file import
+    case 3: // tap-scroll options
+      rowCount = 2;
+      break;
+		case 4: //file import
 			rowCount = 4;
 			break;
-		case 4: //tap-scroll speed
+		case 5: //tap-scroll speed
 			rowCount = 1;
 			break;
-		case 5: //new books
+		case 6: //new books
 			rowCount = 2;
 			break;
 	}
@@ -631,7 +636,7 @@
 
 - (id)preferencesTable:(id)preferencesTable cellForRow:(int)row inGroup:(int)group
 {
-	GSLog(@"PreferencesController: cellForRow:%d inGroup:%d", row, group);
+	//GSLog(@"PreferencesController: cellForRow:%d inGroup:%d", row, group);
 	id prefCell = nil;
 	switch (group)
 	{
@@ -672,15 +677,19 @@
 				case 2:
 					prefCell = flippedToolbarPreferenceCell;
 					break;
-				case 3:
-					prefCell = invNavZonePreferenceCell;
-					break;
-				case 4:
-					prefCell = enlargeNavZonePreferenceCell;
-					break;
 			}
 			break;
-		case 3:
+    case 3:
+      switch(row) {
+        case 0:
+					prefCell = invNavZonePreferenceCell;
+					break;
+				case 1:
+					prefCell = enlargeNavZonePreferenceCell;
+					break;
+      }
+      break;
+		case 4:
 			switch (row)
 			{
 				case 0:
@@ -697,7 +706,7 @@
 					break;
 			}
 			break;
-		case 4:
+		case 5:
 			switch (row)
 			{
 				case 0:
@@ -705,7 +714,7 @@
 					break;
 			}
 			break;
-		case 5:
+		case 6:
 			switch (row)
 			{
 				case 0:
@@ -734,13 +743,16 @@
 		case 2:
 			title = @"Toolbar Options";
 			break;
-		case 3:
+    case 3:
+      title = @"Tap to Scroll Options";
+      break;
+		case 4:
 			title = @"File Import";
 			break;
-		case 4:
+		case 5:
 			title = @"Tap-Scroll Speed";
 			break;
-		case 5:
+		case 6:
 			title = @"New Books";
 			break;
 	}
@@ -754,25 +766,22 @@
 
 
 
-	- (void)dealloc {
-		if (preferencesView != nil)
-		{
-			[[NSNotificationCenter defaultCenter] removeObserver:self];
-			[preferencesView release];
-			[appView release];
-			[preferencesTable release];
-			[translate release];
-			[animator release];
-			[transitionView release];
-			[navigationBar release];
-		}
-		if (encodingPrefs != nil)
-			[encodingPrefs release];
-		if (fontChoicePrefs != nil)
-			[fontChoicePrefs release];
-		[defaults release];
-		[controller release];
-		[super dealloc];
-	}
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  
+  [preferencesView release];
+  [appView release];
+  [preferencesTable release];
+  [translate release];
+  [animator release];
+  [transitionView release];
+  [navigationBar release];
+  [encodingPrefs release];
+  [fontChoicePrefs release];
+  [defaults release];
+  [controller release];
+  
+  [super dealloc];
+}
 
 @end
