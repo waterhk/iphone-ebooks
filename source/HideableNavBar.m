@@ -35,6 +35,7 @@
 #import "FileBrowser.h"
 #import "EBookView.h"
 #import "FileNavigationItem.h"
+#import "BooksApp.h"
 
 #define READY_FROM_VIEW @"fromView"
 #define READY_TO_VIEW @"toView"
@@ -44,18 +45,17 @@
 //#include "dolog.h"
 @implementation HideableNavBar
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv {
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv asTop:(BOOL)p_top {
 	[super initWithFrame:rect];
   
 	defaults = [BooksDefaultsController sharedBooksDefaultsController];
-	// Try to infer whether the navbar is on the top or bottom of the screen.
-	if (rect.origin.y == 0.0f)
-		isTop = YES;
-	else
-		isTop = NO;
+	isTop = p_top;
+		
 	translate =  [[UITransformAnimation alloc] initWithTarget: self];
 	animator = [[UIAnimator alloc] init];
-	hidden = NO;
+  
+  hidden = YES;
+	
 	_transView = nil;
   m_bSkipNextTransition = NO;
 
@@ -64,7 +64,9 @@
   [self setDelegate:p_del];
   
   _transView = [p_tv retain];
-
+  
+  m_bFirstShowing = YES;
+  
   // Only need file handling stuff on the top nav bar
   if(isTop) {
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -176,11 +178,15 @@
     }
     
     // If it's a book, call cleanup on the progress bar and also get the book prefs loaded.
-	if([toView isKindOfClass:[EBookView class]]) {
-      EBookView *ebv = (EBookView*)toView;    
-	  [ebv applyTextDisplayPreferences]; 
-      [ebv hidePleaseWait];
+    if([toView isKindOfClass:[EBookView class]]) {
+      [((EBookView*)toView) applyTextDisplayPreferences]; 
     }
+  
+    // Clear the progress HUD:
+    [((BooksApp*)[self delegate]) hidePleaseWait];
+    
+    // FIXME: Now that BooksApp deals with the progress bar, we may be able to get rid of this timer for cleanupStartupImage
+    // and just move it to hidePleaseWait instead.
     
     // Cleanup the startup image later so we can still use it to transition.
     [NSTimer scheduledTimerWithTimeInterval:0.5f target:[self delegate] selector:@selector(cleanupStartupImage) userInfo:nil repeats:NO];
@@ -288,6 +294,7 @@
  * Hide this navigation bar.
  */
 - (void)hide {
+  GSLog(@"%@ nav hide", (isTop ? @"Top" : @"Bottom"));
 	if (!hidden) {	
     struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
@@ -313,6 +320,7 @@
  * Show the navigation bar.
  */
 - (void)show {
+  GSLog(@"%@ nav show", (isTop ? @"Top" : @"Bottom"));
 	if (hidden) {
     struct CGRect hardwareRect = [[self superview] bounds];
     struct CGAffineTransform startTrans;
@@ -321,32 +329,28 @@
 		if (isTop) {
       //CHANGED: The "68" comes from SummerBoard--if we just use 48, 
       // the top nav bar shows under the status bar.
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      if(!m_bFirstShowing) {
+        [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      } else {
+        [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.origin.y, hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      }
       startTrans = CGAffineTransformMakeTranslation(0,-(TOOLBAR_FUDGE+TOOLBAR_HEIGHT));
       endTrans = CGAffineTransformIdentity;
     } else {
-      [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      if(!m_bFirstShowing) {
+        [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height, hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      } else {
+        [self setFrame:CGRectMake(hardwareRect.origin.x, hardwareRect.size.height - TOOLBAR_HEIGHT, hardwareRect.size.width, TOOLBAR_HEIGHT)];
+      }
       startTrans = CGAffineTransformMakeTranslation(0, TOOLBAR_HEIGHT);
       endTrans = CGAffineTransformMake(1,0,0,1,0,0);
     }
-    
     [translate setStartTransform:startTrans];
     [translate setEndTransform:endTrans];
     [animator addAnimation:translate withDuration:.25 start:YES];
-    
 		hidden = NO;
+    m_bFirstShowing = NO;
 	}
-}
-
-/**
- * Toggle the visibility of the nav bar.
- */
-- (void)toggle {
-	if (hidden) {
-		[self show];
-	} else {
-    [self hide];
-  }
 }
 
 /**

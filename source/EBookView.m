@@ -23,8 +23,6 @@
 #import <UIKit/CDStructures.h>
 #import <UIKit/UISliderControl.h>
 #import <UIKit/UIAlphaAnimation.h>
-#import <UIKit/UIProgressIndicator.h>
-#import <UIKit/UIProgressHUD.h>
 #import <UIKit/UIView-Gestures.h>
 #import <UIKit/UITextView.h>
 #import <UIKit/UITextTraitsClientProtocol.h>
@@ -453,45 +451,6 @@
 }
 
 /**
- * Show the please wait / progress spinner view.
- */
-- (void)showPleaseWait:(UIView*)p_parent {
-  const int PROG_SIZE = 32;
-  const int progHeight = 70;
-  const int progWidth = 64;
-  struct CGRect progRect = CGRectMake([p_parent bounds].size.width - (progWidth + 10),
-                                      [p_parent bounds].size.height - (progHeight + 10),
-                                      progWidth, 
-                                      progHeight);
-  
-  m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
-//  [[m_progressIndicator _progressIndicator] setFrame:CGRectMake(0, 0, PROG_SIZE, PROG_SIZE)];
-  [m_progressIndicator setFontSize:6];
-  [m_progressIndicator setText:@" "];
-  [p_parent addSubview:m_progressIndicator];
-  [m_progressIndicator show:YES];
-}
-
-/**
- * Hide the please wait / progress spinner view, apply book preferences.
- */
-- (void)hidePleaseWait {
-  [m_progressIndicator show:NO];
-  [m_progressIndicator removeFromSuperview];
-  [m_progressIndicator release];
-  m_progressIndicator = nil;
-  
-  /*
-   * This is a kludge for some weird threading issues.  We need to perform this from a timer on the main
-   * thread in order for the scroll point to be updated.  I've tried numerous combinations of the various
-   * thread and perform selector methods.  This seems to be the only one that works.  The navbar will
-   * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
-   * and all is well. -ZSB 16-Mar-2008
-   */
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyBarPreferences) userInfo:nil repeats:NO];
-}
-
-/**
  * Return YES if content is loaded and we're ready to transition.
  */
 - (BOOL)isReadyToShow {
@@ -512,18 +471,6 @@
   subchapter = p_chap;
   
   [defaults setLastSubchapter:p_chap forFile:p_path]; // Update 'read' indicator
-}
-
-/**
- * Actually load the book set with setBookPath:subchapter:.
- */
-- (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView {
-  if(p_progView != nil) {
-    [self showPleaseWait:p_progView];
-    [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:self withObject:nil];
-  } else {
-    [self loadBookWithPath:path subchapter:subchapter];
-  }
 }
 
 /**
@@ -794,24 +741,23 @@
   return [self setSubchapter:subchapter-1];
 }
 
-/*
-- (int)  swipe: ( int)num  withEvent: ( struct __GSEvent *)event
-{
-	if (num == kUIViewSwipeLeft)
-		GSLog(@"SwipeLeft");
-	if (num == kUIViewSwipeRight)
-		GSLog(@"SwipeRight");
-}
-*/
-
-- (BOOL)canHandleSwipes
-{
+- (BOOL)canHandleSwipes {
 	return YES;
 }
+
 - (void)applyTextDisplayPreferences {
   [self setTextSize:[defaults textSize]];
   [self invertText:[defaults inverted]];
   [self setTextFont:[defaults textFont]];
+  
+  /*
+   * This is a kludge for some weird threading issues.  We need to perform this from a timer on the main
+   * thread in order for the scroll point to be updated.  I've tried numerous combinations of the various
+   * thread and perform selector methods.  This seems to be the only one that works.  The navbar will
+   * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
+   * and all is well. -ZSB 16-Mar-2008
+   */
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyBarPreferences) userInfo:nil repeats:NO];
 }
 
 /**
@@ -867,9 +813,6 @@
   
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
  
-  [m_progressIndicator removeFromSuperview];  
-  [m_progressIndicator release];
-
   [m_scrollerSlider removeFromSuperview];
   [m_scrollerSlider release];
 	

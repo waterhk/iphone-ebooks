@@ -22,8 +22,6 @@
 @class UIView;
 @class UITextView;
 @class UISliderControl;
-@class UIProgressIndicator;
-@class UIProgressHUD;
 
 @class ChapteredHTML;
 @class BooksDefaultsController;
@@ -51,8 +49,6 @@
 
   BOOL m_navBarsVisible;
   
-  UIProgressHUD *m_progressIndicator;
-  
   BOOL m_readyToShow;
   
   BOOL m_bDocIsHtml;
@@ -69,7 +65,7 @@ typedef enum
 - (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par;
 - (void)setupScrollerWithFrame:(struct CGRect)p_bounds parent:(UIView*)p_par;
 - (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap;
-- (void)loadSetDocumentWithProgressOnView:(UIView*)p_progView;
+- (void)reallyLoadBook;
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int) theSubchapter;
 
 - (NSMutableString *)readHtmlFile:(NSString *)thePath;
@@ -77,9 +73,6 @@ typedef enum
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data;
 
 - (BOOL)isReadyToShow;
-
-- (void)showPleaseWait:(UIView*)p_parent;
-- (void)hidePleaseWait;
 
 - (NSString *)currentPath;
 - (void)embiggenText;

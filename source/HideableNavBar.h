@@ -40,13 +40,13 @@
   
   UIView *m_offViewKludge;
   BOOL m_bSkipNextTransition;
+  BOOL m_bFirstShowing;
 }
 
-- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv;
+- (HideableNavBar *)initWithFrame:(struct CGRect)rect delegate:(id)p_del transitionView:(UITransitionView*)p_tv asTop:(BOOL)p_top;
 
 - (void)hide;
 - (void)show;
-- (void)toggle;
 - (BOOL)hidden;
 
 - (void)performSelectorOnItemViews:(SEL)p_sel withObject:(id)p_obj;

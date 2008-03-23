@@ -32,6 +32,7 @@
 #import <UIKit/UINavigationItem.h>
 #import <UIKit/UINavBarButton.h>
 #import <UIKit/UIFontChooser.h>
+#import <UIKit/UIProgressHUD.h>
 #import "EBookView.h"
 #import "EBookImageView.h"
 #import "FileBrowser.h"
@@ -108,7 +109,7 @@
 
 	// Hide the slider.
 	UIView *topView = [navBar topView];
-	if([topView respondsToSelector:@selector(hideSlider)]) {
+	if([topView isKindOfClass:[EBookView class]]) {
 		EBookView *ebv = (EBookView*)topView;
 		[ebv hideSlider];
 	}
@@ -137,9 +138,9 @@
 	[self hideNavbars];
 
 	UIView *topView = [navBar topView];
-	if([topView respondsToSelector:@selector(numberOfRowsInTable:)]) {
-						  // FIXME: This selector is a kludgey choice, but it works.
-	[NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
+	if([topView isKindOfClass:[FileBrowser class]]) {
+		// FIXME: This selector is a kludgey choice, but it works.
+    [NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
 	}
 
 	[self adjustStatusBarColorWithUiOrientation:[p_note uiOrientationCode]];
@@ -147,7 +148,7 @@
 
 - (void)applicationDidFinishLaunching:(id)unused {  
   m_documentExtensions = [[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil] retain];
-
+  
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
   [defaults setRotateLocked:[defaults isRotateLocked]];
@@ -223,8 +224,12 @@
 											   name:[BoundsChangedNotification willChangeName]
 											 object:nil];
 
+  [self showPleaseWait];
+  
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
-  // fire almost immediately.
+  // fire almost immediately.  Doing this with performSelectorOnMainThread: doesn't actually get back
+  // to the runloop - we're already running in the main thread, so it just executes it directoy instead
+  // of inserting a message for later.
   [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
 }
 
@@ -254,6 +259,8 @@
 
 	[self setupNavbar];
 	[self setupToolbar];
+  
+  [self hideNavbars];
 
 	// Get last browser path and start loading files
 	NSString *lastBrowserPath;
@@ -284,7 +291,9 @@
 			 */
 			[self transitionNavbarAnimation];
 			[navBar setTransitionOffView:m_startupImage];
-			[navBar skipNextTransition];
+			if(![defaults startupIsCover]) {
+        [navBar skipNextTransition];
+      }
 		}
 
 		NSString *curPath = [arPathComponents objectAtIndex:pathCount];
@@ -315,7 +324,7 @@
 	}
 
 	[arPathComponents release];
-
+  
 	[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
 }
 
@@ -383,12 +392,44 @@
 }
 
 /**
- * Toggle visibility of the navigation bars.
+ * Show the please wait / progress spinner view.
  */
-- (void)toggleNavbars {
-	GSLog(@"%s .", _cmd);
-	[navBar toggle];
-	[bottomNavBar toggle];
+- (void)showPleaseWait {
+  if(m_progressIndicator == nil) {
+    // We might already be showing the progressHUD if this is startup.
+    // Don't show it again if it's already there.
+    
+    UIView *progView;
+    if(m_startupImage != nil) {
+      progView = m_startupImage;
+    } else {
+      progView = [navBar topView];
+    }
+    
+    const int PROG_SIZE = 32;
+    const int progHeight = 70;
+    const int progWidth = 64;
+    struct CGRect progRect = CGRectMake([progView bounds].size.width - (progWidth + 10),
+                                        [progView bounds].size.height - (progHeight + 10),
+                                        progWidth, 
+                                        progHeight);
+    
+    m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
+    [m_progressIndicator setFontSize:6];
+    [m_progressIndicator setText:@" "];
+    [progView addSubview:m_progressIndicator];
+    [m_progressIndicator show:YES];
+  }
+}
+
+/**
+ * Hide the please wait / progress spinner view, apply book preferences.
+ */
+- (void)hidePleaseWait {
+  [m_progressIndicator show:NO];
+  [m_progressIndicator removeFromSuperview];
+  [m_progressIndicator release];
+  m_progressIndicator = nil;
 }
 
 /**
@@ -427,7 +468,8 @@
 		  progView = [navBar topView];
 	  }
 
-	  [ebv loadSetDocumentWithProgressOnView:progView];
+    [self showPleaseWait];
+    [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:ebv withObject:nil];
 
 	  ret = ebv;
   }  
@@ -493,7 +535,7 @@
 
 	// Need to kick the top-most EBookView.  It doesn't clean up on its own at shutdown.
 	UIView *top = [navBar topView];
-	if([top respondsToSelector:@selector(saveBookPosition)]) {
+	if([top isKindOfClass:[EBookView class]]) {
 		EBookView *eb = (EBookView*)top;
 		[eb saveBookPosition];
 	}
@@ -592,23 +634,19 @@
  * Create or reconfigure the nav bar (file browser).
  */
 - (void)setupNavbar {
-	struct CGRect rect = [mainView bounds];
-	struct CGRect frameRect = CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, TOOLBAR_HEIGHT);
-
-	// Remove any old navBar
+	// Only create the navbar once.
 	if(navBar == nil) {    
-		navBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView];
+    struct CGRect rect = [mainView bounds];
+    struct CGRect frameRect = CGRectMake(rect.origin.x, rect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), rect.size.width, TOOLBAR_HEIGHT);
+    
+		navBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView asTop:YES];
 		[navBar hideButtons];
 
 		float lMargin = 45.0f;
 		[navBar setRightMargin:lMargin];
-		//position the prefsButton in the margin
-		//for some reason cannot click on the button when it is there
 		prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(rect.size.width-lMargin,9,40,30) selector:@selector(showPrefs:) flipped:NO];
-		//prefsButton = [self toolbarButtonWithName:@"prefs" rect:CGRectMake(275,9,40,30) selector:@selector(showPrefs:) flipped:NO];
 
 		[navBar addSubview:prefsButton];
-
 	}
 }
 
@@ -616,63 +654,64 @@
  * Create or reconfigure the tool bar (reader).
  */
 - (void)setupToolbar {
-	struct CGRect rect = [mainView bounds];
-	struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height - TOOLBAR_HEIGHT, rect.size.width, TOOLBAR_HEIGHT);
-
+  // Only create the navbar once
 	if(bottomNavBar == nil) {
-		// FIXME: This will never redraw the nav bars after prefs.
-	bottomNavBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView];
-	[bottomNavBar setBarStyle:0];
+    struct CGRect rect = [mainView bounds];
+    struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height, rect.size.width, TOOLBAR_HEIGHT);
+    
+		// FIXME: Will this ever redraw the nav bars after prefs?
+    bottomNavBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView asTop:NO];
+    [bottomNavBar setBarStyle:0];
 
-	// Put the buttons back
-	if ([defaults flipped]) {
-		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
-		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
+    // Put the buttons back
+    if ([defaults flipped]) {
+      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
+      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
 
-		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
-		} else {
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
-		}
+      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      } else {
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
+      }
 
-		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
-		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-	} else {
-		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
-		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
+      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+    } else {
+      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
+      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
 
-		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
-		} else {
-			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
-			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
-		}
+      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      } else {
+        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
+        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
+      }
 
-		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
-		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
-	}
+      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
+      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
+    }
 
-	[bottomNavBar addSubview:minusButton];
-	[bottomNavBar addSubview:plusButton];
-	[bottomNavBar addSubview:invertButton];
-	[bottomNavBar addSubview:rotateButton];
+    [bottomNavBar addSubview:minusButton];
+    [bottomNavBar addSubview:plusButton];
+    [bottomNavBar addSubview:invertButton];
+    [bottomNavBar addSubview:rotateButton];
 
-	if ([defaults chapternav]) {
-		[bottomNavBar addSubview:leftButton];
-		[bottomNavBar addSubview:rightButton];
-	}
+    if ([defaults chapternav]) {
+      [bottomNavBar addSubview:leftButton];
+      [bottomNavBar addSubview:rightButton];
+    }
 
-	if ([defaults pagenav]) {	
-		[bottomNavBar addSubview:upButton];
-		[bottomNavBar addSubview:downButton];
-	}
+    if ([defaults pagenav]) {	
+      [bottomNavBar addSubview:upButton];
+      [bottomNavBar addSubview:downButton];
+    }
 	}
 }
 
@@ -789,6 +828,10 @@
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+  
+  [m_progressIndicator removeFromSuperview];  
+  [m_progressIndicator release];
+
 	[navBar release];
 	[bottomNavBar release];
 	[mainView release];
