@@ -141,7 +141,7 @@
  */
 - (void)transitionViewsWhenReady:(id)p_tmr {
   NSDictionary *info;
-  
+  //GSLog(@"%s: %d", _cmd); 
   // We can either get a timer w/ user info, or just pass the dictionary directly.
   if([p_tmr respondsToSelector:@selector(userInfo)]) {
     NSTimer *tmr = (NSTimer*)p_tmr;
@@ -176,9 +176,9 @@
     }
     
     // If it's a book, call cleanup on the progress bar and also get the book prefs loaded.
-    if([toView respondsToSelector:@selector(isReadyToShow)]) {
+	if([toView isKindOfClass:[EBookView class]]) {
       EBookView *ebv = (EBookView*)toView;    
-	 [ebv applyTextDisplayPreferences]; 
+	  [ebv applyTextDisplayPreferences]; 
       [ebv hidePleaseWait];
     }
     
