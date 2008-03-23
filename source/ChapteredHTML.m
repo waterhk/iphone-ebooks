@@ -66,16 +66,21 @@
 	SHA1 ((const unsigned char *) [_fullHTML UTF8String],
 			(unsigned long) [_fullHTML length],
 			_fullHTMLHash);
-	NSString *lDirName = [NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Caches/Books/"];
-	filename = [[NSMutableString alloc] initWithString:lDirName];
+	NSString *lDirName = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Caches/Books"];
+	filename = [[NSMutableString alloc] initWithCapacity:[lDirName length] + (2 * SHA_DIGEST_LENGTH) + 32];
+  [filename appendString:lDirName];
+  [filename appendString:@"/"];
+  
 	for (index = 0; index < sizeof (_fullHTMLHash); index++)
 	{
 		[filename appendFormat:@"%02x", _fullHTMLHash[index]];
 	}
 	[filename appendString:@".plist"];
+  
+  GSLog(@"ChapteredHTML trying to open %@", filename);
 
-	if ([self loadFromFile:filename] == NO)
-	{
+	if ([self loadFromFile:filename] == NO) {
+    GSLog(@"File not found");
 		[self findSections];
 		[self findChapters];
 		[self saveToFile:filename];
@@ -380,7 +385,7 @@
 			index++)
 	{
 		int     offset = (_bodyRange.location + index);
-		GSLog(@"offset: %d, _fullHTML.length %d", offset, [_fullHTML length]);
+		//GSLog(@"offset: %d, _fullHTML.length %d", offset, [_fullHTML length]);
 		//trouble
 		unichar chr    = [_fullHTML characterAtIndex:offset];
 

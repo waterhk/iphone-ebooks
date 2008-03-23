@@ -45,6 +45,8 @@ AGRegex *SCRIPT_REGEX;
 AGRegex *OBJECT_REGEX;
 AGRegex *FRAMESET_REGEX;
 AGRegex *LINK_REGEX;
+AGRegex *DOCTYPE_REGEX;
+AGRegex *META_REGEX;
 
 @implementation HTMLFixer
 
@@ -57,16 +59,16 @@ AGRegex *LINK_REGEX;
   IMGTAG_REGEX = [[AGRegex alloc] initWithPattern:@"<img[^>]+>" options:AGRegexCaseInsensitive];
   
   // Open table elements
-  TABLE_REGEX = [[AGRegex alloc] initWithPattern:@"<table[^>]+>" options:AGRegexCaseInsensitive];
-  TR_REGEX = [[AGRegex alloc] initWithPattern:@"<tr[^>]+>" options:AGRegexCaseInsensitive];
-  TD_REGEX = [[AGRegex alloc] initWithPattern:@"<td[^>]+>" options:AGRegexCaseInsensitive];
-  TH_REGEX = [[AGRegex alloc] initWithPattern:@"<th[^>]+>" options:AGRegexCaseInsensitive];
+  TABLE_REGEX = [[AGRegex alloc] initWithPattern:@"<table[^>]*>" options:AGRegexCaseInsensitive];
+  TR_REGEX = [[AGRegex alloc] initWithPattern:@"<tr[^>]*>" options:AGRegexCaseInsensitive];
+  TD_REGEX = [[AGRegex alloc] initWithPattern:@"<td[^>]*>" options:AGRegexCaseInsensitive];
+  TH_REGEX = [[AGRegex alloc] initWithPattern:@"<th[^>]*>" options:AGRegexCaseInsensitive];
   
   // Close table elements
-  TABLECL_REGEX = [[AGRegex alloc] initWithPattern:@"</table[^>]+>" options:AGRegexCaseInsensitive];
-  TRCL_REGEX = [[AGRegex alloc] initWithPattern:@"</tr[^>]+>" options:AGRegexCaseInsensitive];
-  TDCL_REGEX = [[AGRegex alloc] initWithPattern:@"</td[^>]+>" options:AGRegexCaseInsensitive];
-  THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]+>" options:AGRegexCaseInsensitive];
+  TABLECL_REGEX = [[AGRegex alloc] initWithPattern:@"</table[^>]*>" options:AGRegexCaseInsensitive];
+  TRCL_REGEX = [[AGRegex alloc] initWithPattern:@"</tr[^>]*>" options:AGRegexCaseInsensitive];
+  TDCL_REGEX = [[AGRegex alloc] initWithPattern:@"</td[^>]*>" options:AGRegexCaseInsensitive];
+  THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]*>" options:AGRegexCaseInsensitive];
   
   // Attributes that need to be removed
   STYLEATT_REGEX = [[AGRegex alloc] initWithPattern:@"style=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
@@ -77,7 +79,9 @@ AGRegex *LINK_REGEX;
   SCRIPT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*script[^>]*>.*?<[ \n\r]*/script[^>]*>" options:AGRegexCaseInsensitive];
   OBJECT_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*object[^>]*>.*?<[ \n\r]*/object[^>]*>" options:AGRegexCaseInsensitive];
   FRAMESET_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*frameset[^>]*>.*?<[ \n\r]*/frameset[^>]*>" options:AGRegexCaseInsensitive];
-  LINK_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*link[^>]*>[^>]*>" options:AGRegexCaseInsensitive];
+  LINK_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*link[^>]*>" options:AGRegexCaseInsensitive];
+  DOCTYPE_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*!DOCTYPE[^>]*>" options:AGRegexCaseInsensitive];
+  META_REGEX = [[AGRegex alloc] initWithPattern:@"(?s)<[ \n\r]*meta[^>]*>" options:AGRegexCaseInsensitive];
 }
 
 /**
@@ -186,6 +190,9 @@ AGRegex *LINK_REGEX;
     i += [HTMLFixer replaceRegex:SCRIPT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:OBJECT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:LINK_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:DOCTYPE_REGEX withString:@"" inMutableString:theHTML];
+    i += [HTMLFixer replaceRegex:META_REGEX withString:@"" inMutableString:theHTML];
+    
     
     
     // FIXME: This kills any noframes section too, but it keeps Books from crashing.
