@@ -72,8 +72,9 @@
 /**
  * Notification when our bounds change - we probably rotated.
  */
-- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {  
   [self setFrame:[p_note newBounds]];
+  [_table setFrame:[self bounds]];
 }
 
 /**
