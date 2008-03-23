@@ -225,6 +225,10 @@
   
   //GSLog(@"Popped %@ %@", ([poppedFi isDocument] ? @"Document" : @"Directory"), [poppedFi path]);
   
+  if([[poppedFi view] isKindOfClass:[EBookView class]]) {
+    [((EBookView*)[poppedFi view]) hideSlider];
+  }
+  
   if([self isAnimationEnabled]) {
     [self transitionViewsWhenReady:[self transitionDictFromView:[poppedFi view] toView:[topFi view] destItem:topFi transition:2]];
   }
