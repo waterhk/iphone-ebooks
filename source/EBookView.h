@@ -27,7 +27,6 @@
 @class BooksDefaultsController;
 
 @interface EBookView : UITextView {
-  //  UIViewTapInfo *tapinfo;
   NSString                *path;
   struct CGRect           lastVisibleRect;
   ChapteredHTML	          *chapteredHTML;
@@ -35,9 +34,6 @@
   BooksDefaultsController *defaults;
  	UISliderControl *m_scrollerSlider;
   
-	//what is the current orientation used in particular to find if the orientation should be changed when receiving a setOrientation message
-	int _orient;
-	CGAffineTransform _matrixprev;  
 	/**
 	 * stores the X coordinate of the last mouse down event for swipe detection
 	 */
@@ -90,9 +86,6 @@ typedef enum
 - (BOOL)gotoNextSubchapter;
 - (BOOL)gotoPreviousSubchapter;
 
-//-(void) setOrientation: (int) orientation animate:(bool)anime;
-//- (void) fitRect;
-//-(void) afterRotate: (NSTimer*) timer;
 -(void)reflowBook;
 - (void)saveBookPosition;
 - (void)applyTextDisplayPreferences;
@@ -104,6 +97,7 @@ typedef enum
 - (void)updateSliderPosition;
 - (void)scrollToPoint:(float)p_pt;
 @end
+
 //informal protocol declaration for _heartbeatDelegate
 @interface NSObject (EBookViewHeartbeatDelegate)
 - (void)heartbeatCallback:(id)ignored;

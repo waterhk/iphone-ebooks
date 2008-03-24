@@ -89,6 +89,11 @@
                                              selector:@selector(boundsDidChange:)
                                                  name:[BoundsChangedNotification didChangeName]
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(boundsDidChange:)
+                                                 name:[BoundsChangedNotification didChangeName]
+                                               object:nil];
   }
   
 	return self;
@@ -118,11 +123,22 @@
 }
 
 /**
+ * Update our visible rect before rotate happens.
+ */
+- (void)boundsWillChange:(BoundsChangedNotification*)p_note {
+  lastVisibleRect = [self visibleRect];
+}  
+
+/**
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
   struct CGRect oldB = [p_note oldBounds];
   struct CGRect newB = [p_note newBounds];
+  
+  // Figure out where we need to scroll.  We'll apply it in the timer at the end of this function.
+  float scrollPercent = lastVisibleRect.origin.y / oldB.size.height; 
+  NSNumber *scroll = [NSNumber numberWithFloat:(scrollPercent * newB.size.height)];
   
   [self setFrame:newB];
   
@@ -144,17 +160,17 @@
   [self setupScrollerWithFrame:newB parent:scrollParent];
   [scrollParent release];
   
-//  [self scrollToPoint:lastVisibleRect.origin.y * (oldB.size.height / newB.size.height)];
-  
   // Setup to fix the visibleRect
-  [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(afterRotate) userInfo:nil repeats:NO];
+  [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(afterRotate:) userInfo:scroll repeats:NO];
 }
 
 /**
- * Update our visible rect once any rotations are done.
+ * Update our visible rect and rescroll once any rotations are done.
  */
-- (void)afterRotate {
-  // FIXME: This isn't working - we still have to double tap to scroll.
+- (void)afterRotate:(NSTimer*)p_tmr {
+  NSNumber *scroll = [p_tmr userInfo];  
+  [self scrollToPoint:[scroll floatValue]];
+  
   lastVisibleRect = [self visibleRect];
   [self updateSliderPosition];
 }
