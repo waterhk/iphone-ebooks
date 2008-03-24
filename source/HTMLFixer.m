@@ -71,7 +71,7 @@ AGRegex *META_REGEX;
   THCL_REGEX = [[AGRegex alloc] initWithPattern:@"</th[^>]*>" options:AGRegexCaseInsensitive];
   
   // Attributes that need to be removed
-  STYLEATT_REGEX = [[AGRegex alloc] initWithPattern:@"style=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
+  //STYLEATT_REGEX = [[AGRegex alloc] initWithPattern:@"style=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
   EMBEDSRCATT_REGEX = [[AGRegex alloc] initWithPattern:@"embedsrc=\"[^\\\"]+\"" options:AGRegexCaseInsensitive];
   
   // Assorted problematic block elements
@@ -199,7 +199,7 @@ AGRegex *META_REGEX;
     i += [HTMLFixer replaceRegex:FRAMESET_REGEX withString:@"" inMutableString:theHTML];
     
     // Kill style attributes - they can contain widths.
-    i += [HTMLFixer replaceRegex:STYLEATT_REGEX withString:@"" inMutableString:theHTML];
+    //i += [HTMLFixer replaceRegex:STYLEATT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:EMBEDSRCATT_REGEX withString:@"" inMutableString:theHTML];    
     
     // Adjust tables if desired.
