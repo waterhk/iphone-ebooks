@@ -36,8 +36,8 @@ AGRegex *TRCL_REGEX;
 AGRegex *TDCL_REGEX;
 AGRegex *THCL_REGEX;
 
-AGRegex *STYLEATT_REGEX;
-AGRegex *EMBEDSRCATT_REGEX;
+//AGRegex *STYLEATT_REGEX;
+//AGRegex *EMBEDSRCATT_REGEX;
 
 // Assorted problematic block elements
 AGRegex *STYLE_REGEX;
@@ -193,11 +193,11 @@ AGRegex *META_REGEX;
     i += [HTMLFixer replaceRegex:DOCTYPE_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:META_REGEX withString:@"" inMutableString:theHTML];
     
-    
-    
     // FIXME: This kills any noframes section too, but it keeps Books from crashing.
     i += [HTMLFixer replaceRegex:FRAMESET_REGEX withString:@"" inMutableString:theHTML];
-    
+  
+    [theHTML replaceOccurrencesOfString:@"embedsrc=" withString:@"invalid=" options:NSCaseInsensitiveSearch range:NSMakeRange(0, [theHTML length])];
+
     // Kill style attributes - they can contain widths.
     //i += [HTMLFixer replaceRegex:STYLEATT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:EMBEDSRCATT_REGEX withString:@"" inMutableString:theHTML];    
@@ -216,7 +216,6 @@ AGRegex *META_REGEX;
       i += [HTMLFixer replaceRegex:TRCL_REGEX withString:[HTMLFixer trEndReplacement] inMutableString:theHTML];
       i += [HTMLFixer replaceRegex:TDCL_REGEX withString:[HTMLFixer tdEndReplacement] inMutableString:theHTML];
       i += [HTMLFixer replaceRegex:THCL_REGEX withString:[HTMLFixer thEndReplacement] inMutableString:theHTML];
-      // GSLog(@"Done-Replacing table tags. (%d tags)", i);
     }
     
     // Check for missing opening html & body tags
@@ -286,13 +285,13 @@ AGRegex *META_REGEX;
  */
 + (int)replaceRegex:(AGRegex*)p_regex withString:(NSString*)p_repl inMutableString:(NSMutableString*)p_mut {
   // Do this in its own pool as the regex will likely alloc a lot of temporary memory.
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  //NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   int i;
   
   // Regex to find everything
   NSArray *matches = [p_regex findAllInString:p_mut];
   int matchCount = [matches count];  
-  
+
   // Loop over all the matches, and replace
   for(i=0; i<matchCount; i++) {
     AGRegexMatch *tagMatch = [matches objectAtIndex:i];
@@ -300,8 +299,8 @@ AGRegex *META_REGEX;
     NSRange origRange = [p_mut rangeOfString:sMatch];
     [p_mut replaceCharactersInRange:origRange withString:p_repl];
   }
-  
-  [pool release];
+
+  //[pool release];
   
   return matchCount;
 }
