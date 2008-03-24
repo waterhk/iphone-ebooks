@@ -450,23 +450,23 @@
 - (void)tableRowSelected:(NSNotification *)notification 
 {
 	int i = [preferencesTable selectedRow];
-	//GSLog(@"Selected!Prefs! Row %d!", i);
+//	GSLog(@"Selected!Prefs! Row %d!", i);
 	switch (i)
 	{
 		case 1: // font
 			[self makeFontPrefsPane];
 			break;
-		case 14: // text encoding
+		case 15: // text encoding
 			[self makeEncodingPrefsPane];
 			break;
-		case 21: // mark current book as new
+		case 22: // mark current book as new
 			//GSLog(@"mark current book as new");
 			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 			[[NSNotificationCenter defaultCenter] postNotificationName:RELOADTOPBROWSER object:self];
 			[markCurrentBookAsNewCell setEnabled:NO];
 			[markCurrentBookAsNewCell setSelected:NO withFade:YES];
 			break;
-		case 22: // mark all books as new
+		case 23: // mark all books as new
 			//GSLog(@"mark all book as new");
 			[defaults removePerFileDataForDirectory:[controller currentBrowserPath]];
 			[defaults removePerFileData];
