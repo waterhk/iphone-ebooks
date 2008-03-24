@@ -339,7 +339,11 @@
 
 	[arPathComponents release];
   
-	[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
+  if([defaults uiOrientation] != 0) {
+    // No sense triggering rotation if it isn't going to do anything - I think it also messed up the
+    // clock at startup. -ZSB
+    [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
+  }
 }
 
 /**
