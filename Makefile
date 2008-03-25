@@ -133,6 +133,9 @@ obj/%.o:    source/AGRegex/%.c
 htmltest: test/HTMLFixerTester.m source/HTMLFixer.m
 	gcc -DDESKTOP=1 -framework CoreFoundation -framework AppKit -framework Cocoa -lobjc test/HTMLFixerTester.m source/AGRegex/*.c source/AGRegex/*.m source/HTMLFixer.m -o test/htmltest
 
+ht:	htmltest
+	./test/htmltest test/in.html test/out.html
+
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
 	cd jpeg-6b ; if [ -f Makefile ] ; then make distclean ; fi
