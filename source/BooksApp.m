@@ -101,7 +101,7 @@
 - (void)alertCrashDetected
 {
 	GSLog(@"alertcrashdetected");
-	NSString *bodyText = @"Prior crash detected, do you want to reset preferences?";
+	NSString *bodyText = @"Prior crash detected, do you want to reset startup preferences?";
 	CGRect rect = [[UIWindow keyWindow] bounds];
 	UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
 	[alertSheet setTitle:@"Error opening books"];
