@@ -19,6 +19,7 @@
 
 #import "common.h"
 #import "FontChoiceController.h"
+#import "BoundsChangedNotification.h"
 
 @implementation FontChoiceController
 
@@ -27,7 +28,7 @@
 	if (self = [super init])
 	{
 		defaults = [BooksDefaultsController sharedBooksDefaultsController];
-		struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+		struct CGRect rect = [[[UIWindow keyWindow] contentView] bounds];
 		//    struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
 		//  rect.origin.x = rect.origin.y = 0;
 
@@ -63,6 +64,11 @@
 		[fontTable setDelegate:self];
 		[fontTable setDataSource:self];
 		[fontTable reloadData];
+
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(boundsDidChange:)
+													 name:[BoundsChangedNotification didChangeName]
+												   object:nil];
 		//      defaults = [[BooksDefaultsController alloc] init];
 	}
 
@@ -119,7 +125,7 @@
 	NSString *title;
 	BOOL checked = NO;
 
-	CGRect rect = [UIHardware fullScreenApplicationContentRect];
+	CGRect rect = [[[UIWindow keyWindow] contentView] bounds];
 	UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,TOOLBAR_HEIGHT)];
 
 	//UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,320,TOOLBAR_HEIGHT)];
@@ -135,6 +141,14 @@
 	[fontTable release];
 	[defaults release];
 	[super dealloc];
+}
+
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+	struct CGRect rect = [p_note newBounds];  
+	[fontTable setFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
 }
 
 @end

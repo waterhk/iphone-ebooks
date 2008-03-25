@@ -18,6 +18,7 @@
 */
 
 #import "EncodingPrefsController.h"
+#import "BoundsChangedNotification.h"
 
 @implementation EncodingPrefsController
 
@@ -26,7 +27,7 @@
   if (self = [super init])
     {
       defaults = [BooksDefaultsController sharedBooksDefaultsController];
-      struct CGRect rect = [UIHardware fullScreenApplicationContentRect];
+      struct CGRect rect = [[[UIWindow keyWindow] contentView] bounds];
 
       encodingTable = [[UIPreferencesTable alloc] initWithFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
       [encodingTable setDelegate:self];
@@ -53,6 +54,11 @@
       encodingNames = [[NSArray alloc] initWithArray:tempEncodingNames];
       [tempEncodingNames release];
     }
+
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(boundsDidChange:)
+													 name:[BoundsChangedNotification didChangeName]
+												   object:nil];
   return self;
 }
 
@@ -119,6 +125,7 @@ int unsignedCompare(id x, id y, void *context)
   [[NSNotificationCenter defaultCenter] postNotificationName:ENCODINGSELECTED object:title];
 }
 
+
 - (id)preferencesTable:(id)preferencesTable cellForRow:(int)row inGroup:(int)group
 {
   NSString *title;
@@ -134,7 +141,7 @@ int unsignedCompare(id x, id y, void *context)
       checked = ([[encodingNumbers objectAtIndex:(row - 1)] unsignedIntValue]
 		 == [defaults defaultTextEncoding]);
     }
-  CGRect rect = [UIHardware fullScreenApplicationContentRect];
+  CGRect rect = [[[UIWindow keyWindow] contentView] bounds];
   UIPreferencesTableCell *theCell = [[UIPreferencesTableCell alloc] initWithFrame:CGRectMake(0,0,rect.size.width,PREFS_TABLE_ROW_HEIGHT)];
   [theCell setTitle:title];
   [theCell setChecked:checked];
@@ -149,6 +156,14 @@ int unsignedCompare(id x, id y, void *context)
   [encodingTable release];
   [defaults release];
   [super dealloc];
+}
+
+/**
+ * Notification when our bounds change - we probably rotated.
+ */
+- (void)boundsDidChange:(BoundsChangedNotification*)p_note {
+	struct CGRect rect = [p_note newBounds];  
+	[encodingTable setFrame:CGRectMake(0,0,rect.size.width, rect.size.height-TOOLBAR_HEIGHT)];
 }
 
 @end
