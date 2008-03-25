@@ -94,9 +94,29 @@
                                              selector:@selector(boundsDidChange:)
                                                  name:[BoundsChangedNotification didChangeName]
                                                object:nil];
+    
+    // Need to reload the book if encoding changes.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(reloadBook)
+                                                 name:ENCODINGSELECTED
+                                               object:nil];
+    
+    
   }
   
 	return self;
+}
+
+/**
+ * Reload the book from file - to apply new text encoding.
+ */
+- (void)reloadBook {
+  // FIXME: Scroll point isn't restored
+  [defaults setLastScrollPoint:lastVisibleRect.origin.y
+                 forSubchapter:[self getSubchapter]
+                       forFile:[self currentPath]];
+  
+  [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:self withObject:nil];
 }
 
 /**
