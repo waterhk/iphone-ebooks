@@ -656,10 +656,11 @@ static BooksDefaultsController *sharedBooksDefaultsController = nil;
 
 - (void)reset
 {
-	BooksDefaultsController* lDefault = [BooksDefaultsController sharedBooksDefaultsController];
-	[NSUserDefaults resetStandardUserDefaults];
+	//BooksDefaultsController* lDefault = [BooksDefaultsController sharedBooksDefaultsController];
+	//[NSUserDefaults resetStandardUserDefaults];
 	//bcc do not release _defaults on purpose it is broken after resetStandardUserDefaults
-	_defaults = [[NSUserDefaults standardUserDefaults] retain];
-
+	//_defaults = [[NSUserDefaults standardUserDefaults] retain];
+	[self setLastBrowserPath:@""]
+	
 }
 @end
