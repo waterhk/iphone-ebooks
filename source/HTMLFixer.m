@@ -231,7 +231,7 @@ AGRegex *META_REGEX;
         // Ugh....  Has HTML but no BODY.  Do we really need to deal with garbage html like this?
         // We'll assume the tag is <html> with no extra characters or attributed.  If that's not the case, 
         // this will probably make a horrible mess of things.  There's only so much we can do with invalid HTML...
-        [theHTML insertString:@"<body>" atIndex:htmlRange.location+2]; // 1 for the close bracket we didn't search for above +  1 for the next char
+        [theHTML insertString:@"<body>" atIndex:htmlRange.location+htmlRange.length+1]; // 1 for the close bracket we didn't search for above +  1 for the next char
       }
     } else if(!hasHtml) {
       [theHTML insertString:@"<html>" atIndex:0];
