@@ -139,8 +139,9 @@ ht:	htmltest
 clean:
 	rm -rf obj Books.app Books-*.tbz Books-*.zip repo.xml repo.xml.gz
 	cd jpeg-6b ; if [ -f Makefile ] ; then make distclean ; fi
-	
-obj/Info.plist: Info.plist.tmpl
+
+
+obj/Info.plist: Info.plist.tmpl version
 	@echo "Building Info.plist for version $(VERSION)."
 	@sed -e 's|__VERSION__|$(VERSION)|g' < $< > $@
 
@@ -194,4 +195,4 @@ jpeg-6b/.libs/libjpeg.a:	jpeg-6b/*.c jpeg-6b/*.h
 		--build=i386-apple-darwin --host=arm-apple-darwin --enable-static --enable-shared ; \
 		make AR="arm-apple-darwin-ar rc" AR2="arm-apple-darwin-ranlib" libjpeg.la
 	
-.PHONY: nightly deploy-repo package deploy-app deploy clean bundle test all
+.PHONY: nightly deploy-repo package deploy-app deploy clean bundle test all version
