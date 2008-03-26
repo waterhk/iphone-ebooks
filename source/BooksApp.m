@@ -96,6 +96,7 @@
     [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applicationDidFinishLaunching:) userInfo:nil repeats:NO];
 //    [self applicationDidFinishLaunching:nil];
   }
+  [defaults setRotateLocked:[defaults isRotateLocked]];
 }
 
 - (void)alertCrashDetected
@@ -164,7 +165,7 @@
   
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
-  [defaults setRotateLocked:[defaults isRotateLocked]];
+  [self lockUIOrientation];
   
   NSString *lAppStatus = [defaults appStatus];
   GSLog(@"appstatus: %@", lAppStatus);
@@ -177,6 +178,8 @@
   }
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
+  
+  [defaults setRotateLocked:[defaults isRotateLocked]];
 
   [[NSNotificationCenter defaultCenter] addObserver:self
 										   selector:@selector(updateToolbar:)
@@ -520,6 +523,7 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if(![fileManager fileExistsAtPath:file isDirectory:&isDir]) {
+    [self lockUIOrientation];
 		CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
@@ -532,6 +536,7 @@
 	}
   
   if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
+    [self lockUIOrientation];
     CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
