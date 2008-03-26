@@ -565,6 +565,10 @@
 
 		// Plain text types don't need to go through all the HTML conversion leg work.
 		if([@"htm" isEqualToString:retType]) {
+      // We assume that the HTML generated from converting a Palm book format is 
+      // valid - we generated it ourselves, so it should be!  Run it through an
+      // abbreviated HTMLFixer which fixes image widths if necessary, but doesn't
+      // apply all of the other regex fixes.
 		  [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
 		  m_bDocIsHtml = YES;
 		} else {
