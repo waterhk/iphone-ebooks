@@ -66,51 +66,21 @@
    };
    */
 // Delegate methods
-- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button 
-{
-  BOOL bIsWarningSheet = NO;
-  if([[[[sheet buttons] objectAtIndex:0] title] isEqualToString:@"OK"]) {
-    bIsWarningSheet = YES;
-  }
-  
+/**
+ * Handle warning dialog button click from file access problems.
+ */
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
 	[sheet dismissAnimated:YES];
   [sheet release];
   
-  if(bIsWarningSheet) {
-    // It's a warning dialog for file access problems
-    if(button != 1) {
-      // Help button for warning dialog: show website.
-      NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
-      [UIApp openURL:websiteURL];
-    } 
-  } else {
-    // It's the "crashed last time" dialog
-    if (1 == button)  //reset prefs
-    {
-      [defaults reset];
-    }
-    
-    //reset the status as if the app had previously closed correctly
-    [defaults setAppStatus:APPCLOSEDVALUE];
-    //continue where we were before we opened the alert
-    [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applicationDidFinishLaunching:) userInfo:nil repeats:NO];
-//    [self applicationDidFinishLaunching:nil];
+   // It's a warning dialog for file access problems
+  if(button != 1) {
+    // Help button for warning dialog: show website.
+    NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
+    [UIApp openURL:websiteURL];
   }
+ 
   [defaults setRotateLocked:[defaults isRotateLocked]];
-}
-
-- (void)alertCrashDetected
-{
-	GSLog(@"alertcrashdetected");
-	NSString *bodyText = @"Prior crash detected, do you want to reset startup preferences?";
-	CGRect rect = [[UIWindow keyWindow] bounds];
-	UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - 240, rect.size.width,240)];
-	[alertSheet setTitle:@"Error opening books"];
-	[alertSheet setBodyText:bodyText];
-	[alertSheet addButtonWithTitle:@"YES"];
-	[alertSheet addButtonWithTitle:@"NO"];
-	[alertSheet setDelegate: self];
-	[alertSheet popupAlertAnimated:YES];
 }
 
 /**
@@ -169,12 +139,11 @@
   
   NSString *lAppStatus = [defaults appStatus];
   GSLog(@"appstatus: %@", lAppStatus);
-  if ([lAppStatus isEqualToString: APPOPENVALUE])
-  {
-	  //bcc need error handling now.
-	  //should be able to revert to previously known to be ok prefs, lets just say we erase them
-	  [self alertCrashDetected];
-    return;
+  if ([lAppStatus isEqualToString: APPOPENVALUE]) {
+		// I think it's enough to just clear out the last read path -- no need to kill the whole
+		// prefs file.  Probably also no need to prompt since clearing the last read book isn't that
+		// big a deal (as compared to trashing the entire prefs). -ZSB
+		[defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
   }
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
