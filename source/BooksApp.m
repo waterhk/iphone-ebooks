@@ -135,10 +135,9 @@
   
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
-  [self lockUIOrientation];
   
   NSString *lAppStatus = [defaults appStatus];
-  GSLog(@"appstatus: %@", lAppStatus);
+
   if ([lAppStatus isEqualToString: APPOPENVALUE]) {
 		// I think it's enough to just clear out the last read path -- no need to kill the whole
 		// prefs file.  Probably also no need to prompt since clearing the last read book isn't that
@@ -148,8 +147,6 @@
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
   
-  [defaults setRotateLocked:[defaults isRotateLocked]];
-
   [[NSNotificationCenter defaultCenter] addObserver:self
 										   selector:@selector(updateToolbar:)
 											   name:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION
@@ -240,7 +237,6 @@
  * last read file.  Takes down splash image if it was present.
  */
 - (void)finishUpLaunch {
-	GSLog(@"%s .", _cmd);
 	NSString *recentFile = [defaults lastBrowserPath];
 
 	[self setupNavbar];
@@ -311,7 +307,7 @@
 
 	[arPathComponents release];
   
-  if([defaults uiOrientation] != 0) {
+  if([defaults uiOrientation] != 1) {
     // No sense triggering rotation if it isn't going to do anything - I think it also messed up the
     // clock at startup. -ZSB
     [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
@@ -492,7 +488,7 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if(![fileManager fileExistsAtPath:file isDirectory:&isDir]) {
-    [self lockUIOrientation];
+//    [self lockUIOrientation];
 		CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
@@ -505,7 +501,7 @@
 	}
   
   if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
-    [self lockUIOrientation];
+//    [self lockUIOrientation];
     CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
@@ -737,7 +733,7 @@
 	if ([name isEqualToString: @"rotate"])
 	{
 		BOOL lLockState = [defaults isRotateLocked];
-			GSLog(@"%s: lockstate:%d", _cmd, lLockState);
+
 		if (lLockState)
 		{
 			[button setImage:[self navBarImage:@"rotate_lock_up" flipped:flipped] forState:0];
@@ -864,7 +860,7 @@
 		[defaults setRotateLocked:!lLockState];
 		lLockState = !lLockState;	//bcc prefs was change the line above
 		BOOL flipped = NO;
-			GSLog(@"%s: lockstate:%d", _cmd, lLockState);
+
 		if (lLockState)
 		{
 			[button setImage:[self navBarImage:@"rotate_lock_up" flipped:flipped] forState:0];
