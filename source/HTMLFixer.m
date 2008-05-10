@@ -183,8 +183,10 @@ AGRegex *META_REGEX;
 
   NSString *basePath = [thePath stringByDeletingLastPathComponent];
   
+
   // If we came from a simplified HTML format (Plucker), we don't need to do most of this stuff.
   if(!p_imgOnly) {
+		/*
     // Kill any styles or other difficult block elements (do this instead of just the @imports)
     i = [HTMLFixer replaceRegex:STYLE_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:SCRIPT_REGEX withString:@"" inMutableString:theHTML];
@@ -201,7 +203,7 @@ AGRegex *META_REGEX;
     // Kill style attributes - they can contain widths.
     //i += [HTMLFixer replaceRegex:STYLEATT_REGEX withString:@"" inMutableString:theHTML];
     i += [HTMLFixer replaceRegex:EMBEDSRCATT_REGEX withString:@"" inMutableString:theHTML];    
-    
+    */
     // Adjust tables if desired.
     if(![HTMLFixer isRenderTables]) {
       // Use regex's to replace all table related tags with reasonably small-screen equivalents.
