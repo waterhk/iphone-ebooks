@@ -62,7 +62,7 @@
     [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
     [temp setObject:@"1" forKey:SCROLLSPEEDINDEXKEY];
     [temp setObject:[NSMutableDictionary dictionaryWithCapacity:1] forKey:FILESPECIFICDATAKEY];
-    [temp setObject:@"0" forKey:UIORIENTATIONKEY];
+    [temp setObject:@"1" forKey:UIORIENTATIONKEY];
     [temp setObject:@"0" forKey:INVERSENAVZONEKEY];
     [temp setObject:@"0" forKey:ENABLESUBCHAPTERINGKEY];
     [temp setObject:@"1" forKey:ISROTATELOCKEDKEY];
