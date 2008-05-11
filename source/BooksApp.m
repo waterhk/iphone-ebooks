@@ -78,9 +78,13 @@
     // Help button for warning dialog: show website.
     NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
     [UIApp openURL:websiteURL];
-  }
+  } else if(!m_openedFirstDoc) {
+		// FIXME: Quit!
+		[UIApp terminateWithSuccess];
+	}
  
   [defaults setRotateLocked:[defaults isRotateLocked]];
+//	[self setUIOrientation:uiOrientation];
 }
 
 /**
@@ -132,7 +136,9 @@
 
 - (void)applicationDidFinishLaunching:(id)unused {  
   m_documentExtensions = [[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil] retain];
-  
+
+  m_openedFirstDoc = NO;
+
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
   
@@ -146,6 +152,8 @@
   }
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
+
+	[defaults setRotateLocked:[defaults isRotateLocked]];
   
   [[NSNotificationCenter defaultCenter] addObserver:self
 										   selector:@selector(updateToolbar:)
@@ -488,29 +496,31 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if(![fileManager fileExistsAtPath:file isDirectory:&isDir]) {
-//    [self lockUIOrientation];
+		[self setUIOrientation:1];
+    [self lockUIOrientation];
 		CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
     [alertSheet setTitle:@"Folder not found"];
     [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", file]];
-    [alertSheet addButtonWithTitle:@"OK"];
+    [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
     [alertSheet setDelegate: self];
-    [alertSheet popupAlertAnimated:YES];
+    [alertSheet presentSheetInView:mainView];
 		return;
 	}
   
   if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
-//    [self lockUIOrientation];
+		[self setUIOrientation:1];
+    [self lockUIOrientation];
     CGRect rect = [[UIWindow keyWindow] bounds];
     UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
     // NOTE: Leave this retained - we'll release it in the delegate callback.
     [alertSheet setTitle:@"Access Denied"];
     [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", file]];
-    [alertSheet addButtonWithTitle:@"OK"]; // buttonIdx == 1
+    [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
     [alertSheet addButtonWithTitle:@"Help (Wiki)"];
     [alertSheet setDelegate: self];
-    [alertSheet popupAlertAnimated:YES];
+    [alertSheet presentSheetInView:mainView];
     return;
   }
 
@@ -529,6 +539,9 @@
 		UIView *displayView = [self showDocumentAtPath:file];
 		tempItem = [[FileNavigationItem alloc] initWithDocument:file view:displayView];
 	}
+	
+	// Until we get through a document load once, we're just going to quit if permissions fail.
+	m_openedFirstDoc = YES;
 
 	[navBar pushNavigationItem:tempItem];
 	[tempItem release];

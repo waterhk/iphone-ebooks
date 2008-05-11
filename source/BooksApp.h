@@ -67,6 +67,12 @@ enum PreferenceAnimationType;
   
 	NSString *imgPath;
   NSArray *m_documentExtensions;
+
+	/** 
+	 * If NO, a permissions error should quit, not return 
+	 * to the file browser.
+	 */
+	BOOL m_openedFirstDoc;
 }
 
 + (void)debugNotification:(NSNotification*)p_note;
