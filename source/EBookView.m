@@ -181,7 +181,7 @@
   [scrollParent release];
   
   // Setup to fix the visibleRect
-  [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(afterRotate:) userInfo:scroll repeats:NO];
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(afterRotate:) userInfo:scroll repeats:NO];
 }
 
 /**

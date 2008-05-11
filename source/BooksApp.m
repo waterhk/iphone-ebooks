@@ -550,7 +550,7 @@
 - (void)cleanUpBeforeQuit {
 	FileNavigationItem *topItem = [navBar topItem];
 	NSString *filename = [topItem path];
-	GSLog(@"Saving last browser path at shutdown: %@", filename);
+	GSLog(@"Saving last browser path: %@", filename);
 	[defaults setLastBrowserPath:filename];
 
 	// Need to kick the top-most EBookView.  It doesn't clean up on its own at shutdown.
@@ -560,15 +560,48 @@
 		[eb saveBookPosition];
 	}
 
-
-	[defaults setAppStatus:APPCLOSEDVALUE];
 	GSLog(@"Books is terminating.");
 	GSLog(@"========================================================");
 }
 
-- (void) applicationWillSuspend {
-	[self cleanUpBeforeQuit];
+/**
+ * Will suspend is called (after suspend for events only, sometimes)
+ * in cases where the phone is going to do something else but might 
+ * come back to Books without compeltely quitting it.
+ */
+- (void)applicationWillSuspend {
+	if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
+		// Only clean up is we haven't done it yet (clean up sets this to NO)
+		[self cleanUpBeforeQuit];
+	}
 }
+
+/**
+ * Application suspend is called before the app is REALLY going to go down.
+ */
+- (void)applicationSuspend:(struct __GSEvent *)fp8 {
+	if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
+		// Only clean up is we haven't done it yet (clean up sets this to NO)
+		[defaults setAppStatus:APPCLOSEDVALUE];
+	}
+}
+
+/*
+ * Will suspend for events only is called before the app goes down when
+ * the phone is probably going to switch to another app (phone call).
+- (void)applicationWillSuspendForEventsOnly {
+	GSLog(@"%s .", _cmd);
+}
+*/
+
+/*
+ * Will suspend under lock is called before the phone is going
+ * to lock (oddly enough)...  One of the other functions we monitor
+ * will always be called as well, so we'll ignore this one.
+- (void)applicationWillSuspendUnderLock {
+	GSLog(@"%s .", _cmd);
+}
+*/
 
 - (void)embiggenText:(UINavBarButton *)button {
 	if (![button isPressed]) {// mouse up events only, kids!
