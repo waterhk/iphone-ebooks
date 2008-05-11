@@ -30,11 +30,8 @@
 
 @implementation BooksDefaultsController
 
-+ (NSString*) defaultEBookPath
-{
-	static NSString *_default_EBookPath;
-	_default_EBookPath	= [[NSHomeDirectory() stringByAppendingPathComponent: EBOOK_PATH_SUFFIX] retain];
-	return _default_EBookPath;
++ (NSString*) defaultEBookPath {
+	return [NSHomeDirectory() stringByAppendingPathComponent: EBOOK_PATH_SUFFIX];
 }
 
 - (id) init
@@ -196,19 +193,8 @@
 {
 	NSString *path = [[_defaults objectForKey:BROWSERFILESKEY] stringByExpandingTildeInPath];
 	NSString * lDefaultPath = [BooksDefaultsController defaultEBookPath];
-	if (![path hasPrefix:lDefaultPath])
-	{
-
-		NSString *bodyText = [NSString stringWithFormat:@"The last visited directory was %@ this is not a subdirectory of the Books directory (%@) this is typically the sign of a 1.1.2 to 1.1.3 migration.\n  Current path reset to the default one.  If you haven't recently migrated you may have a corrupt preference file.", path, lDefaultPath];
+	if (![path hasPrefix:lDefaultPath]) {
 		path = lDefaultPath;
-		CGRect rect = [UIHardware fullScreenApplicationContentRect];
-		UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
-		[alertSheet setTitle:@"Path reset"];
-		[alertSheet setBodyText:bodyText];
-		[alertSheet addButtonWithTitle:@"OK"];
-		[alertSheet setDelegate: self];
-		[alertSheet popupAlertAnimated:YES];
-		[alertSheet autorelease];
 		[_defaults setObject:path forKey:BROWSERFILESKEY];
 	}
 	Debug (@"[_defaults lastBrowserPath] = %@", path);
