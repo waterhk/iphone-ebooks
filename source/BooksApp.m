@@ -415,7 +415,7 @@
     m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
     [m_progressIndicator setFontSize:6];
     [m_progressIndicator setText:@" "];
-    [m_transitionView addSubview:m_progressIndicator];
+    [mainView addSubview:m_progressIndicator];
     [m_progressIndicator show:YES];
   }
 }
