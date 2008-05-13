@@ -221,7 +221,7 @@
   // fire almost immediately.  Doing this with performSelectorOnMainThread: doesn't actually get back
   // to the runloop - we're already running in the main thread, so it just executes it directoy instead
   // of inserting a message for later.
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
+  [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
 }
 
 /**
@@ -318,7 +318,7 @@
   if([defaults uiOrientation] != 1) {
     // No sense triggering rotation if it isn't going to do anything - I think it also messed up the
     // clock at startup. -ZSB
-    [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
+    [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
   }
 }
 
