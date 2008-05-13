@@ -550,18 +550,14 @@
 - (void)cleanUpBeforeQuit {
 	FileNavigationItem *topItem = [navBar topItem];
 	NSString *filename = [topItem path];
-	GSLog(@"Saving last browser path: %@", filename);
 	[defaults setLastBrowserPath:filename];
 
 	// Need to kick the top-most EBookView.  It doesn't clean up on its own at shutdown.
-	UIView *top = [navBar topView];
+	UIView *top = [topItem view];
 	if([top isKindOfClass:[EBookView class]]) {
 		EBookView *eb = (EBookView*)top;
 		[eb saveBookPosition];
 	}
-
-	GSLog(@"Books is terminating.");
-	GSLog(@"========================================================");
 }
 
 /**
@@ -570,20 +566,24 @@
  * come back to Books without compeltely quitting it.
  */
 - (void)applicationWillSuspend {
-	if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
+	//if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
 		// Only clean up is we haven't done it yet (clean up sets this to NO)
 		[self cleanUpBeforeQuit];
-	}
+	//}
 }
 
 /**
  * Application suspend is called before the app is REALLY going to go down.
  */
 - (void)applicationSuspend:(struct __GSEvent *)fp8 {
-	if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
-		// Only clean up is we haven't done it yet (clean up sets this to NO)
-		[defaults setAppStatus:APPCLOSEDVALUE];
-	}
+	[defaults setAppStatus:APPCLOSEDVALUE];
+}
+
+/**
+ * Note sure when/if this gets called...
+ */
+- (void)anotherApplicationFinishedLaunching:(struct __GSEvent *)event {
+	[self applicationWillSuspend];
 }
 
 /*
@@ -851,9 +851,7 @@
 	return window;
 }
 
-- (void)anotherApplicationFinishedLaunching:(struct __GSEvent *)event {
-	[self applicationWillSuspend];
-}
+
 
 - (NSString *)currentBrowserPath {
 	return [[navBar topBrowser] path];

@@ -836,11 +836,13 @@
 - (void)saveBookPosition {
   if(path) {
     float pt = [self visibleRect].origin.y;
-//    GSLog(@"EBookView saving position %f for book %@", pt, path);
+
     [defaults setLastScrollPoint:pt
-                   forSubchapter:[self getSubchapter]
-                         forFile:[self currentPath]];
-    [defaults setLastSubchapter:subchapter forFile:[self currentPath]];
+                   forSubchapter:subchapter
+                         forFile:path];
+                         
+    [defaults setLastSubchapter:subchapter 
+                        forFile:path];
   }
 }
 
