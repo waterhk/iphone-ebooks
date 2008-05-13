@@ -586,6 +586,13 @@
 	[self applicationWillSuspend];
 }
 
+/**
+ * Fix the status bar location after a resume.
+ */
+- (void)applicationDidResume {
+  [self adjustStatusBarColorWithUiOrientation:[defaults uiOrientation]];
+}
+
 /*
  * Will suspend for events only is called before the app goes down when
  * the phone is probably going to switch to another app (phone call).
