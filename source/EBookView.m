@@ -378,14 +378,14 @@
 	clicked.y -= lOffset.y;
 	//BCC: swipe detection
 	BOOL lChangeChapter = NO;
-	if (clicked.y - _MouseDownY < 20 && clicked.y - _MouseDownY > -20)
+	if (clicked.y - _MouseDownY < 30 && clicked.y - _MouseDownY > -30)
 	{
-		if (clicked.x - _MouseDownX > 100 )
+		if (clicked.x - _MouseDownX > 80 )
 		{
       [[self delegate] chapBack:nil];
 			lChangeChapter = YES;
 		}
-		else if (clicked.x - _MouseDownX < -100)
+		else if (clicked.x - _MouseDownX < -80)
 		{
       [[self delegate] chapForward:nil];
 			lChangeChapter = YES;
