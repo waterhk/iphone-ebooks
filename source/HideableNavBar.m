@@ -162,18 +162,22 @@
   // If it's a book and it's not ready, then we're not ready.  Otherwise, we are.
   if([toView respondsToSelector:@selector(isReadyToShow)]) {
     // Note: Use the selector here instead of the class type.  Maybe the other view types will get ready indicators at some point.
+// Note BCC: this is why we ought to use a protocol instead of a selector
     EBookView *ebv = (EBookView*)toView;
     bCanShow = [ebv isReadyToShow];
+	GSLog(@"%s:%d %s can show:%i.",__FILE__, __LINE__, _cmd, (int)bCanShow);
   } 
   
   if(bCanShow) {
     // Do the transition
     [[self delegate] setNavForItem:destItem];
     if(m_bSkipNextTransition) {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
       m_bSkipNextTransition = NO;
       [_transView transition:0 toView:toView];
       [fromView removeFromSuperview];
     } else {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
       [_transView transition:[transition intValue] fromView:fromView toView:toView];
     }
     
@@ -190,8 +194,15 @@
     
     // Cleanup the startup image later so we can still use it to transition.
     [NSTimer scheduledTimerWithTimeInterval:0.5f target:[self delegate] selector:@selector(cleanupStartupImage) userInfo:nil repeats:NO];
+	  [(BooksApp*)[self delegate] setResizeOnly:NO];
+	  if ([(BooksApp*)[self delegate] orientationLocked])
+		  [(BooksApp*)[self delegate] setUIOrientation:[defaults uiOrientation]];
+	  //else
+		//  [(BooksApp*)[self delegate] setUIOrientation:[UIHardware deviceOrientation:YES]];
+	 
   } else {
     // Reschedule
+	  [(BooksApp*)[self delegate] setResizeOnly:YES];
     [NSTimer scheduledTimerWithTimeInterval:0.2f target:self selector:@selector(transitionViewsWhenReady:) userInfo:info repeats:NO];
   }
 }

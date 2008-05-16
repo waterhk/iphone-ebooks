@@ -27,6 +27,8 @@
 @interface UIOrientingApplication : UIApplication {
 	CGRect m_fullKeyBounds;
 	CGRect m_fullContentBounds;
+	bool resizeOnly;
+	bool freezeAnimation;
 	int orientations[7];
 	int orientationDegrees;
 	bool orientationLocked;
@@ -48,5 +50,7 @@
 - (CGRect)windowBounds;
 - (CGRect)contentBounds;
 - (bool)orientationLocked;
+- (void)setResizeOnly:(bool)iResizeOnly;
+- (void)freezeNextAnimation;
 
 @end

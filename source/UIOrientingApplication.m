@@ -37,6 +37,8 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	id rVal = [super init];
 	unsigned char i = 7;
 	while (i--) orientations[i] = defaultOrientations[i];
+	resizeOnly = NO;
+	freezeAnimation = NO;
 	orientationLocked = NO;
 	reorientationDuration = 0.35f;
 	orientationDegrees = -1;
@@ -54,6 +56,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 }
 
 - (void) lockUIToOrientation: (unsigned int)o_code {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	[self setUIOrientation: o_code];
 	[self lockUIOrientation];
 }
@@ -68,7 +71,14 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	[self setUIOrientation: [UIHardware deviceOrientation:YES]];
 }
 
+- (void)setResizeOnly:(bool)iResizeOnly{
+	resizeOnly = iResizeOnly;
+}
+- (void)freezeNextAnimation{
+	freezeAnimation = YES;
+}
 - (void) setUIOrientation: (unsigned int)o_code {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	if (o_code > 6) return;
 	/* Degrees should technically be a float, but without integers here, rounding errors seem to screw up the UI over time.
    The compiler will automatically cast to a float when appropriate API calls are made. */
@@ -82,7 +92,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	float statusBar = [UIHardware statusBarHeight];
 	
 	if (landscape) {
-		size.width -= statusBar;
+		 size.width -= statusBar;
 	} else size.height -= statusBar;
 	
 	m_fullKeyBounds.origin.x = (degrees == 90) ? statusBar : 0;
@@ -95,7 +105,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 	/* Now that our member variable is set, we try to apply these changes to the key view, if present.
    If this routine is called before there is a key view, it will still set the rects and move the statusbar. */
 	UIWindow *key = [UIWindow keyWindow];
-	if (key) {
+	if (key  && !resizeOnly) {
 		
 		[self setStatusBarMode:[self statusBarMode]
                orientation: (degrees == 180) ? 0 : degrees
@@ -112,7 +122,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
 					transEnd = CGAffineTransformMake(0, 1, -1, 0, 0, 0);
 					break;
 				case -90:
-					transEnd = CGAffineTransformMake(0, -1, 1, 0, 0, 0);
+					 transEnd = CGAffineTransformMake(0, -1, 1, 0, 0, 0);
 					break;
 				case 0:
 				default:
@@ -126,8 +136,9 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
                                                               orientation:o_code
                                                               forObject:transView]];
       
-      
+      if (!freezeAnimation)
 			[UIView beginAnimations: nil];
+
       [transView setTransform:transEnd];
       [transView setBounds:m_fullContentBounds];
       [transView resizeSubviewsWithOldSize: oldSize];
@@ -142,6 +153,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
                                                               forObject:transView]];
       
       [key setBounds: m_fullKeyBounds];
+      if (!freezeAnimation)
 			[UIView endAnimations];
 		} else {
       [key setBounds: m_fullKeyBounds];
@@ -152,6 +164,7 @@ static const int defaultOrientations[7] = {-1, 0, -1, 90, -90, -1, -1};
   
 	orientationDegrees = degrees;
 	[super setUIOrientation: o_code];
+	freezeAnimation = NO;
 }
 
 - (void) setAngleForOrientation: (unsigned int)o_code toDegrees: (int)degrees {

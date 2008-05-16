@@ -219,7 +219,7 @@
   
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
   // fire almost immediately.  Doing this with performSelectorOnMainThread: doesn't actually get back
-  // to the runloop - we're already running in the main thread, so it just executes it directoy instead
+  // to the runloop - we're already running in the main thread, so it just executes it directly instead
   // of inserting a message for later.
   [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
 }
@@ -245,6 +245,7 @@
  * last read file.  Takes down splash image if it was present.
  */
 - (void)finishUpLaunch {
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	NSString *recentFile = [defaults lastBrowserPath];
 
 	[self setupNavbar];
@@ -291,7 +292,7 @@
 		[self fileBrowser:nil fileSelected:curPath];
 	}
 
-
+	
 	if(readingText) {
 		/*
 		 * If we are reading text, then we DIDN'T finish setting up the navbar during
@@ -300,14 +301,21 @@
 		[self transitionNavbarAnimation];
 
 
+		GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 		// We don't want a transition if we already have an image of text on the screen.
 		if(![defaults startupIsCover]) {
 			[navBar skipNextTransition];
+			//only freeze the next rotation animation if a rotation is needed
+			if ([defaults uiOrientation] != 1)
+				[self freezeNextAnimation];
 		}
-		[navBar setTransitionOffView:m_startupImage];
+		else
+			[navBar setTransitionOffView:m_startupImage];
 
 		// Pushing the file onto the toolbar will trigger it being opened.
+		GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 		UIView *view = [self showDocumentAtPath:recentFile];    
+		GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 		FileNavigationItem *fni = [[FileNavigationItem alloc] initWithDocument:recentFile view:view];
 		[navBar pushNavigationItem:fni];
 		[fni release];
@@ -315,7 +323,7 @@
 
 	[arPathComponents release];
   
-  if([defaults uiOrientation] != 1) {
+  if([defaults uiOrientation] != 1 && !readingText) {
     // No sense triggering rotation if it isn't going to do anything - I think it also messed up the
     // clock at startup. -ZSB
     [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
@@ -462,6 +470,7 @@
 	  }
 
     [self showPleaseWait];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
     [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:ebv withObject:nil];
 
 	  ret = ebv;
@@ -987,10 +996,10 @@
 				[defaults setStartupIsCover:YES];
 				bGotShot = YES;
 			}
-			else GSLog(@"%s: could not create image");
+			else GSLog(@" could not create image");
 			CGContextRelease(bitmap);
 		} 
-		else GSLog(@"%s: could not create context");
+		else GSLog(@" could not create context");
 		CGColorSpaceRelease(space);
 	}
 
