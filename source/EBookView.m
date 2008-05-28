@@ -41,81 +41,82 @@
 	NSWindowsCP1252StringEncoding, NSMacOSRomanStringEncoding,NSASCIIStringEncoding, -1}; 
 
 @interface NSObject (HeartbeatDelegate)
-- (void)showNavbars;
-- (void)hideNavbars;
-- (UIView*)progressParentView;
-- (void)chapForward:(UINavBarButton *)button;
-- (void)chapBack:(UINavBarButton *)button;
-@end
+	- (void)showNavbars;
+	- (void)hideNavbars;
+	- (UIView*)progressParentView;
+	- (void)chapForward:(UINavBarButton *)button;
+	- (void)chapBack:(UINavBarButton *)button;
+	@end
 
 
-@implementation EBookView
+	@implementation EBookView
 
-- (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par {
+	- (id)initWithFrame:(struct CGRect)rect delegate:(id)p_del parentView:(UIView*)p_par {
 	if(self = [super initWithFrame:rect]) {
-    chapteredHTML = [[ChapteredHTML alloc] init];
-    subchapter    = 0;
-    defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
-    m_navBarsVisible = NO;
-    m_readyToShow = NO;
-    
-    [self setAdjustForContentSizeChange:YES];
-    [self setEditable:NO];
+		chapteredHTML = [[ChapteredHTML alloc] init];
+		subchapter    = 0;
+		defaults      = [BooksDefaultsController sharedBooksDefaultsController]; 
+		m_navBarsVisible = NO;
+		m_readyToShow = NO;
 
-    [self setTextSize:16.0f];
-    [self setTextFont:@"TimesNewRoman"];
+		[self setAdjustForContentSizeChange:YES];
+		[self setEditable:NO];
 
-    [self setAllowsRubberBanding:YES];
-    [self setBottomBufferHeight:0.0f];
+		[self setTextSize:16.0f];
+		[self setTextFont:@"TimesNewRoman"];
 
-    [self scrollToMakeCaretVisible:NO];
-    
-    [self setScrollDecelerationFactor:0.996f];
-    [self setTapDelegate:self];
-    [self setScrollerIndicatorsPinToContent:NO];
-    
-    lastVisibleRect = [self visibleRect];
-    [self scrollSpeedDidChange:nil];
-    
-    [self setDelegate:p_del];
-    [self setupScrollerWithFrame:[self bounds] parent:p_par];
-   
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                         selector:@selector(scrollSpeedDidChange:)
-                           name:CHANGEDSCROLLSPEED
-                           object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(boundsDidChange:)
-                                                 name:[BoundsChangedNotification didChangeName]
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(boundsDidChange:)
-                                                 name:[BoundsChangedNotification didChangeName]
-                                               object:nil];
-    
-    // Need to reload the book if encoding changes.
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadBook)
-                                                 name:ENCODINGSELECTED
-                                               object:nil];
-    
-    
-  }
-  
+		[self setAllowsRubberBanding:YES];
+		[self setBottomBufferHeight:0.0f];
+
+		[self scrollToMakeCaretVisible:NO];
+
+		[self setScrollDecelerationFactor:0.996f];
+		[self setTapDelegate:self];
+		[self setScrollerIndicatorsPinToContent:NO];
+
+		lastVisibleRect = [self visibleRect];
+		GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
+		[self scrollSpeedDidChange:nil];
+
+		[self setDelegate:p_del];
+		[self setupScrollerWithFrame:[self bounds] parent:p_par];
+
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(scrollSpeedDidChange:)
+													 name:CHANGEDSCROLLSPEED
+												   object:nil];
+
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(boundsDidChange:)
+													 name:[BoundsChangedNotification didChangeName]
+												   object:nil];
+
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(boundsDidChange:)
+													 name:[BoundsChangedNotification didChangeName]
+												   object:nil];
+
+		// Need to reload the book if encoding changes.
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(reloadBook)
+													 name:ENCODINGSELECTED
+												   object:nil];
+
+
+	}
+
 	return self;
-}
+	}
 
 /**
  * Reload the book from file - to apply new text encoding.
  */
 - (void)reloadBook {
-  // FIXME: Scroll point isn't restored
+	// FIXME: Scroll point isn't restored
   [defaults setLastScrollPoint:lastVisibleRect.origin.y
-                 forSubchapter:[self getSubchapter]
-                       forFile:[self currentPath]];
-  
+				 forSubchapter:[self getSubchapter]
+					   forFile:[self currentPath]];
+
   [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:self withObject:nil];
 }
 
@@ -123,76 +124,85 @@
  * Setup the scroll slider.
  */
 - (void)setupScrollerWithFrame:(struct CGRect)p_bounds parent:(UIView*)p_par {
-  if(m_scrollerSlider == nil) {
-    CGRect scrollerRect = CGRectMake(0, TOOLBAR_HEIGHT, p_bounds.size.width, TOOLBAR_HEIGHT);
-    m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
-    
-    [p_par addSubview:m_scrollerSlider];
-    float backParts[4] = {0, 0, 0, .5};
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    [m_scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
-    [m_scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
-    [m_scrollerSlider setAlpha:0];
-    
-    UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
-    [m_scrollerSlider setMinValueImage:img];
-    [m_scrollerSlider setMaxValueImage:img];
-    
-    [self updateSliderPosition];
-  }
+	if(m_scrollerSlider == nil) {
+		CGRect scrollerRect = CGRectMake(0, TOOLBAR_HEIGHT, p_bounds.size.width, TOOLBAR_HEIGHT);
+		m_scrollerSlider = [[UISliderControl alloc] initWithFrame:scrollerRect];
+
+		[p_par addSubview:m_scrollerSlider];
+		float backParts[4] = {0, 0, 0, .5};
+		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+		[m_scrollerSlider setBackgroundColor: CGColorCreate( colorSpace, backParts)];
+		[m_scrollerSlider addTarget:self action:@selector(handleSlider:) forEvents:7];
+		[m_scrollerSlider setAlpha:0];
+
+		UIImage *img = [UIImage applicationImageNamed:@"ReadIndicator.png"];
+		[m_scrollerSlider setMinValueImage:img];
+		[m_scrollerSlider setMaxValueImage:img];
+
+		[self updateSliderPosition];
+	}
 }
 
 /**
  * Update our visible rect before rotate happens.
  */
 - (void)boundsWillChange:(BoundsChangedNotification*)p_note {
-  lastVisibleRect = [self visibleRect];
+	lastVisibleRect = [self visibleRect];
+	GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
 }  
 
 /**
  * Notification when our bounds change - we probably rotated.
  */
 - (void)boundsDidChange:(BoundsChangedNotification*)p_note {
-  struct CGRect oldB = [p_note oldBounds];
-  struct CGRect newB = [p_note newBounds];
-  
-  // Figure out where we need to scroll.  We'll apply it in the timer at the end of this function.
-  float scrollPercent = lastVisibleRect.origin.y / oldB.size.height; 
-  NSNumber *scroll = [NSNumber numberWithFloat:(scrollPercent * newB.size.height)];
-  
-  [self setFrame:newB];
-  
-  if(m_bDocIsHtml) {
-    id html = [[self HTML] retain];
-    [self setHTML:html];
-    [html release]; 
-  } else {
-    id txt = [[self text] retain];
-    [self setText:txt];
-    [txt release];
-  }
-  
-  // Recreate the slider
-  UIView *scrollParent = [[m_scrollerSlider superview] retain];
-  [m_scrollerSlider removeFromSuperview];
-  [m_scrollerSlider release];
-  m_scrollerSlider = nil;
-  [self setupScrollerWithFrame:newB parent:scrollParent];
-  [scrollParent release];
-  
-  // Setup to fix the visibleRect
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(afterRotate:) userInfo:scroll repeats:NO];
+	struct CGRect oldB = [p_note oldBounds];
+	struct CGRect newB = [p_note newBounds];
+
+	GSLog(@"%s:%d %s oldBounds: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, oldB.origin.x, oldB.origin.y, oldB.size.width, oldB.size.height);
+	GSLog(@"%s:%d %s newBounds: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, newB.origin.x, newB.origin.y, newB.size.width, newB.size.height);
+	// Figure out where we need to scroll.  We'll apply it in the timer at the end of this function.
+	//float scrollPercent = lastVisibleRect.origin.y / oldB.size.height; 
+	NSNumber *factor = [NSNumber numberWithFloat:(newB.size.height/oldB.size.height)];
+
+	GSLog(@"%s:%d %s factor: %@.",__FILE__, __LINE__, _cmd, factor);
+	[self setFrame:newB];
+
+	if(m_bDocIsHtml) {
+		id html = [[self HTML] retain];
+		[self setHTML:html];
+		[html release]; 
+	} else {
+		id txt = [[self text] retain];
+		[self setText:txt];
+		[txt release];
+	}
+
+	// Recreate the slider
+	UIView *scrollParent = [[m_scrollerSlider superview] retain];
+	[m_scrollerSlider removeFromSuperview];
+	[m_scrollerSlider release];
+	m_scrollerSlider = nil;
+	[self setupScrollerWithFrame:newB parent:scrollParent];
+	[scrollParent release];
+
+	// Setup to fix the visibleRect
+	[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(afterRotate:) userInfo:factor repeats:NO];
 }
 
 /**
  * Update our visible rect and rescroll once any rotations are done.
  */
 - (void)afterRotate:(NSTimer*)p_tmr {
-  NSNumber *scroll = [p_tmr userInfo];  
-  [self scrollToPoint:[scroll floatValue]];
-  
-  lastVisibleRect = [self visibleRect];
-  [self updateSliderPosition];
+		 GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
+		 NSNumber *factor = [p_tmr userInfo];  
+		 struct CGRect lCurVisRect = [self visibleRect];
+		 float scroll = lastVisibleRect.origin.y * lCurVisRect.size.height/lastVisibleRect.size.height; 
+		 GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
+		 [self scrollToPoint:scroll];
+
+		 //lastVisibleRect = [self visibleRect];
+		 GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
+		 [self updateSliderPosition];
 }
 
 
@@ -200,55 +210,56 @@
  * Make sure our lastVisible gets updated after a scroll event.
  */
 - (void)_scrollAnimationEnded {
-  lastVisibleRect = [self visibleRect];
-  [super _scrollAnimationEnded];
+	lastVisibleRect = [self visibleRect];
+	GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
+	[super _scrollAnimationEnded];
 }
 
 /**
  * Hide the nav bars and slider.
  */
 - (void)hideNavbars {
-  if(m_navBarsVisible) {
-    [self hideSlider];
-    if ([self delegate] != nil) {
-      if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
-        [[self delegate] hideNavbars];
-      }
-    }
-    m_navBarsVisible = NO;
-  }
+	if(m_navBarsVisible) {
+		[self hideSlider];
+		if ([self delegate] != nil) {
+			if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
+				[[self delegate] hideNavbars];
+			}
+		}
+		m_navBarsVisible = NO;
+	}
 }
 
 /**
  * Toggle visibility of the navbars and slider.
  */
 - (void)toggleNavbars {
-  if(m_navBarsVisible) {
-    // Hide the navbars
-    [self hideSlider];
-    if ([self delegate] != nil) {
-      if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
-        [[self delegate] hideNavbars];
-      }
-    }
-    m_navBarsVisible = NO;
-  } else {
-    // Show the nav bars
-    [self showSlider];
-    if ([self delegate] != nil) {
-      if ([[self delegate] respondsToSelector:@selector(showNavbars)]) {
-        [[self delegate] showNavbars];
-      }
-    }
-    m_navBarsVisible = YES;
-  }
+	if(m_navBarsVisible) {
+		// Hide the navbars
+		[self hideSlider];
+		if ([self delegate] != nil) {
+			if ([[self delegate] respondsToSelector:@selector(hideNavbars)]) {
+				[[self delegate] hideNavbars];
+			}
+		}
+		m_navBarsVisible = NO;
+	} else {
+		// Show the nav bars
+		[self showSlider];
+		if ([self delegate] != nil) {
+			if ([[self delegate] respondsToSelector:@selector(showNavbars)]) {
+				[[self delegate] showNavbars];
+			}
+		}
+		m_navBarsVisible = YES;
+	}
 }
 
 /**
  * Figure out where the scroller should be based on the currently visible portion of the document.
  */
 - (void)updateSliderPosition {
-  CGRect theWholeShebang = [[self _webView] frame];  
+	CGRect theWholeShebang = [[self _webView] frame];  
 	CGRect lDefRect = [self bounds];
 	CGRect visRect = [self visibleRect];
 	int endPos = (int)theWholeShebang.size.height - lDefRect.size.height;
@@ -261,15 +272,15 @@
  * Show the scroll slider.
  */
 - (void)showSlider {
-  [self updateSliderPosition];
-  [m_scrollerSlider setAlpha:1];
+	[self updateSliderPosition];
+	[m_scrollerSlider setAlpha:1];
 }
 
 /**
  * Hide the scroll slider.
  */
 - (void)hideSlider {
-  [m_scrollerSlider setAlpha:0];
+	[m_scrollerSlider setAlpha:0];
 }
 
 /**
@@ -306,17 +317,17 @@
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
 		[self setTextSize:[self textSize] + 2.0f];
-           
-    [self recalculateStyle];
-    [self webViewDidChange:nil];
+
+		[self recalculateStyle];
+		[self webViewDidChange:nil];
 		[self setNeedsDisplay];
-    
-    totalRect = [[self _webView] frame];
+
+		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
-    
-    [self updateSliderPosition];
+
+		[self updateSliderPosition];
 	}
 }
 
@@ -331,17 +342,17 @@
 		struct CGRect totalRect = [[self _webView] frame];
 		float middleRect = oldRect.origin.y + (oldRect.size.height / 2);
 		float scrollFactor = middleRect / totalRect.size.height;
- 		[self setTextSize:[self textSize] - 2.0f];
-    [self recalculateStyle];
-    [self webViewDidChange:nil];
+		[self setTextSize:[self textSize] - 2.0f];
+		[self recalculateStyle];
+		[self webViewDidChange:nil];
 		[self setNeedsDisplay];
-    
-    totalRect = [[self _webView] frame];
+
+		totalRect = [[self _webView] frame];
 		middleRect = scrollFactor * totalRect.size.height;
 		oldRect.origin.y = middleRect - (oldRect.size.height / 2);
 		[self scrollPointVisibleAtTopLeft:oldRect.origin animated:NO];
-    
-    [self updateSliderPosition];
+
+		[self updateSliderPosition];
 	}
 }
 
@@ -362,7 +373,8 @@
 	_MouseDownX = clicked.x ;
 	_MouseDownY = clicked.y;
 	[super mouseDown:event];
-  lastVisibleRect = [self visibleRect];
+	lastVisibleRect = [self visibleRect];
+	GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
 }
 
 /**
@@ -382,54 +394,55 @@
 	{
 		if (clicked.x - _MouseDownX > 80 )
 		{
-      [[self delegate] chapBack:nil];
+			[[self delegate] chapBack:nil];
 			lChangeChapter = YES;
 		}
 		else if (clicked.x - _MouseDownX < -80)
 		{
-      [[self delegate] chapForward:nil];
+			[[self delegate] chapForward:nil];
 			lChangeChapter = YES;
 		}
 	}
 
-  if(!lChangeChapter) {
-    struct CGRect newRect = [self visibleRect];
-    struct CGRect contentRect = [self bounds];
-    int lZoneHeight = [defaults enlargeNavZone] ? TOOLBAR_HEIGHT+30 : TOOLBAR_HEIGHT;
+	if(!lChangeChapter) {
+		struct CGRect newRect = [self visibleRect];
+		struct CGRect contentRect = [self bounds];
+		int lZoneHeight = [defaults enlargeNavZone] ? TOOLBAR_HEIGHT+30 : TOOLBAR_HEIGHT;
 
-    struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
-    struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
+		struct CGRect topTapRect = CGRectMake(0, 0, newRect.size.width, lZoneHeight);
+		struct CGRect botTapRect = CGRectMake(0, contentRect.size.height - lZoneHeight, contentRect.size.width, lZoneHeight);
 
-    if ([self isScrolling]) {
-      if (CGRectEqualToRect(lastVisibleRect, newRect)) {
-        if (CGRectContainsPoint(topTapRect, clicked)) {
-          if ([defaults inverseNavZone]) {
-            //scroll forward one screen...
-            [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-          } else {
-            //scroll back one screen...
-            [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-          }
-        } else if (CGRectContainsPoint(botTapRect,clicked)) {
-          if ([defaults inverseNavZone]) {
-            //scroll back one screen...
-            [self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
-          } else {
-            //scroll forward one screen...
-            [self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
-          }
-        } else {  // If the old rect equals the new, then we must not be scrolling
-          [self toggleNavbars];
-        }
-      }	else {
-        //we are, in fact, scrolling
-        [self hideNavbars];
-      }
-    }
-  }
+		if ([self isScrolling]) {
+			if (CGRectEqualToRect(lastVisibleRect, newRect)) {
+				if (CGRectContainsPoint(topTapRect, clicked)) {
+					if ([defaults inverseNavZone]) {
+						//scroll forward one screen...
+						[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
+					} else {
+						//scroll back one screen...
+						[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
+					}
+				} else if (CGRectContainsPoint(botTapRect,clicked)) {
+					if ([defaults inverseNavZone]) {
+						//scroll back one screen...
+						[self pageUpWithTopBar:NO bottomBar:![defaults toolbar]];
+					} else {
+						//scroll forward one screen...
+						[self pageDownWithTopBar:![defaults navbar] bottomBar:NO];
+					}
+				} else {  // If the old rect equals the new, then we must not be scrolling
+					[self toggleNavbars];
+				}
+			}	else {
+				//we are, in fact, scrolling
+				[self hideNavbars];
+			}
+		}
+	}
 
-  [self releaseRubberBandIfNecessary];
+	[self releaseRubberBandIfNecessary];
 	lastVisibleRect = [self visibleRect];
+	GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
 	[super mouseUp:event];
 }
 
@@ -446,8 +459,8 @@
 	// That little dance above was so we only scroll in
 	// multiples of the text size.  And it doesn't even work!
 	[self scrollByDelta:CGSizeMake(0, scrollness)	animated:YES];
-  
-  [self updateSliderPosition];
+
+	[self updateSliderPosition];
 	//[self hideNavbars];
 }
 
@@ -464,8 +477,8 @@
 	// That little dance above was so we only scroll in
 	// multiples of the text size.  And it doesn't even work!
 	[self scrollByDelta:CGSizeMake(0, -scrollness) animated:YES];
-  
-  [self updateSliderPosition];
+
+	[self updateSliderPosition];
 	//[self hideNavbars];
 }
 
@@ -474,13 +487,13 @@
  */
 - (void)scrollSpeedDidChange:(NSNotification *)aNotification {
 	switch ([defaults scrollSpeedIndex]) {
-  case 0:
+		case 0:
 	  [self setScrollToPointAnimationDuration:0.75];
 	  break;
-	case 1:
+		case 1:
 	  [self setScrollToPointAnimationDuration:0.25];
 	  break;
-	case 2:
+		case 2:
 	  [self setScrollToPointAnimationDuration:0.0];
 	  break;
 	}
@@ -490,7 +503,7 @@
  * Return YES if content is loaded and we're ready to transition.
  */
 - (BOOL)isReadyToShow {
-  return m_readyToShow;
+	return m_readyToShow;
 }
 
 #pragma mark File Reading Methods START
@@ -500,22 +513,22 @@
  * Use for deferred loading with progress bars, etc.
  */
 - (void)setBookPath:(NSString*)p_path subchapter:(int)p_chap {
-  m_readyToShow = NO;
-  [p_path retain];
-  [path release];
-  path = p_path;
-  subchapter = p_chap;
-  
-  [defaults setLastSubchapter:p_chap forFile:p_path]; // Update 'read' indicator
+	m_readyToShow = NO;
+	[p_path retain];
+	[path release];
+	path = p_path;
+	subchapter = p_chap;
+
+	[defaults setLastSubchapter:p_chap forFile:p_path]; // Update 'read' indicator
 }
 
 /**
  * Call from main runloop so progres hud displays.
  */
 - (void)reallyLoadBook {
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  [self loadBookWithPath:path subchapter:subchapter];
-  [pool release];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	[self loadBookWithPath:path subchapter:subchapter];
+	[pool release];
 }
 
 /**
@@ -527,16 +540,16 @@
  * @param theSubchapter subchapter number for chaptered HTML
  */
 - (void)loadBookWithPath:(NSString *)thePath subchapter:(int)theSubchapter {
-  m_readyToShow = NO;
-  GSLog(@"Loading book %@", thePath);
-  
-  // Update the 'read' indicator for the file browser
-  [defaults setLastSubchapter:theSubchapter forFile:thePath];
-  
+	m_readyToShow = NO;
+	GSLog(@"Loading book %@", thePath);
+
+	// Update the 'read' indicator for the file browser
+	[defaults setLastSubchapter:theSubchapter forFile:thePath];
+
 	NSMutableString *theHTML = nil;
-  
-  [thePath retain];
-  [path release];
+
+	[thePath retain];
+	[path release];
 	path = thePath;
 
 	NSString *pathExt = [[thePath pathExtension] lowercaseString];
@@ -565,20 +578,20 @@
 
 		// Plain text types don't need to go through all the HTML conversion leg work.
 		if([@"htm" isEqualToString:retType]) {
-      // We assume that the HTML generated from converting a Palm book format is 
-      // valid - we generated it ourselves, so it should be!  Run it through an
-      // abbreviated HTMLFixer which fixes image widths if necessary, but doesn't
-      // apply all of the other regex fixes.
-		  [HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
-		  m_bDocIsHtml = YES;
+			// We assume that the HTML generated from converting a Palm book format is 
+			// valid - we generated it ourselves, so it should be!  Run it through an
+			// abbreviated HTMLFixer which fixes image widths if necessary, but doesn't
+			// apply all of the other regex fixes.
+			[HTMLFixer fixHTMLString:theHTML filePath:thePath imageOnly:YES];
+			m_bDocIsHtml = YES;
 		} else {
 			m_bDocIsHtml = NO;
 		}
 	}
-  
-  // Need to set the text or html on the main thread, otherwise images don't load
-  [self performSelectorOnMainThread:@selector(setContent:) withObject:theHTML waitUntilDone:NO];
-  
+
+	// Need to set the text or html on the main thread, otherwise images don't load
+	[self performSelectorOnMainThread:@selector(setContent:) withObject:theHTML waitUntilDone:NO];
+
 	/* This code doesn't work.  Sorry, charlie.
 	   if (1) //replace with a defaults check
 	   { 
@@ -601,55 +614,55 @@
  * @param p_content text or html content for the book.
  */
 - (void)setContent:(NSString*)p_content {
-  if(m_bDocIsHtml) {
-    if ([defaults subchapteringEnabled] == NO) {
-      [self setHTML:p_content];
-      subchapter = 0;
-    } else {
-      int theSubchapter = [defaults lastSubchapterForFile:path];
-      
-      [chapteredHTML setHTML:p_content];
-      
-      if (theSubchapter < [chapteredHTML chapterCount])
-        subchapter = theSubchapter;
-      else
-        subchapter = 0;
-      
-      [self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-    }
-  } else {
-    [self setText:p_content];
-  }
-  
-  m_readyToShow = YES;
+	if(m_bDocIsHtml) {
+		if ([defaults subchapteringEnabled] == NO) {
+			[self setHTML:p_content];
+			subchapter = 0;
+		} else {
+			int theSubchapter = [defaults lastSubchapterForFile:path];
+
+			[chapteredHTML setHTML:p_content];
+
+			if (theSubchapter < [chapteredHTML chapterCount])
+				subchapter = theSubchapter;
+			else
+				subchapter = 0;
+
+			[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
+		}
+	} else {
+		[self setText:p_content];
+	}
+
+	m_readyToShow = YES;
 }
 
 /**
  * Convert Palm data to string using proper text encoding.
  */
 - (NSMutableString *)convertPalmDoc:(NSData*)p_data {
-  NSMutableString *originalText;
-  
-  int i=0;
-  NSStringEncoding encList[] = ENCODING_LIST;
-  NSStringEncoding curEnc = encList[i];
-  while(curEnc != -1) {
-    //GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-    originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
-    
-    if(originalText != nil) {
-      //GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      break;
-    }
-    
-    curEnc = encList[++i];
-  }
-  
-  if(originalText == nil) {
-    originalText = [[NSMutableString alloc] initWithString:
-                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-  }
-  
+	NSMutableString *originalText;
+
+	int i=0;
+	NSStringEncoding encList[] = ENCODING_LIST;
+	NSStringEncoding curEnc = encList[i];
+	while(curEnc != -1) {
+		//GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+		originalText = [[NSMutableString alloc] initWithData:p_data encoding:curEnc];
+
+		if(originalText != nil) {
+			//GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			break;
+		}
+
+		curEnc = encList[++i];
+	}
+
+	if(originalText == nil) {
+		originalText = [[NSMutableString alloc] initWithString:
+			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
+
 	return [originalText autorelease];  
 }
 
@@ -658,34 +671,34 @@
  * or with a list of common encodings, convert to HTML and return.
  */
 - (NSMutableString *)readTextFile:(NSString *)file {  
-  NSMutableString *originalText;
-  
-  int i=0;
-  NSStringEncoding encList[] = ENCODING_LIST;
-  NSStringEncoding curEnc = encList[i];
-  while(curEnc != -1) {
-    
-    if(curEnc == AUTOMATIC_ENCODING) {
-      //GSLog(@"Trying automatic encoding");
-      originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
-    } else {
-      //GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
-    }
-    
-    if(originalText != nil) {
-      //GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
-      break;
-    }
-    
-    curEnc = encList[++i];
-  }
-  
-  if(originalText == nil) {
-    originalText = [[NSMutableString alloc] initWithString:
-                    @"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
-  }
-  
+	NSMutableString *originalText;
+
+	int i=0;
+	NSStringEncoding encList[] = ENCODING_LIST;
+	NSStringEncoding curEnc = encList[i];
+	while(curEnc != -1) {
+
+		if(curEnc == AUTOMATIC_ENCODING) {
+			//GSLog(@"Trying automatic encoding");
+			originalText = [[NSMutableString alloc] initWithContentsOfFile:file usedEncoding:&curEnc error:NULL];
+		} else {
+			//GSLog(@"Trying encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			originalText = [[NSMutableString alloc] initWithContentsOfFile:file encoding:curEnc error:NULL];
+		}
+
+		if(originalText != nil) {
+			//GSLog(@"Successfully opened with encoding: %@", CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(curEnc)));
+			break;
+		}
+
+		curEnc = encList[++i];
+	}
+
+	if(originalText == nil) {
+		originalText = [[NSMutableString alloc] initWithString:
+			@"Could not determine text encoding.  Try changing the text encoding settings in Preferences.\n\n"];
+	}
+
 	return [originalText autorelease];  
 }
 
@@ -724,8 +737,8 @@
 		[self setScrollerIndicatorStyle:0];
 	}
 
-  // setFrame makes the colors reverse properly.
-  [self setFrame:[self frame]];
+	// setFrame makes the colors reverse properly.
+	[self setFrame:[self frame]];
 	[self setNeedsDisplay];
 }
 
@@ -753,32 +766,32 @@
  */
 - (BOOL)setSubchapter:(int)chapter {
 	if ([defaults subchapteringEnabled] && chapter >= 0 && (chapter < [chapteredHTML chapterCount])) {
-    GSLog(@"Set subchapter to %d", chapter);
-    subchapter = chapter;
-    [self saveBookPosition];
+		GSLog(@"Set subchapter to %d", chapter);
+		subchapter = chapter;
+		[self saveBookPosition];
 		[self setHTML:[chapteredHTML getChapterHTML:subchapter]];
-    [self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
-    [self recalculateStyle];
-    [self updateWebViewObjects];
-    [self setNeedsDisplay]; 
-    return YES;
+		[self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
+		[self recalculateStyle];
+		[self updateWebViewObjects];
+		[self setNeedsDisplay]; 
+		return YES;
 	} else {
-    return NO;
-  }
+		return NO;
+	}
 }
 
 /**
  * Go to the next HTML chapter.
  */
 - (BOOL)gotoNextSubchapter {
-  return [self setSubchapter:subchapter+1];
+	return [self setSubchapter:subchapter+1];
 }
 
 /**
  * Change to the previous HTML chapter.
  */
 - (BOOL) gotoPreviousSubchapter {
-  return [self setSubchapter:subchapter-1];
+	return [self setSubchapter:subchapter-1];
 }
 
 - (BOOL)canHandleSwipes {
@@ -786,82 +799,85 @@
 }
 
 - (void)applyTextDisplayPreferences {
-  [self setTextSize:[defaults textSize]];
-  [self invertText:[defaults inverted]];
-  [self setTextFont:[defaults textFont]];
-  
-  /*
-   * This is a kludge for some weird threading issues.  We need to perform this from a timer on the main
-   * thread in order for the scroll point to be updated.  I've tried numerous combinations of the various
-   * thread and perform selector methods.  This seems to be the only one that works.  The navbar will
-   * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
-   * and all is well. -ZSB 16-Mar-2008
-   */
-  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyBarPreferences) userInfo:nil repeats:NO];
+	[self setTextSize:[defaults textSize]];
+	[self invertText:[defaults inverted]];
+	[self setTextFont:[defaults textFont]];
+
+	/*
+	 * This is a kludge for some weird threading issues.  We need to perform this from a timer on the main
+	 * thread in order for the scroll point to be updated.  I've tried numerous combinations of the various
+	 * thread and perform selector methods.  This seems to be the only one that works.  The navbar will
+	 * call this method once the flurry or transitions is done.  Then we schedule a timer on ourself
+	 * and all is well. -ZSB 16-Mar-2008
+	 */
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
+	[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(applyBarPreferences) userInfo:nil repeats:NO];
 }
 
 /**
  * Apply various defaults to the given EBookView.
  */
 - (void)applyBarPreferences {
-
-  // FIXME: This toolbar/navbar stuff needs to react to hide/show
+	// FIXME: This toolbar/navbar stuff needs to react to hide/show
 	if (![defaults navbar]) {
 		[self setMarginTop:TOOLBAR_HEIGHT];
-  } else {
+	} else {
 		[self setMarginTop:0];
-  }
-  
+	}
+
 	if (![defaults toolbar]) {
 		[self setBottomBufferHeight:TOOLBAR_HEIGHT];
 	} else {
 		[self setBottomBufferHeight:0];
-  }
+	}
 
-  // Restore scroll location
-  [self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
+	// Restore scroll location
+	[self scrollToPoint:[defaults lastScrollPointForFile:path inSubchapter:subchapter]];
 }
 
 /**
  * Scrolls to the given point by waking up the heartbeat for one pulse.
  */
 - (void)scrollToPoint:(float)p_pt {
-//  GSLog(@"Scrolling book position to %f", p_pt);
-  [self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, p_pt) animated:NO];
+	GSLog(@"Scrolling book position to %f", p_pt);
+	[self scrollPointVisibleAtTopLeft:CGPointMake(0.0f, p_pt) animated:NO];
+	lastVisibleRect = [self visibleRect];
+	GSLog(@"%s:%d %s rect: x:%f, y:%f, h:%f, w:%f.",__FILE__, __LINE__, _cmd, lastVisibleRect.origin.x, lastVisibleRect.origin.y, lastVisibleRect.size.width, lastVisibleRect.size.height);
 }
 
 /**
  * Save the current chapter and scroll point to preferences.
  */
 - (void)saveBookPosition {
-  if(path) {
-    float pt = [self visibleRect].origin.y;
+	if(path) {
+		float pt = [self visibleRect].origin.y;
 
-    [defaults setLastScrollPoint:pt
-                   forSubchapter:subchapter
-                         forFile:path];
-                         
-    [defaults setLastSubchapter:subchapter 
-                        forFile:path];
-  }
+		[defaults setLastScrollPoint:pt
+					   forSubchapter:subchapter
+							 forFile:path];
+
+		[defaults setLastSubchapter:subchapter 
+							forFile:path];
+	}
 }
 
 /**
  * Cleanup.
  */
 - (void)dealloc {
-  GSLog(@"Book dealloc");
-  [self saveBookPosition];
-  
+	GSLog(@"Book dealloc");
+	[self saveBookPosition];
+
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
- 
-  [m_scrollerSlider removeFromSuperview];
-  [m_scrollerSlider release];
-	
-  [path release];
+
+	[m_scrollerSlider removeFromSuperview];
+	[m_scrollerSlider release];
+
+	[path release];
 	[chapteredHTML release];
 	[defaults release];
-  
+
 	[super dealloc];
 }
 @end
