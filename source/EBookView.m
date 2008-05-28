@@ -91,10 +91,10 @@
 													 name:[BoundsChangedNotification didChangeName]
 												   object:nil];
 
-		[[NSNotificationCenter defaultCenter] addObserver:self
-												 selector:@selector(boundsDidChange:)
-													 name:[BoundsChangedNotification didChangeName]
-												   object:nil];
+//		[[NSNotificationCenter defaultCenter] addObserver:self
+//												 selector:@selector(boundsDidChange:)
+//													 name:[BoundsChangedNotification didChangeName]
+//												   object:nil];
 
 		// Need to reload the book if encoding changes.
 		[[NSNotificationCenter defaultCenter] addObserver:self
