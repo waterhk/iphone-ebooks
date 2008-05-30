@@ -73,8 +73,14 @@ enum PreferenceAnimationType;
 	 * to the file browser.
 	 */
 	BOOL m_openedFirstDoc;
+    float                    initVol;
+    float                    curVol;
+    bool                     volChanged;
+
 }
 
+- (void)clearVolumeChanged:(id)unused;
+- (void) volumeChanged:(NSNotification *)notify;
 + (void)debugNotification:(NSNotification*)p_note;
 - (void)showPleaseWait;
 - (void)hidePleaseWait;

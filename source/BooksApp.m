@@ -1,21 +1,23 @@
 /* ------ BooksApp, written by Zachary Brewster-Geisz
    (and others)
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; version 2
-   of the License.
+   contains code from 
+ * textReader.app -  kludged up by Jim Beesley for volume control of page turning
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; version 2
+ of the License.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
+#import <Celestial/AVSystemController.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIWindow.h>
@@ -71,20 +73,20 @@
  */
 - (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button {
 	[sheet dismissAnimated:YES];
-  [sheet release];
-  
-   // It's a warning dialog for file access problems
-  if(button != 1) {
-    // Help button for warning dialog: show website.
-    NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
-    [UIApp openURL:websiteURL];
-  } else if(!m_openedFirstDoc) {
+	[sheet release];
+
+	// It's a warning dialog for file access problems
+	if(button != 1) {
+		// Help button for warning dialog: show website.
+ NSURL *websiteURL = [NSURL URLWithString:PERMISSION_HELP_URL_STRING];
+ [UIApp openURL:websiteURL];
+	} else if(!m_openedFirstDoc) {
 		// FIXME: Quit!
 		[UIApp terminateWithSuccess];
 	}
- 
-  [defaults setRotateLocked:[defaults isRotateLocked]];
-//	[self setUIOrientation:uiOrientation];
+
+	[defaults setRotateLocked:[defaults isRotateLocked]];
+	//	[self setUIOrientation:uiOrientation];
 }
 
 /**
@@ -128,7 +130,7 @@
 
 	UIView *topView = [navBar topView];
 	if([topView isKindOfClass:[FileBrowser class]]) {
-    [NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
+	[NSTimer scheduledTimerWithTimeInterval:0.2f target:navBar selector:@selector(show) userInfo:nil repeats:NO];
 	}
 
 	[self adjustStatusBarColorWithUiOrientation:[p_note uiOrientationCode]];
@@ -141,20 +143,20 @@
 
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
-  
+
   NSString *lAppStatus = [defaults appStatus];
 
   if ([lAppStatus isEqualToString: APPOPENVALUE]) {
-		// I think it's enough to just clear out the last read path -- no need to kill the whole
-		// prefs file.  Probably also no need to prompt since clearing the last read book isn't that
-		// big a deal (as compared to trashing the entire prefs). -ZSB
-		[defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
+	  // I think it's enough to just clear out the last read path -- no need to kill the whole
+	  // prefs file.  Probably also no need to prompt since clearing the last read book isn't that
+	  // big a deal (as compared to trashing the entire prefs). -ZSB
+	  [defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
   }
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
 
-	[defaults setRotateLocked:[defaults isRotateLocked]];
-  
+  [defaults setRotateLocked:[defaults isRotateLocked]];
+
   [[NSNotificationCenter defaultCenter] addObserver:self
 										   selector:@selector(updateToolbar:)
 											   name:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION
@@ -216,12 +218,99 @@
 											 object:nil];
 
   [self showPleaseWait];
-  
+
+  // // Volume scrolling ...  
+  [self setSystemVolumeHUDEnabled:NO];
+
+  AVSystemController *avsc = [AVSystemController sharedAVSystemController];
+
+  [[NSNotificationCenter defaultCenter] addObserver:self 
+										   selector:@selector(volumeChanged:) 
+											   name:@"AVSystemController_SystemVolumeDidChangeNotification" 
+											 object:avsc];
+
+  NSString *name;
+  [avsc getActiveCategoryVolume:&initVol andName:&name];
+
+  // We need to set the current volume so it has some up and down room
+  // Can't do this here because the HUDEnabled:NO has not yet taken effect - use a timer
+			// [avsc setActiveCategoryVolumeTo:curVol];
+  [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(setCurVolume:) userInfo:nil repeats:NO];
+
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
   // fire almost immediately.  Doing this with performSelectorOnMainThread: doesn't actually get back
   // to the runloop - we're already running in the main thread, so it just executes it directly instead
   // of inserting a message for later.
   [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
+}
+
+// Make sure the current volume is within bounds
+- (void)setCurVolume {  
+
+	curVol = initVol;
+
+	// There are 16 bars on the volume HUD
+	// 1/16 = 0.0625, but apparently that isn't quite enough - add 0.005
+	if (curVol == 1.0f) 
+		curVol = 1.0f - 0.063f;
+	if (curVol < 0.063f) 
+		curVol = 0.063f;
+
+	AVSystemController *avsc = [AVSystemController sharedAVSystemController];
+	[avsc setActiveCategoryVolumeTo:curVol];
+}
+
+// This is used to "de-bounce" the volume buttons
+// We start a timer to call this func to reset the changed flag
+// Until the timer fires we won't accept another vol change
+- (void)clearVolumeChanged:(id)unused {  
+    volChanged = false;
+} // clearVolumeChanged
+
+
+// This gets called every time the vol keys get pressed
+- (void) volumeChanged:(NSNotification *)notify
+{
+	float newVol;
+	NSString * name;
+
+	UIView *top = [navBar topView];
+	if([top isKindOfClass:[EBookView class]]) 
+	{
+		AVSystemController *avsc = [AVSystemController sharedAVSystemController];
+
+		[avsc getActiveCategoryVolume:&newVol andName:&name];
+
+		if (newVol < curVol) 
+		{
+			// Scroll down
+			if (!volChanged)
+			{
+				volChanged = true;
+				[(EBookView*)top pageDownWithTopBar:![defaults navbar]
+										  bottomBar:![defaults toolbar]];
+				[NSTimer scheduledTimerWithTimeInterval:0.2f target:self 
+											   selector:@selector(clearVolumeChanged:) userInfo:nil repeats:NO];
+			}
+		}
+		else if (newVol > curVol)
+		{
+			// Scroll up
+			if (!volChanged)
+			{
+				volChanged = true;
+				[(EBookView*)top pageUpWithTopBar:![defaults navbar]
+										  bottomBar:![defaults toolbar]];
+				[NSTimer scheduledTimerWithTimeInterval:0.2f target:self 
+											   selector:@selector(clearVolumeChanged:) userInfo:nil repeats:NO];
+			}
+		}
+
+		if (newVol != curVol)
+			[avsc setActiveCategoryVolumeTo:curVol];
+
+		// Restore our initial volume
+	}
 }
 
 /**
@@ -247,11 +336,11 @@
 - (void)finishUpLaunch {
 	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	NSString *recentFile = [defaults lastBrowserPath];
-
+	[self setCurVolume];
 	[self setupNavbar];
 	[self setupToolbar];
-  
-  [self hideNavbars];
+
+	[self hideNavbars];
 
 	// Get last browser path and start loading files
 	NSString *lastBrowserPath;
@@ -283,8 +372,8 @@
 			[self transitionNavbarAnimation];
 			[navBar setTransitionOffView:m_startupImage];
 			if(![defaults startupIsCover]) {
-        [navBar skipNextTransition];
-      }
+				[navBar skipNextTransition];
+			}
 		}
 
 		NSString *curPath = [arPathComponents objectAtIndex:pathCount];
@@ -292,7 +381,7 @@
 		[self fileBrowser:nil fileSelected:curPath];
 	}
 
-	
+
 	if(readingText) {
 		/*
 		 * If we are reading text, then we DIDN'T finish setting up the navbar during
@@ -322,12 +411,12 @@
 	}
 
 	[arPathComponents release];
-  
-  if([defaults uiOrientation] != 1 && !readingText) {
-    // No sense triggering rotation if it isn't going to do anything - I think it also messed up the
-    // clock at startup. -ZSB
-    [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
-  }
+
+	if([defaults uiOrientation] != 1 && !readingText) {
+		// No sense triggering rotation if it isn't going to do anything - I think it also messed up the
+		// clock at startup. -ZSB
+		[NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(applyOrientationLater) userInfo:nil repeats:NO];
+	}
 }
 
 /**
@@ -356,7 +445,7 @@
 	} else {
 		// Set nav bars for a file browser
 		[bottomNavBar hide];
-    [navBar show];
+		[navBar show];
 	}
 }
 
@@ -398,47 +487,47 @@
  * Show the please wait / progress spinner view.
  */
 - (void)showPleaseWait {
-  FileBrowser *topB = [navBar topBrowser];
-  [topB setEnabled:NO];
-  
-  if(m_progressIndicator == nil) {
-    // We might already be showing the progressHUD if this is startup.
-    // Don't show it again if it's already there.
-    
-    UIView *progView;
-    if(m_startupImage != nil) {
-      progView = m_startupImage;
-    } else {
-      progView = [navBar topView];
-    }
-    
-    const int PROG_SIZE = 32;
-    const int progHeight = 70;
-    const int progWidth = 64;
-    struct CGRect progRect = CGRectMake([progView bounds].size.width - (progWidth + 10),
-                                        [progView bounds].size.height - (progHeight + 10),
-                                        progWidth, 
-                                        progHeight);
-    
-    m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
-    [m_progressIndicator setFontSize:6];
-    [m_progressIndicator setText:@" "];
-    [mainView addSubview:m_progressIndicator];
-    [m_progressIndicator show:YES];
-  }
+	FileBrowser *topB = [navBar topBrowser];
+	[topB setEnabled:NO];
+
+	if(m_progressIndicator == nil) {
+		// We might already be showing the progressHUD if this is startup.
+		// Don't show it again if it's already there.
+
+		UIView *progView;
+		if(m_startupImage != nil) {
+			progView = m_startupImage;
+		} else {
+			progView = [navBar topView];
+		}
+
+		const int PROG_SIZE = 32;
+		const int progHeight = 70;
+		const int progWidth = 64;
+		struct CGRect progRect = CGRectMake([progView bounds].size.width - (progWidth + 10),
+				[progView bounds].size.height - (progHeight + 10),
+				progWidth, 
+				progHeight);
+
+		m_progressIndicator = [[UIProgressHUD alloc] initWithFrame:progRect];
+		[m_progressIndicator setFontSize:6];
+		[m_progressIndicator setText:@" "];
+		[mainView addSubview:m_progressIndicator];
+		[m_progressIndicator show:YES];
+	}
 }
 
 /**
  * Hide the please wait / progress spinner view, apply book preferences.
  */
 - (void)hidePleaseWait {
-  [m_progressIndicator show:NO];
-  [m_progressIndicator removeFromSuperview];
-  [m_progressIndicator release];
-  m_progressIndicator = nil;
-  
-  FileBrowser *topB = [navBar topBrowser];
-  [topB setEnabled:YES];
+	[m_progressIndicator show:NO];
+	[m_progressIndicator removeFromSuperview];
+	[m_progressIndicator release];
+	m_progressIndicator = nil;
+
+	FileBrowser *topB = [navBar topBrowser];
+	[topB setEnabled:YES];
 }
 
 /**
@@ -469,9 +558,9 @@
 		  progView = [navBar topView];
 	  }
 
-    [self showPleaseWait];
-	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
-    [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:ebv withObject:nil];
+	  [self showPleaseWait];
+	  GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
+	  [NSThread detachNewThreadSelector:@selector(reallyLoadBook) toTarget:ebv withObject:nil];
 
 	  ret = ebv;
   }  
@@ -505,33 +594,33 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	if(![fileManager fileExistsAtPath:file isDirectory:&isDir]) {
-		[self setUIOrientation:1];
-    [self lockUIOrientation];
-		CGRect rect = [[UIWindow keyWindow] bounds];
-    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
-    // NOTE: Leave this retained - we'll release it in the delegate callback.
-    [alertSheet setTitle:@"Folder not found"];
-    [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", file]];
-    [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
-    [alertSheet setDelegate: self];
-    [alertSheet presentSheetInView:mainView];
-		return;
+			   [self setUIOrientation:1];
+			   [self lockUIOrientation];
+			   CGRect rect = [[UIWindow keyWindow] bounds];
+			   UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+			   // NOTE: Leave this retained - we'll release it in the delegate callback.
+  [alertSheet setTitle:@"Folder not found"];
+  [alertSheet setBodyText:[NSString stringWithFormat:@"%@ doesn't appear to exist.  Try restarting Books to refresh folders.", file]];
+  [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
+  [alertSheet setDelegate: self];
+  [alertSheet presentSheetInView:mainView];
+  return;
 	}
-  
-  if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
-		[self setUIOrientation:1];
-    [self lockUIOrientation];
-    CGRect rect = [[UIWindow keyWindow] bounds];
-    UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
-    // NOTE: Leave this retained - we'll release it in the delegate callback.
-    [alertSheet setTitle:@"Access Denied"];
-    [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", file]];
-    [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
-    [alertSheet addButtonWithTitle:@"Help (Wiki)"];
-    [alertSheet setDelegate: self];
-    [alertSheet presentSheetInView:mainView];
-    return;
-  }
+
+	if(![[NSFileManager defaultManager] isReadableFileAtPath:file]) {
+									  [self setUIOrientation:1];
+									  [self lockUIOrientation];
+									  CGRect rect = [[UIWindow keyWindow] bounds];
+									  UIAlertSheet * alertSheet = [[UIAlertSheet alloc] initWithFrame:CGRectMake(0,rect.size.height - TOOLBAR_HEIGHT, rect.size.width,240)];
+									  // NOTE: Leave this retained - we'll release it in the delegate callback.
+						 [alertSheet setTitle:@"Access Denied"];
+						 [alertSheet setBodyText:[NSString stringWithFormat:@"Error reading %@.  Perhaps user mobile lacks the rights to do so?", file]];
+						 [alertSheet addButtonWithTitle:(m_openedFirstDoc ? @"OK" : @"Quit")];
+						 [alertSheet addButtonWithTitle:@"Help (Wiki)"];
+						 [alertSheet setDelegate: self];
+						 [alertSheet presentSheetInView:mainView];
+						 return;
+	}
 
 	[defaults setLastBrowserPath:file];
 
@@ -548,7 +637,7 @@
 		UIView *displayView = [self showDocumentAtPath:file];
 		tempItem = [[FileNavigationItem alloc] initWithDocument:file view:displayView];
 	}
-	
+
 	// Until we get through a document load once, we're just going to quit if permissions fail.
 	m_openedFirstDoc = YES;
 
@@ -576,8 +665,8 @@
  */
 - (void)applicationWillSuspend {
 	//if([[defaults appStatus] isEqualToString:APPOPENVALUE]) {
-		// Only clean up is we haven't done it yet (clean up sets this to NO)
-		[self cleanUpBeforeQuit];
+	// Only clean up is we haven't done it yet (clean up sets this to NO)
+	[self cleanUpBeforeQuit];
 	//}
 }
 
@@ -599,25 +688,25 @@
  * Fix the status bar location after a resume.
  */
 - (void)applicationDidResume {
-  [self adjustStatusBarColorWithUiOrientation:[defaults uiOrientation]];
+	[self adjustStatusBarColorWithUiOrientation:[defaults uiOrientation]];
 }
 
 /*
  * Will suspend for events only is called before the app goes down when
  * the phone is probably going to switch to another app (phone call).
-- (void)applicationWillSuspendForEventsOnly {
-	GSLog(@"%s .", _cmd);
-}
-*/
+ - (void)applicationWillSuspendForEventsOnly {
+ GSLog(@"%s .", _cmd);
+ }
+ */
 
 /*
  * Will suspend under lock is called before the phone is going
  * to lock (oddly enough)...  One of the other functions we monitor
  * will always be called as well, so we'll ignore this one.
-- (void)applicationWillSuspendUnderLock {
-	GSLog(@"%s .", _cmd);
-}
-*/
+ - (void)applicationWillSuspendUnderLock {
+ GSLog(@"%s .", _cmd);
+ }
+ */
 
 - (void)embiggenText:(UINavBarButton *)button {
 	if (![button isPressed]) {// mouse up events only, kids!
@@ -705,9 +794,9 @@
 - (void)setupNavbar {
 	// Only create the navbar once.
 	if(navBar == nil) {    
-    struct CGRect rect = [mainView bounds];
-    struct CGRect frameRect = CGRectMake(rect.origin.x, rect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), rect.size.width, TOOLBAR_HEIGHT);
-    
+		struct CGRect rect = [mainView bounds];
+		struct CGRect frameRect = CGRectMake(rect.origin.x, rect.origin.y - (TOOLBAR_FUDGE+TOOLBAR_HEIGHT), rect.size.width, TOOLBAR_HEIGHT);
+
 		navBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView asTop:YES];
 		[navBar hideButtons];
 
@@ -723,64 +812,64 @@
  * Create or reconfigure the tool bar (reader).
  */
 - (void)setupToolbar {
-  // Only create the navbar once
+	// Only create the navbar once
 	if(bottomNavBar == nil) {
-    struct CGRect rect = [mainView bounds];
-    struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height, rect.size.width, TOOLBAR_HEIGHT);
-    
+		struct CGRect rect = [mainView bounds];
+		struct CGRect frameRect = CGRectMake(rect.origin.x, rect.size.height, rect.size.width, TOOLBAR_HEIGHT);
+
 		// FIXME: Will this ever redraw the nav bars after prefs?
-    bottomNavBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView asTop:NO];
-    [bottomNavBar setBarStyle:0];
+	bottomNavBar = [[HideableNavBar alloc] initWithFrame:frameRect delegate:self transitionView:m_transitionView asTop:NO];
+	[bottomNavBar setBarStyle:0];
 
-    // Put the buttons back
-    if ([defaults flipped]) {
-      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
-      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
+	// Put the buttons back
+	if ([defaults flipped]) {
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(5,9,40,30) selector:@selector(pageDown:) flipped:YES];
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(45,9,40,30) selector:@selector(pageUp:) flipped:YES];
 
-      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
-        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
-      } else {
-        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
-        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
-      }
+		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(5,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(45,9,40,30) selector:@selector(chapForward:) flipped:NO];
+		} else {
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(88,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(128,9,40,30) selector:@selector(chapForward:) flipped:NO];	
+		}
 
-      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
-      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
-      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-    } else {
-      minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
-      plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
-      invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
-      rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(171,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(203,9,30,30) selector:@selector(invertText:) flipped:NO];
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(235,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(275,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+	} else {
+		minusButton = [self toolbarButtonWithName:@"emsmall" rect:CGRectMake(5,9,40,30) selector:@selector(ensmallenText:) flipped:NO];
+		plusButton = [self toolbarButtonWithName:@"embig" rect:CGRectMake(45,9,40,30) selector:@selector(embiggenText:) flipped:NO];
+		invertButton = [self toolbarButtonWithName:@"inv" rect:CGRectMake(87,9,30,30) selector:@selector(invertText:) flipped:NO];
+		rotateButton = [self toolbarButtonWithName:@"rotate" rect:CGRectMake(119,9,30,30) selector:@selector(rotateButtonCallback:) flipped:NO];
 
-      if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
-        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
-        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
-      } else {
-        leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
-        rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
-      }
+		if (![defaults pagenav]) { // If pagnav buttons should be off, then move the chapter buttons over
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(235,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(275,9,40,30) selector:@selector(chapForward:) flipped:NO];
+		} else {
+			leftButton = [self toolbarButtonWithName:@"left" rect:CGRectMake(152,9,40,30) selector:@selector(chapBack:) flipped:NO];
+			rightButton = [self toolbarButtonWithName:@"right" rect:CGRectMake(192,9,40,30) selector:@selector(chapForward:) flipped:NO];
+		}
 
-      upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
-      downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
-    }
+		upButton = [self toolbarButtonWithName:@"up" rect:CGRectMake(235,9,40,30) selector:@selector(pageUp:) flipped:NO];
+		downButton = [self toolbarButtonWithName:@"down" rect:CGRectMake(275,9,40,30) selector:@selector(pageDown:) flipped:NO];
+	}
 
-    [bottomNavBar addSubview:minusButton];
-    [bottomNavBar addSubview:plusButton];
-    [bottomNavBar addSubview:invertButton];
-    [bottomNavBar addSubview:rotateButton];
+	[bottomNavBar addSubview:minusButton];
+	[bottomNavBar addSubview:plusButton];
+	[bottomNavBar addSubview:invertButton];
+	[bottomNavBar addSubview:rotateButton];
 
-    if ([defaults chapternav]) {
-      [bottomNavBar addSubview:leftButton];
-      [bottomNavBar addSubview:rightButton];
-    }
+	if ([defaults chapternav]) {
+		[bottomNavBar addSubview:leftButton];
+		[bottomNavBar addSubview:rightButton];
+	}
 
-    if ([defaults pagenav]) {	
-      [bottomNavBar addSubview:upButton];
-      [bottomNavBar addSubview:downButton];
-    }
+	if ([defaults pagenav]) {	
+		[bottomNavBar addSubview:upButton];
+		[bottomNavBar addSubview:downButton];
+	}
 	}
 }
 
@@ -809,8 +898,8 @@
 	}
 	else
 	{
-	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
-	[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
+		[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_up",name] flipped:flipped] forState:0];
+		[button setImage:[self navBarImage:[NSString stringWithFormat:@"%@_down",name] flipped:flipped] forState:1];
 	}
 	[button setDrawContentsCentered:YES];
 	[button addTarget:self action:selector forEvents: (255)];
@@ -895,9 +984,9 @@
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-  
-  [m_progressIndicator removeFromSuperview];  
-  [m_progressIndicator release];
+
+	[m_progressIndicator removeFromSuperview];  
+	[m_progressIndicator release];
 
 	[navBar release];
 	[bottomNavBar release];
