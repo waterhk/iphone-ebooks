@@ -137,14 +137,17 @@
 }
 
 - (void)applicationDidFinishLaunching:(id)unused {  
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   m_documentExtensions = [[NSArray arrayWithObjects:@"txt", @"htm", @"html", @"pdb", @"jpg", @"png", @"gif", nil] retain];
 
   m_openedFirstDoc = NO;
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   //investigate using [self setUIOrientation 3] that may alleviate for the need of a weirdly sized window
   defaults = [BooksDefaultsController sharedBooksDefaultsController];
 
   NSString *lAppStatus = [defaults appStatus];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   if ([lAppStatus isEqualToString: APPOPENVALUE]) {
 	  // I think it's enough to just clear out the last read path -- no need to kill the whole
@@ -152,6 +155,7 @@
 	  // big a deal (as compared to trashing the entire prefs). -ZSB
 	  [defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
   }
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   //now set the app status to open
   [defaults setAppStatus:APPOPENVALUE];
 
@@ -162,14 +166,18 @@
 											   name:TOOLBAR_DEFAULTS_CHANGED_NOTIFICATION
 											 object:nil];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   window = [[UIWindow alloc] initWithContentRect:[UIHardware fullScreenApplicationContentRect]];  
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   mainView = [[UIView alloc] initWithFrame:[window bounds]];
   [window setContentView:mainView];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   m_transitionView = [[UITransitionView alloc] initWithFrame:[window bounds]];
   [mainView addSubview:m_transitionView];
   [m_transitionView setDelegate:self];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   /*
    * We need to fix up any prefs-weirdness relating to file path before we try to open a document.
    * Figure out if we have a directory or a file and if it exists.  If it doesn't, jump back to the
@@ -181,6 +189,7 @@
 
   readingText = exists && !isDir;
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   if(!exists) {
 	  [defaults setLastBrowserPath:[BooksDefaultsController defaultEBookPath]];
 	  [defaults removePerFileDataForFile:recentFile];
@@ -189,6 +198,7 @@
 
   NSString *defImage = [self _pathToDefaultImageNamed:[self nameOfDefaultImageToUpdateAtSuspension]];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   if(![[NSFileManager defaultManager] fileExistsAtPath:defImage]) {
 	 defImage = [[NSBundle mainBundle] pathForResource:@"Default" ofType:@"png"];
@@ -197,6 +207,7 @@
   m_startupImage = [[EBookImageView alloc] initWithContentsOfFile:defImage
 														withFrame:[window bounds] 
 													  scaleAspect:NO];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   [m_transitionView transition:0 toView:m_startupImage];
 
   // At this point, we're showing either the startup book or the cover image in the real imageView and m_startupView is gone.
@@ -211,37 +222,47 @@
 										   selector:@selector(boundsDidChange:)
 											   name:[BoundsChangedNotification didChangeName]
 											 object:nil];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   [[NSNotificationCenter defaultCenter] addObserver:self
 										   selector:@selector(boundsWillChange:)
 											   name:[BoundsChangedNotification willChangeName]
 											 object:nil];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   [self showPleaseWait];
-
+//#define volumeScroll
+#ifdef volumeScroll
   // // Volume scrolling ...  
   [self setSystemVolumeHUDEnabled:NO];
-
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   AVSystemController *avsc = [AVSystemController sharedAVSystemController];
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 
   [[NSNotificationCenter defaultCenter] addObserver:self 
 										   selector:@selector(volumeChanged:) 
 											   name:@"AVSystemController_SystemVolumeDidChangeNotification" 
 											 object:avsc];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   NSString *name;
   [avsc getActiveCategoryVolume:&initVol andName:&name];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
   // We need to set the current volume so it has some up and down room
   // Can't do this here because the HUDEnabled:NO has not yet taken effect - use a timer
 			// [avsc setActiveCategoryVolumeTo:curVol];
   [NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(setCurVolume:) userInfo:nil repeats:NO];
 
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
+#endif
   // We need to get back to the main runloop for some things to finish up.  Schedule a timer to
   // fire almost immediately.  Doing this with performSelectorOnMainThread: doesn't actually get back
   // to the runloop - we're already running in the main thread, so it just executes it directly instead
   // of inserting a message for later.
   [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector(finishUpLaunch) userInfo:nil repeats:NO];
+
+	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 }
 
 // Make sure the current volume is within bounds
@@ -273,7 +294,6 @@
 {
 	float newVol;
 	NSString * name;
-
 	UIView *top = [navBar topView];
 	if([top isKindOfClass:[EBookView class]]) 
 	{
@@ -336,7 +356,9 @@
 - (void)finishUpLaunch {
 	GSLog(@"%s:%d %s .",__FILE__, __LINE__, _cmd);
 	NSString *recentFile = [defaults lastBrowserPath];
+#ifdef volumeScroll
 	[self setCurVolume];
+#endif
 	[self setupNavbar];
 	[self setupToolbar];
 
