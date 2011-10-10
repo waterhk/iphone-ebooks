@@ -1,5 +1,4 @@
 Landscape:
 		BUG: correct the pixel artifacts when scrolling
-DONE	BUG: correct the display of the cover art 
+DONE		BUG: correct the display of the cover art 
 		HL:switch orientation without restarting
-	
